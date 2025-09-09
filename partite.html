@@ -10,19 +10,39 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
   <style>
+    /* ===== STAT CARD (nuovo layout) ===== */
     .stat-card{
       background:linear-gradient(180deg,#7d2631,#6b0f1a);
       color:#fff;border-radius:18px;padding:16px;
-      box-shadow:0 10px 30px rgba(0,0,0,.12)
+      box-shadow:0 10px 28px rgba(0,0,0,.14)
     }
-    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
-    .stat-kpi{background:#ffffff14;border:1px solid #ffffff2b;border-radius:16px;padding:12px;text-align:center}
-    .stat-kpi .v{font-weight:800;font-size:22px}
-    .form-dot{width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
-      font-weight:700;color:#fff;margin-right:6px}
+    .stat-head{display:flex;justify-content:space-between;align-items:center}
+    .stat-title{display:flex;gap:10px;align-items:center;font-size:22px;font-weight:800}
+    .stat-range{opacity:.9;font-size:13px}
+
+    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
+    .kpi3-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+
+    .kpi{
+      background:#ffffff1c;border:1px solid #ffffff33;border-radius:16px;
+      padding:14px 10px;text-align:center;min-height:96px;
+      display:flex;flex-direction:column;justify-content:center;gap:6px
+    }
+    .kpi .ico{font-size:22px;line-height:1}
+    .kpi .val{font-weight:900;font-size:26px;line-height:1}
+    .kpi .lbl{font-size:13px;opacity:.95}
+
+    .form-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+    .form-dot{
+      width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:800;color:#fff;font-size:13px
+    }
     .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
-    .item-head{display:flex;justify-content:space-between;align-items:center}
-    @media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+
+    @media(max-width:760px){
+      .kpi-row{grid-template-columns:repeat(2,1fr)}
+      .kpi3-row{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -51,27 +71,30 @@
       </div>
     </section>
 
-    <!-- 📊 Statistiche Stagione -->
+    <!-- 📊 Statistiche Stagione (nuovo) -->
     <section id="stats" class="stat-card">
-      <div class="item-head">
-        <h2 style="margin:0;display:flex;gap:8px;align-items:center"><span>📊</span> <span>Statistiche Stagione</span></h2>
-        <span id="statsRange" class="small" style="opacity:.85"></span>
+      <div class="stat-head">
+        <div class="stat-title"><span>📊</span><span>Statistiche Stagione</span></div>
+        <div id="statsRange" class="stat-range">—</div>
       </div>
 
-      <div class="stat-grid" style="margin-top:12px">
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Partite</div><div id="kGames" class="v">0</div></div>
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Vittorie</div><div id="kW" class="v">0</div></div>
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Pareggi</div><div id="kD" class="v">0</div></div>
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Sconfitte</div><div id="kL" class="v">0</div></div>
+      <!-- Prima riga: 4 KPI con icone -->
+      <div class="kpi-row">
+        <div class="kpi"><div class="ico">⚽️</div><div id="kGames" class="val">0</div><div class="lbl">Partite</div></div>
+        <div class="kpi"><div class="ico">🏆</div><div id="kW" class="val">0</div><div class="lbl">Vittorie</div></div>
+        <div class="kpi"><div class="ico">➖</div><div id="kD" class="val">0</div><div class="lbl">Pareggi</div></div>
+        <div class="kpi"><div class="ico">✖️</div><div id="kL" class="val">0</div><div class="lbl">Sconfitte</div></div>
       </div>
 
-      <div class="stat-grid" style="margin-top:10px">
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Gol Fatti</div><div id="kGF" class="v">0</div></div>
-        <div class="stat-kpi"><div class="small" style="opacity:.85">Gol Subiti</div><div id="kGA" class="v">0</div></div>
-        <div class="stat-kpi" style="grid-column:span 2"><div class="small" style="opacity:.85">Differenza</div><div id="kGD" class="v">0</div></div>
+      <!-- Seconda riga: GF / GA / GD -->
+      <div class="kpi3-row">
+        <div class="kpi"><div class="ico">🥅</div><div id="kGF" class="val">0</div><div class="lbl">Gol Fatti</div></div>
+        <div class="kpi"><div class="ico">🛡️</div><div id="kGA" class="val">0</div><div class="lbl">Gol Subiti</div></div>
+        <div class="kpi"><div class="ico">➕/➖</div><div id="kGD" class="val">0</div><div class="lbl">Differenza</div></div>
       </div>
 
-      <div class="row" style="margin-top:12px">
+      <!-- Forma attuale -->
+      <div class="form-row">
         <div class="small" style="opacity:.95">Forma Attuale:</div>
         <div id="formRow"></div>
       </div>
@@ -85,7 +108,7 @@
   <script type="module">
     import {get} from './data-store.js';
 
-    // --- Helpers ---
+    // Helpers
     function toDate(d, t='00:00') {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T${t}`);
@@ -112,7 +135,7 @@
       return '<span class="badge badge-amber">PAREGGIO</span>';
     }
 
-    // --- Dataset: solo partite già giocate ---
+    // Dataset: solo partite già giocate
     const now = new Date();
     const raw = get('matches') || [];
     const played = raw.map(m => ({
@@ -121,34 +144,28 @@
         competizione: m.competizione || 'Serie A Futsal'
       }))
       .filter(m => !isNaN(+m.date) && m.date <= now)
-      .sort((a,b) => b.date - a.date); // più recente → più vecchia
+      .sort((a,b) => b.date - a.date);
 
-    // ===== Calcolo Statistiche =====
-    const stats = {
-      games: 0, w:0, d:0, l:0, gf:0, ga:0, gd:0, form: [] // form: ['W','D','L'...]
-    };
+    // ===== Statistiche =====
+    const stats = {games:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, form:[]};
     played.forEach(m => {
       const s = parseScore(m.risultato);
       if (!s) return;
       stats.games++;
-      stats.gf += s.gf;
-      stats.ga += s.ga;
-      if (s.gf > s.ga) stats.w++;
-      else if (s.gf < s.ga) stats.l++;
-      else stats.d++;
-      stats.form.push(s.gf > s.ga ? 'W' : s.gf < s.ga ? 'L' : 'D');
+      stats.gf += s.gf; stats.ga += s.ga;
+      if (s.gf > s.ga) { stats.w++; stats.form.push('W'); }
+      else if (s.gf < s.ga) { stats.l++; stats.form.push('L'); }
+      else { stats.d++; stats.form.push('D'); }
     });
     stats.gd = stats.gf - stats.ga;
 
-    // Range date per etichetta
+    // Intestazione range date
+    const rangeEl = document.getElementById('statsRange');
     if (played.length){
       const from = played[played.length-1].date;
       const to   = played[0].date;
-      document.getElementById('statsRange').textContent =
-        from.toLocaleDateString() + ' → ' + to.toLocaleDateString();
-    } else {
-      document.getElementById('statsRange').textContent = '—';
-    }
+      rangeEl.textContent = from.toLocaleDateString() + ' → ' + to.toLocaleDateString();
+    } else rangeEl.textContent = '—';
 
     // Render KPI
     document.getElementById('kGames').textContent = stats.games;
@@ -160,15 +177,14 @@
     document.getElementById('kGD').textContent = (stats.gd>0?'+':'') + stats.gd;
 
     // Forma attuale (ultime 5)
-    const formRow = document.getElementById('formRow');
-    const last5 = stats.form.slice(0,5); // già dalla più recente
-    formRow.innerHTML = last5.map(x => {
+    const last5 = stats.form.slice(0,5);
+    document.getElementById('formRow').innerHTML = last5.map(x=>{
       if (x==='W') return '<span class="form-dot fW">V</span>';
       if (x==='D') return '<span class="form-dot fD">P</span>';
       return '<span class="form-dot fL">S</span>';
     }).join('');
 
-    // --- LISTA RISULTATI ---
+    // ===== LISTA RISULTATI =====
     const list = document.getElementById('list');
 
     function card(m){
@@ -204,7 +220,6 @@
       list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessun risultato</div>';
     }
 
-    // Eventi filtri
     document.getElementById('q').addEventListener('input', apply);
     document.querySelectorAll('#comp .chip').forEach(chip => {
       chip.addEventListener('click', () => {
@@ -214,12 +229,8 @@
       });
     });
 
-    // Render iniziale
     apply();
-
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>
 </html>
