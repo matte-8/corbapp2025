@@ -3,51 +3,128 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>CORB</title>
+  <title>Home - CORB</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
+  <style>
+    /* BOX griglia */
+    .grid-home{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    @media(min-width:720px){.grid-home{grid-template-columns:repeat(3,1fr)}}
+    .home-box{
+      display:flex;flex-direction:column;justify-content:center;align-items:center;
+      background:var(--granata);color:#fff;border-radius:16px;padding:12px;cursor:pointer;
+      font-weight:600;text-align:center;min-height:110px;box-shadow:0 6px 20px rgba(0,0,0,.15)
+    }
+    .home-emoji{font-size:28px;margin-bottom:8px;line-height:1}
+    /* Drawer (menu a tendina) */
+    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
+      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
+    #drawer.open{right:0}
+    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
+    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
+    /* News preview */
+    .news-mini .item{display:grid;grid-template-columns:1fr auto;gap:6px;padding:12px;border-bottom:1px solid var(--ring)}
+    .news-mini .item:last-child{border-bottom:0}
+    .ellipsis{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  </style>
 </head>
 <body>
-  <!-- Barra superiore -->
+  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
-      <div class="title" style="font-weight:700">CORB</div>
+      <img src="img/icons/icon-192.png" style="width:28px;height:28px;border-radius:6px">
+      <div class="title" style="font-weight:700;margin-left:8px">Home</div>
     </div>
     <div class="right">
-      <a class="iconbtn" href="./admin.html">⟳</a>
+      <a id="menuBtn" class="iconbtn" title="Menu">☰</a>
     </div>
   </header>
 
-  <!-- Contenuto -->
+  <!-- Drawer menu -->
+  <nav id="drawer">
+    <span id="drawer-close">✕</span>
+    <h3>Menu</h3>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./sponsor.html">💰 Sponsor</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">📊 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
   <main class="container">
-    <section class="card">
-      <h1>Benvenuto 👋</h1>
-      <p class="small">App ufficiale della squadra futsal Corbiolo</p>
-      <div class="row">
-        <a class="iconbtn" href="./squadra.html">👥</a>
-        <a class="iconbtn" href="./partite.html">🏆</a>
-        <a class="iconbtn" href="./prossima.html">🗓</a>
-        <a class="iconbtn" href="./news.html">📰</a>
-        <a class="iconbtn" href="./sponsor.html">💼</a>
-        <a class="iconbtn" href="./calendario.html">📅</a>
-      </div>
+    <!-- Griglia 6 box -->
+    <section class="grid-home">
+      <a class="home-box" href="./news.html">
+        <span class="home-emoji">📰</span><div>News</div>
+      </a>
+      <a class="home-box" href="./squadra.html">
+        <span class="home-emoji">👥</span><div>Squadra</div>
+      </a>
+      <a class="home-box" href="./sponsor.html">
+        <span class="home-emoji">💰</span><div>Sponsor</div>
+      </a>
+      <a class="home-box" href="./prossima.html">
+        <span class="home-emoji">📅</span><div>Prossima Partita</div>
+      </a>
+      <a class="home-box" href="./partite.html">
+        <span class="home-emoji">🏆</span><div>Risultati</div>
+      </a>
+      <a class="home-box" href="./calendario.html">
+        <span class="home-emoji">📆</span><div>Calendario</div>
+      </a>
     </section>
 
+    <!-- Anteprima ultime 2 news -->
+    <section class="card news-mini">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Ultime News</h2>
+        <a class="small" href="./news.html">Vedi tutte →</a>
+      </div>
+      <div id="newsPreview"></div>
+    </section>
+
+    <!-- Ultimo sync -->
     <section class="card small">
       Ultimo aggiornamento dati: <span id="ls">never</span>
     </section>
   </main>
 
-  <!-- Script -->
   <script type="module">
-    import {last} from './data-store.js';
+    import {last, get} from './data-store.js';
+
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+
+    // Ultimo sync
     document.getElementById('ls').textContent = last();
 
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
+    // Anteprima 2 news dalla cache
+    const news = (get('news') || [])
+      .map(n => ({titolo:n.titolo||'', contenuto:n.contenuto||'', img:n.img||'', tag:n.tag||''}))
+      .slice(-2)        // ultime due in coda
+      .reverse();       // mostra prima la più recente
+
+    const wrap = document.getElementById('newsPreview');
+    wrap.innerHTML = news.length
+      ? news.map(n => `
+          <div class="item">
+            <div>
+              <div style="font-weight:600">${n.titolo}</div>
+              <div class="small ellipsis">${n.contenuto}</div>
+            </div>
+            <div class="pill">${n.tag || 'News'}</div>
+          </div>`).join('')
+      : '<div class="small">Nessuna notizia disponibile</div>';
+
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("./sw.js");
     }
   </script>
 </body>
