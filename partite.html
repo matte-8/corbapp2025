@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risultati - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Barra superiore -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Risultati</div>
+    </div>
+    <div class="right">
+      <a class="iconbtn" href="./admin.html">⟳</a>
+    </div>
+  </header>
+
+  <!-- Filtri -->
+  <main class="container">
+    <section class="card">
+      <div class="search">
+        <span>🔎</span>
+        <input id="q" placeholder="Cerca partite, squadre o competizioni...">
+      </div>
+      <div class="chips" id="comp">
+        <span class="chip active" data-comp="">Tutte</span>
+        <span class="chip" data-comp="Serie A Futsal">Serie A Futsal</span>
+        <span class="chip" data-comp="Coppa Italia Futsal">Coppa Italia Futsal</span>
+      </div>
+    </section>
+
+    <!-- Lista partite -->
+    <section id="list"></section>
+  </main>
+
+  <!-- Script -->
+  <script type="module">
+    import {get} from './data-store.js';
+
+    const data = get('matches').map(m => ({
+      ...m,
+      date: new Date((m.data || '') + 'T' + (m.ora || '00:00')),
+      competizione: m.competizione || 'Serie A Futsal'
+    }));
+
+    const list = document.getElementById('list');
+
+    function resultBadge(m) {
+      const r = (m.risultato || '').trim();
+      if (!r) return '';
+      const [a, b] = r.split(/\D+/).map(Number);
+      if (isNaN(a) || isNaN(b)) return '';
+      if (a > b) return '<span class="badge badge-green">VITTORIA</span>';
+      if (a < b) return '<span class="badge badge-red">SCONFITTA</span>';
+      return '<span class="badge badge-amber">PAREGGIO</span>';
+    }
+
+    function card(m) {
+      const when = m.date.toLocaleDateString(undefined, {day:'2-digit',month:'2-digit',year:'numeric'});
+      const home = m.casa || 'Corbiolo';
+      const away = m.fuori || '';
+      return `
+        <article class="card" style="display:grid;gap:10px">
+          <div>
+            <div class="small">${m.competizione}</div>
+            <div style="display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px">
+              <div><strong>${home}</strong><div class="small">Casa</div></div>
+              <div class="score">${(m.risultato || '–').replace('-', ' - ')}</div>
+              <div style="text-align:right"><strong>${away}</strong><div class="small">Trasferta</div></div>
+            </div>
+            <div class="row" style="justify-content:space-between;margin-top:6px">
+              ${resultBadge(m)}
+              <div class="small">${when}</div>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function apply() {
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const comp = document.querySelector('#comp .chip.active')?.dataset.comp || '';
+      const rows = data
+        .filter(m => (comp === '' || m.competizione === comp) &&
+                     (`${m.casa} ${m.fuori} ${m.risultato} ${m.competizione}`.toLowerCase().includes(q)))
+        .sort((a, b) => b.date - a.date);
+      list.innerHTML = rows.map(card).join('') || '<div class="card">Nessun risultato</div>';
+    }
+
+    // Eventi
+    document.getElementById('q').addEventListener('input', apply);
+    document.querySelectorAll('#comp .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        chip.classList.add('active');
+        apply();
+      });
+    });
+
+    // Render iniziale
+    apply();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
