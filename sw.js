@@ -1,4 +1,5 @@
-const CACHE = 'corb-pwa-v1';
+// sw.js
+const CACHE = 'corb-pwa-v2';   // <— alza il numero
 const CORE = [
   './',
   './index.html',
