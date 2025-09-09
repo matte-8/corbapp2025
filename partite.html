@@ -29,7 +29,7 @@
         <span>🔎</span>
         <input id="q" placeholder="Cerca partite, squadre o competizioni...">
       </div>
-      <div class="chips" id="comp">
+      <div class="chips" id="comp" style="margin-top:10px">
         <span class="chip active" data-comp="">Tutte</span>
         <span class="chip" data-comp="Serie A Futsal">Serie A Futsal</span>
         <span class="chip" data-comp="Coppa Italia Futsal">Coppa Italia Futsal</span>
@@ -44,19 +44,40 @@
   <script type="module">
     import {get} from './data-store.js';
 
-    const data = get('matches').map(m => ({
+    // Parsing data/ora robusto
+    function toDate(d, t='00:00') {
+      if (!d) return new Date('Invalid');
+      // supporta sia YYYY-MM-DD che DD/MM/YYYY
+      if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T${t}`);
+      const m = d.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+      if (m) {
+        const dd = +m[1], mm = +m[2]-1, yy = (+m[3] < 100 ? 2000 + +m[3] : +m[3]);
+        const [hh='00', mi='00'] = (t||'00:00').split(':');
+        return new Date(yy, mm, dd, +hh||0, +mi||0);
+      }
+      return new Date(`${d}T${t}`);
+    }
+
+    const now = new Date();
+
+    // Prepara dataset: solo partite già giocate (data <= adesso)
+    const raw = get('matches') || [];
+    const data = raw.map(m => ({
       ...m,
-      date: new Date((m.data || '') + 'T' + (m.ora || '00:00')),
+      date: toDate(m.data, m.ora),
       competizione: m.competizione || 'Serie A Futsal'
-    }));
+    }))
+    .filter(m => !isNaN(+m.date) && m.date <= now) // <-- esclude future
+    .sort((a,b) => b.date - a.date);               // <-- dalla più recente
 
     const list = document.getElementById('list');
 
     function resultBadge(m) {
       const r = (m.risultato || '').trim();
       if (!r) return '';
-      const [a, b] = r.split(/\D+/).map(Number);
-      if (isNaN(a) || isNaN(b)) return '';
+      const parts = r.match(/(\d+)\D+(\d+)/);
+      if (!parts) return '';
+      const a = +parts[1], b = +parts[2];
       if (a > b) return '<span class="badge badge-green">VITTORIA</span>';
       if (a < b) return '<span class="badge badge-red">SCONFITTA</span>';
       return '<span class="badge badge-amber">PAREGGIO</span>';
@@ -86,11 +107,11 @@
     function apply() {
       const q = (document.getElementById('q').value || '').toLowerCase();
       const comp = document.querySelector('#comp .chip.active')?.dataset.comp || '';
-      const rows = data
-        .filter(m => (comp === '' || m.competizione === comp) &&
-                     (`${m.casa} ${m.fuori} ${m.risultato} ${m.competizione}`.toLowerCase().includes(q)))
-        .sort((a, b) => b.date - a.date);
-      list.innerHTML = rows.map(card).join('') || '<div class="card">Nessun risultato</div>';
+      const rows = data.filter(m =>
+        (comp === '' || m.competizione === comp) &&
+        (`${m.casa} ${m.fuori} ${m.risultato} ${m.competizione}`.toLowerCase().includes(q))
+      );
+      list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessun risultato</div>';
     }
 
     // Eventi
