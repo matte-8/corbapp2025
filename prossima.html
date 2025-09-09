@@ -92,7 +92,7 @@
     document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
     document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
 
-    // Parsing date
+    // Helpers
     function toDate(d, t='00:00') {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T${t}`);
@@ -105,6 +105,7 @@
       return new Date(`${d}T${t}`);
     }
     function pad(n){return n.toString().padStart(2,'0');}
+    const isHome = m => (m.casa || '').trim().toLowerCase() === 'corbiolo';
 
     const all = (get('matches') || []).map(m => ({
       ...m, date: toDate(m.data, m.ora), competizione: m.competizione || ''
@@ -116,19 +117,9 @@
 
     // ===== PROSSIMA PARTITA =====
     if (next) {
-      const campo = (next.campo || '').toLowerCase();
-      let squadra1, squadra2;
-
-      if (campo === 'casa') {
-        squadra1 = 'Corbiolo';
-        squadra2 = next.fuori || 'Avversario';
-      } else if (campo === 'fuori') {
-        squadra1 = next.casa || 'Avversario';
-        squadra2 = 'Corbiolo';
-      } else {
-        squadra1 = next.casa || 'Corbiolo';
-        squadra2 = next.fuori || 'Avversario';
-      }
+      const homeSide = isHome(next);
+      const squadra1 = homeSide ? 'Corbiolo' : (next.casa || 'Avversario');
+      const squadra2 = homeSide ? (next.fuori || 'Avversario') : 'Corbiolo';
 
       document.getElementById('squadra1').textContent = squadra1;
       document.getElementById('squadra2').textContent = squadra2;
@@ -181,26 +172,13 @@ END:VCALENDAR`;
     // ===== ELENCO FUTURE =====
     const listEl = document.getElementById('futureList');
     function row(m){
-      const campo = (m.campo || '').toLowerCase();
-      let squadra1, squadra2;
-      const isHome = campo === 'casa';
-
-      if (campo === 'casa') {
-        squadra1 = 'Corbiolo';
-        squadra2 = m.fuori || 'Avversario';
-      } else if (campo === 'fuori') {
-        squadra1 = m.casa || 'Avversario';
-        squadra2 = 'Corbiolo';
-      } else {
-        squadra1 = m.casa || 'Corbiolo';
-        squadra2 = m.fuori || 'Avversario';
-      }
-
-      const icon = isHome ? '🏠' : '✈️';
-      const pillClass = isHome ? 'home-pill' : 'away-pill';
+      const homeSide = isHome(m);
+      const squadra1 = homeSide ? 'Corbiolo' : (m.casa || 'Avversario');
+      const squadra2 = homeSide ? (m.fuori || 'Avversario') : 'Corbiolo';
+      const icon = homeSide ? '🏠' : '✈️';
+      const pillClass = homeSide ? 'home-pill' : 'away-pill';
       const ds = m.date.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit'});
       const label = `${squadra1} - ${squadra2}`;
-
       return `
         <div class="future-row">
           <div class="row">
