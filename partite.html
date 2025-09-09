@@ -9,8 +9,24 @@
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
+  <style>
+    .stat-card{
+      background:linear-gradient(180deg,#7d2631,#6b0f1a);
+      color:#fff;border-radius:18px;padding:16px;
+      box-shadow:0 10px 30px rgba(0,0,0,.12)
+    }
+    .stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+    .stat-kpi{background:#ffffff14;border:1px solid #ffffff2b;border-radius:16px;padding:12px;text-align:center}
+    .stat-kpi .v{font-weight:800;font-size:22px}
+    .form-dot{width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:700;color:#fff;margin-right:6px}
+    .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
+    .item-head{display:flex;justify-content:space-between;align-items:center}
+    @media(max-width:720px){.stat-grid{grid-template-columns:repeat(2,1fr)}}
+  </style>
 </head>
 <body>
+  <!-- Barra superiore -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" style="color:#fff">←</a>
@@ -22,24 +38,54 @@
   </header>
 
   <main class="container">
+    <!-- Filtri -->
     <section class="card">
       <div class="search">
         <span>🔎</span>
         <input id="q" placeholder="Cerca partite, squadre o competizioni...">
       </div>
       <div class="chips" id="comp" style="margin-top:10px">
-        <span class="chip active" data-comp="">Tutte</span>
+        <span class="chip active" data-comp="">Tutte le competizioni</span>
         <span class="chip" data-comp="Serie A Futsal">Serie A Futsal</span>
         <span class="chip" data-comp="Coppa Italia Futsal">Coppa Italia Futsal</span>
       </div>
     </section>
 
+    <!-- 📊 Statistiche Stagione -->
+    <section id="stats" class="stat-card">
+      <div class="item-head">
+        <h2 style="margin:0;display:flex;gap:8px;align-items:center"><span>📊</span> <span>Statistiche Stagione</span></h2>
+        <span id="statsRange" class="small" style="opacity:.85"></span>
+      </div>
+
+      <div class="stat-grid" style="margin-top:12px">
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Partite</div><div id="kGames" class="v">0</div></div>
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Vittorie</div><div id="kW" class="v">0</div></div>
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Pareggi</div><div id="kD" class="v">0</div></div>
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Sconfitte</div><div id="kL" class="v">0</div></div>
+      </div>
+
+      <div class="stat-grid" style="margin-top:10px">
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Gol Fatti</div><div id="kGF" class="v">0</div></div>
+        <div class="stat-kpi"><div class="small" style="opacity:.85">Gol Subiti</div><div id="kGA" class="v">0</div></div>
+        <div class="stat-kpi" style="grid-column:span 2"><div class="small" style="opacity:.85">Differenza</div><div id="kGD" class="v">0</div></div>
+      </div>
+
+      <div class="row" style="margin-top:12px">
+        <div class="small" style="opacity:.95">Forma Attuale:</div>
+        <div id="formRow"></div>
+      </div>
+    </section>
+
+    <!-- Lista partite -->
     <section id="list"></section>
   </main>
 
+  <!-- Script -->
   <script type="module">
     import {get} from './data-store.js';
 
+    // --- Helpers ---
     function toDate(d, t='00:00') {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T${t}`);
@@ -52,21 +98,77 @@
       return new Date(`${d}T${t}`);
     }
     const isHome = m => (m.casa || '').trim().toLowerCase() === 'corbiolo';
+
+    function parseScore(r) {
+      const m = (r||'').match(/(\d+)\D+(\d+)/);
+      if (!m) return null;
+      return {gf:+m[1], ga:+m[2]};
+    }
     function resultBadge(ris) {
-      const parts = (ris||'').match(/(\d+)\D+(\d+)/);
-      if (!parts) return '';
-      const a = +parts[1], b = +parts[2];
-      if (a>b) return '<span class="badge badge-green">VITTORIA</span>';
-      if (a<b) return '<span class="badge badge-red">SCONFITTA</span>';
+      const m = parseScore(ris);
+      if (!m) return '';
+      if (m.gf > m.ga) return '<span class="badge badge-green">VITTORIA</span>';
+      if (m.gf < m.ga) return '<span class="badge badge-red">SCONFITTA</span>';
       return '<span class="badge badge-amber">PAREGGIO</span>';
     }
 
+    // --- Dataset: solo partite già giocate ---
     const now = new Date();
-    const played = (get('matches')||[])
-      .map(m => ({...m, date: toDate(m.data, m.ora), competizione: m.competizione || 'Serie A Futsal'}))
+    const raw = get('matches') || [];
+    const played = raw.map(m => ({
+        ...m,
+        date: toDate(m.data, m.ora),
+        competizione: m.competizione || 'Serie A Futsal'
+      }))
       .filter(m => !isNaN(+m.date) && m.date <= now)
-      .sort((a,b)=> b.date - a.date);
+      .sort((a,b) => b.date - a.date); // più recente → più vecchia
 
+    // ===== Calcolo Statistiche =====
+    const stats = {
+      games: 0, w:0, d:0, l:0, gf:0, ga:0, gd:0, form: [] // form: ['W','D','L'...]
+    };
+    played.forEach(m => {
+      const s = parseScore(m.risultato);
+      if (!s) return;
+      stats.games++;
+      stats.gf += s.gf;
+      stats.ga += s.ga;
+      if (s.gf > s.ga) stats.w++;
+      else if (s.gf < s.ga) stats.l++;
+      else stats.d++;
+      stats.form.push(s.gf > s.ga ? 'W' : s.gf < s.ga ? 'L' : 'D');
+    });
+    stats.gd = stats.gf - stats.ga;
+
+    // Range date per etichetta
+    if (played.length){
+      const from = played[played.length-1].date;
+      const to   = played[0].date;
+      document.getElementById('statsRange').textContent =
+        from.toLocaleDateString() + ' → ' + to.toLocaleDateString();
+    } else {
+      document.getElementById('statsRange').textContent = '—';
+    }
+
+    // Render KPI
+    document.getElementById('kGames').textContent = stats.games;
+    document.getElementById('kW').textContent = stats.w;
+    document.getElementById('kD').textContent = stats.d;
+    document.getElementById('kL').textContent = stats.l;
+    document.getElementById('kGF').textContent = stats.gf;
+    document.getElementById('kGA').textContent = stats.ga;
+    document.getElementById('kGD').textContent = (stats.gd>0?'+':'') + stats.gd;
+
+    // Forma attuale (ultime 5)
+    const formRow = document.getElementById('formRow');
+    const last5 = stats.form.slice(0,5); // già dalla più recente
+    formRow.innerHTML = last5.map(x => {
+      if (x==='W') return '<span class="form-dot fW">V</span>';
+      if (x==='D') return '<span class="form-dot fD">P</span>';
+      return '<span class="form-dot fL">S</span>';
+    }).join('');
+
+    // --- LISTA RISULTATI ---
     const list = document.getElementById('list');
 
     function card(m){
@@ -92,24 +194,32 @@
         </article>`;
     }
 
-    function apply(){
-      const q = (document.getElementById('q').value||'').toLowerCase();
+    function apply() {
+      const q = (document.getElementById('q').value || '').toLowerCase();
       const comp = document.querySelector('#comp .chip.active')?.dataset.comp || '';
       const rows = played.filter(m =>
-        (comp==='' || m.competizione===comp) &&
+        (comp === '' || m.competizione === comp) &&
         (`${m.casa} ${m.fuori} ${m.risultato} ${m.competizione}`.toLowerCase().includes(q))
       );
       list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessun risultato</div>';
     }
 
+    // Eventi filtri
     document.getElementById('q').addEventListener('input', apply);
-    document.querySelectorAll('#comp .chip').forEach(c => c.addEventListener('click', () => {
-      c.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-      c.classList.add('active'); apply();
-    }));
+    document.querySelectorAll('#comp .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        chip.classList.add('active');
+        apply();
+      });
+    });
 
+    // Render iniziale
     apply();
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
   </script>
 </body>
 </html>
