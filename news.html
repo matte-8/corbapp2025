@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>News - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">News</div>
+    </div>
+    <div class="right">
+      <a class="iconbtn" href="./admin.html" title="Admin">⟳</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Ricerca + filtri -->
+    <section class="card">
+      <div class="search">
+        <span>🔎</span>
+        <input id="q" placeholder="Cerca notizie...">
+      </div>
+      <div class="chips" id="tags" style="margin-top:10px">
+        <span class="chip active" data-tag="">Tutte</span>
+        <span class="chip" data-tag="Match Report">Match Report</span>
+        <span class="chip" data-tag="Player News">Player News</span>
+        <span class="chip" data-tag="Announcement">Announcement</span>
+      </div>
+    </section>
+
+    <!-- Elenco news -->
+    <section id="list" class="grid-2"></section>
+  </main>
+
+  <script type="module">
+    import {get} from './data-store.js';
+
+    // Dalla cache: titolo, contenuto, img, tag, nuova (boolean-like)
+    const raw = get('news') || [];
+    // Normalizza tag (se il foglio è in italiano li puoi lasciare così, qui metto default "Match Report")
+    const data = raw.map(n => ({
+      titolo: n.titolo || '',
+      contenuto: n.contenuto || '',
+      img: n.img || '',
+      tag: n.tag && n.tag.trim() ? n.tag : 'Match Report',
+      nuova: !!(n.nuova === true || n.nuova === '1' || n.nuova === 'TRUE')
+    }));
+
+    const list = document.getElementById('list');
+
+    function card(n){
+      const badgeNew = n.nuova ? '<span class="badge badge-green">NEW</span>' : '';
+      return `
+        <article class="card news-card">
+          ${n.img ? `<img src="${n.img}" alt="" />` : ''}
+          <div class="row" style="justify-content:space-between;margin-top:8px">
+            <span class="pill">${n.tag}</span>
+            ${badgeNew}
+          </div>
+          <h3 style="margin:8px 0 4px 0">${n.titolo}</h3>
+          <p class="small">${n.contenuto}</p>
+        </article>
+      `;
+    }
+
+    function apply(){
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const tag = document.querySelector('#tags .chip.active')?.dataset.tag || '';
+      const rows = data.filter(n => {
+        const matchTag = tag === '' || n.tag === tag;
+        const matchQ = (`${n.titolo} ${n.contenuto} ${n.tag}`).toLowerCase().includes(q);
+        return matchTag && matchQ;
+      });
+      list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessuna notizia</div>';
+    }
+
+    // Eventi
+    document.getElementById('q').addEventListener('input', apply);
+    document.querySelectorAll('#tags .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        chip.classList.add('active');
+        apply();
+      });
+    });
+
+    // Primo render
+    apply();
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
