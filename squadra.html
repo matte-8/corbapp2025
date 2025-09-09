@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Squadra - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Squadra</div>
+    </div>
+    <div class="right">
+      <a class="iconbtn" href="./admin.html" title="Admin">⟳</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Search + filtri -->
+    <section class="card">
+      <div class="search">
+        <span>🔎</span>
+        <input id="q" placeholder="Cerca giocatore per nome o numero…">
+      </div>
+      <div class="chips" id="roles" style="margin-top:10px">
+        <span class="chip active" data-role="">Tutti</span>
+        <span class="chip" data-role="Portiere">Portieri</span>
+        <span class="chip" data-role="Difensore">Difensori</span>
+        <span class="chip" data-role="Centrale">Centrali</span>
+        <span class="chip" data-role="Pivot">Pivot</span>
+      </div>
+    </section>
+
+    <!-- Lista giocatori -->
+    <section id="players"></section>
+  </main>
+
+  <script type="module">
+    import {get} from './data-store.js';
+
+    // Dalla cache (aggiornata via admin.html)
+    const roster = (get('players') || [])
+      .map(p => ({
+        nome: p.nome || '',
+        numero: p.numero || '',
+        ruolo: p.ruolo || '',
+        foto: p.foto || ''
+      }))
+      // Ordina per numero (se numerico), poi per nome
+      .sort((a,b) => {
+        const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
+        if(!isNaN(na) && !isNaN(nb)) return na - nb;
+        if(!isNaN(na)) return -1;
+        if(!isNaN(nb)) return 1;
+        return (a.nome||'').localeCompare(b.nome||'');
+      });
+
+    const wrap = document.getElementById('players');
+
+    function playerCard(p){
+      return `
+        <div class="player">
+          <img src="${p.foto}" alt="${p.nome}">
+          <div>
+            <div class="row">
+              <span class="pill">#${p.numero || '—'}</span>
+              <strong>${p.nome}</strong>
+            </div>
+            <div class="small">${p.ruolo}</div>
+          </div>
+        </div>`;
+    }
+
+    function render(){
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const role = document.querySelector('#roles .chip.active')?.dataset.role || '';
+
+      const rows = roster.filter(p => {
+        const txt = `${p.nome} ${p.numero} ${p.ruolo}`.toLowerCase();
+        const matchQ = txt.includes(q);
+        const matchR = role === '' || (p.ruolo || '').toLowerCase().includes(role.toLowerCase());
+        return matchQ && matchR;
+      });
+
+      wrap.innerHTML = rows.length
+        ? rows.map(playerCard).join('')
+        : '<div class="card">Nessun giocatore</div>';
+    }
+
+    // Eventi filtri/ricerca
+    document.getElementById('q').addEventListener('input', render);
+    document.querySelectorAll('#roles .chip').forEach(chip => {
+      chip.addEventListener('click', () => {
+        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        chip.classList.add('active');
+        render();
+      });
+    });
+
+    // Primo render
+    render();
+
+    // PWA
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
