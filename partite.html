@@ -9,39 +9,62 @@
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
+
   <style>
-    /* ===== STAT CARD (nuovo layout) ===== */
+    /* ====== STAT CARD stile "mock" ====== */
     .stat-card{
       background:linear-gradient(180deg,#7d2631,#6b0f1a);
-      color:#fff;border-radius:18px;padding:16px;
-      box-shadow:0 10px 28px rgba(0,0,0,.14)
+      color:#fff;border-radius:18px;padding:14px 14px 12px;
+      box-shadow:0 10px 26px rgba(0,0,0,.14)
     }
     .stat-head{display:flex;justify-content:space-between;align-items:center}
-    .stat-title{display:flex;gap:10px;align-items:center;font-size:22px;font-weight:800}
-    .stat-range{opacity:.9;font-size:13px}
+    .stat-title{display:flex;gap:8px;align-items:center;font-weight:800;font-size:20px}
+    .stat-range{opacity:.9;font-size:12px;line-height:1.1;text-align:right}
 
-    .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:14px}
-    .kpi3-row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    /* Riga KPI compatti (4) */
+    .kpi-mini{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px
+    }
+    .mini{
+      background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;
+      padding:10px 6px;text-align:center;min-height:84px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px
+    }
+    .mini .ico{font-size:18px;line-height:1}
+    .mini .val{font-weight:900;font-size:22px;line-height:1}
+    .mini .lbl{font-size:12px;opacity:.95}
 
-    .kpi{
-      background:#ffffff1c;border:1px solid #ffffff33;border-radius:16px;
-      padding:14px 10px;text-align:center;min-height:96px;
+    /* Riga "Gol" (3 card più grandi) */
+    .kpi-big{
+      display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px
+    }
+    .big{
+      background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;
+      padding:12px 10px;text-align:center;min-height:88px;
       display:flex;flex-direction:column;justify-content:center;gap:6px
     }
-    .kpi .ico{font-size:22px;line-height:1}
-    .kpi .val{font-weight:900;font-size:26px;line-height:1}
-    .kpi .lbl{font-size:13px;opacity:.95}
+    .big .ico{font-size:18px}
+    .big .val{font-weight:900;font-size:26px}
+    .big .lbl{font-size:13px;opacity:.95}
 
-    .form-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+    /* Forma attuale */
+    .form-wrap{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
     .form-dot{
-      width:28px;height:28px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
-      font-weight:800;color:#fff;font-size:13px
+      width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;
+      font-weight:800;color:#fff;font-size:12px
     }
     .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
 
-    @media(max-width:760px){
-      .kpi-row{grid-template-columns:repeat(2,1fr)}
-      .kpi3-row{grid-template-columns:1fr}
+    /* Responsiveness: mantiene l’aspetto su qualsiasi mobile */
+    @media(max-width:410px){
+      .mini .val{font-size:20px}
+      .big .val{font-size:24px}
+      .kpi-mini{gap:8px}
+      .kpi-big{gap:10px}
+    }
+    @media(max-width:340px){
+      .kpi-mini{grid-template-columns:repeat(2,1fr)}
+      .kpi-big{grid-template-columns:1fr}
     }
   </style>
 </head>
@@ -71,30 +94,30 @@
       </div>
     </section>
 
-    <!-- 📊 Statistiche Stagione (nuovo) -->
-    <section id="stats" class="stat-card">
+    <!-- 📊 Statistiche Stagione (layout identico al mock) -->
+    <section class="stat-card">
       <div class="stat-head">
         <div class="stat-title"><span>📊</span><span>Statistiche Stagione</span></div>
         <div id="statsRange" class="stat-range">—</div>
       </div>
 
-      <!-- Prima riga: 4 KPI con icone -->
-      <div class="kpi-row">
-        <div class="kpi"><div class="ico">⚽️</div><div id="kGames" class="val">0</div><div class="lbl">Partite</div></div>
-        <div class="kpi"><div class="ico">🏆</div><div id="kW" class="val">0</div><div class="lbl">Vittorie</div></div>
-        <div class="kpi"><div class="ico">➖</div><div id="kD" class="val">0</div><div class="lbl">Pareggi</div></div>
-        <div class="kpi"><div class="ico">✖️</div><div id="kL" class="val">0</div><div class="lbl">Sconfitte</div></div>
+      <!-- 4 KPI compatti -->
+      <div class="kpi-mini">
+        <div class="mini"><div class="ico">✺</div><div id="kGames" class="val">0</div><div class="lbl">Partite</div></div>
+        <div class="mini"><div class="ico">🏆</div><div id="kW" class="val">0</div><div class="lbl">Vittorie</div></div>
+        <div class="mini"><div class="ico">—</div><div id="kD" class="val">0</div><div class="lbl">Pareggi</div></div>
+        <div class="mini"><div class="ico">✕</div><div id="kL" class="val">0</div><div class="lbl">Sconfitte</div></div>
       </div>
 
-      <!-- Seconda riga: GF / GA / GD -->
-      <div class="kpi3-row">
-        <div class="kpi"><div class="ico">🥅</div><div id="kGF" class="val">0</div><div class="lbl">Gol Fatti</div></div>
-        <div class="kpi"><div class="ico">🛡️</div><div id="kGA" class="val">0</div><div class="lbl">Gol Subiti</div></div>
-        <div class="kpi"><div class="ico">➕/➖</div><div id="kGD" class="val">0</div><div class="lbl">Differenza</div></div>
+      <!-- 3 KPI più grandi -->
+      <div class="kpi-big">
+        <div class="big"><div class="ico">🥅</div><div id="kGF" class="val">0</div><div class="lbl">Gol Fatti</div></div>
+        <div class="big"><div class="ico">🛡️</div><div id="kGA" class="val">0</div><div class="lbl">Gol Subiti</div></div>
+        <div class="big"><div class="ico">±</div><div id="kGD" class="val">0</div><div class="lbl">Differenza</div></div>
       </div>
 
       <!-- Forma attuale -->
-      <div class="form-row">
+      <div class="form-wrap">
         <div class="small" style="opacity:.95">Forma Attuale:</div>
         <div id="formRow"></div>
       </div>
@@ -108,15 +131,15 @@
   <script type="module">
     import {get} from './data-store.js';
 
-    // Helpers
+    /* Helpers */
     function toDate(d, t='00:00') {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}$/.test(d)) return new Date(`${d}T${t}`);
-      const m = d.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+      const m = d.match(/^(\d{1,2})[\\/\\-\\.](\d{1,2})[\\/\\-\\.](\d{2,4})$/);
       if (m) {
-        const dd = +m[1], mm = +m[2]-1, yy = (+m[3] < 100 ? 2000 + +m[3] : +m[3]);
+        const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]);
         const [hh='00', mi='00'] = (t||'00:00').split(':');
-        return new Date(yy, mm, dd, +hh||0, +mi||0);
+        return new Date(yy,mm,dd,+hh||0,+mi||0);
       }
       return new Date(`${d}T${t}`);
     }
@@ -135,7 +158,7 @@
       return '<span class="badge badge-amber">PAREGGIO</span>';
     }
 
-    // Dataset: solo partite già giocate
+    /* Dataset: solo giocate */
     const now = new Date();
     const raw = get('matches') || [];
     const played = raw.map(m => ({
@@ -146,47 +169,45 @@
       .filter(m => !isNaN(+m.date) && m.date <= now)
       .sort((a,b) => b.date - a.date);
 
-    // ===== Statistiche =====
-    const stats = {games:0, w:0, d:0, l:0, gf:0, ga:0, gd:0, form:[]};
+    /* Statistiche */
+    const stats = {games:0,w:0,d:0,l:0,gf:0,ga:0,gd:0,form:[]};
     played.forEach(m => {
       const s = parseScore(m.risultato);
       if (!s) return;
-      stats.games++;
-      stats.gf += s.gf; stats.ga += s.ga;
-      if (s.gf > s.ga) { stats.w++; stats.form.push('W'); }
-      else if (s.gf < s.ga) { stats.l++; stats.form.push('L'); }
-      else { stats.d++; stats.form.push('D'); }
+      stats.games++; stats.gf+=s.gf; stats.ga+=s.ga;
+      if (s.gf>s.ga){stats.w++;stats.form.push('W');}
+      else if (s.gf<s.ga){stats.l++;stats.form.push('L');}
+      else {stats.d++;stats.form.push('D');}
     });
     stats.gd = stats.gf - stats.ga;
 
-    // Intestazione range date
+    /* Range date */
     const rangeEl = document.getElementById('statsRange');
     if (played.length){
-      const from = played[played.length-1].date;
-      const to   = played[0].date;
+      const from = played[played.length-1].date, to = played[0].date;
       rangeEl.textContent = from.toLocaleDateString() + ' → ' + to.toLocaleDateString();
-    } else rangeEl.textContent = '—';
+    }
 
-    // Render KPI
-    document.getElementById('kGames').textContent = stats.games;
-    document.getElementById('kW').textContent = stats.w;
-    document.getElementById('kD').textContent = stats.d;
-    document.getElementById('kL').textContent = stats.l;
-    document.getElementById('kGF').textContent = stats.gf;
-    document.getElementById('kGA').textContent = stats.ga;
-    document.getElementById('kGD').textContent = (stats.gd>0?'+':'') + stats.gd;
+    /* Render KPI */
+    const setTxt = (id,v)=>document.getElementById(id).textContent=v;
+    setTxt('kGames', stats.games);
+    setTxt('kW', stats.w);
+    setTxt('kD', stats.d);
+    setTxt('kL', stats.l);
+    setTxt('kGF', stats.gf);
+    setTxt('kGA', stats.ga);
+    setTxt('kGD', (stats.gd>0?'+':'')+stats.gd);
 
-    // Forma attuale (ultime 5)
-    const last5 = stats.form.slice(0,5);
-    document.getElementById('formRow').innerHTML = last5.map(x=>{
-      if (x==='W') return '<span class="form-dot fW">V</span>';
-      if (x==='D') return '<span class="form-dot fD">P</span>';
-      return '<span class="form-dot fL">S</span>';
-    }).join('');
+    /* Forma (ultime 5) */
+    document.getElementById('formRow').innerHTML =
+      stats.form.slice(0,5).map(x=>{
+        if(x==='W')return'<span class="form-dot fW">V</span>';
+        if(x==='D')return'<span class="form-dot fD">P</span>';
+        return'<span class="form-dot fL">S</span>';
+      }).join('');
 
-    // ===== LISTA RISULTATI =====
+    /* Lista risultati */
     const list = document.getElementById('list');
-
     function card(m){
       const when = m.date.toLocaleDateString(undefined,{day:'2-digit',month:'2-digit',year:'numeric'});
       const homeSide = isHome(m);
@@ -221,9 +242,9 @@
     }
 
     document.getElementById('q').addEventListener('input', apply);
-    document.querySelectorAll('#comp .chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('#comp .chip').forEach(chip=>{
+      chip.addEventListener('click', ()=>{
+        chip.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
         chip.classList.add('active');
         apply();
       });
