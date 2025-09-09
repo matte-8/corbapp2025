@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Barra superiore -->
+  <header class="topbar">
+    <div class="nav">
+      <div class="title" style="font-weight:700">CORB</div>
+    </div>
+    <div class="right">
+      <a class="iconbtn" href="./admin.html">⟳</a>
+    </div>
+  </header>
+
+  <!-- Contenuto -->
+  <main class="container">
+    <section class="card">
+      <h1>Benvenuto 👋</h1>
+      <p class="small">App ufficiale della squadra futsal Corbiolo</p>
+      <div class="row">
+        <a class="iconbtn" href="./squadra.html">👥</a>
+        <a class="iconbtn" href="./partite.html">🏆</a>
+        <a class="iconbtn" href="./prossima.html">🗓</a>
+        <a class="iconbtn" href="./news.html">📰</a>
+        <a class="iconbtn" href="./sponsor.html">💼</a>
+        <a class="iconbtn" href="./calendario.html">📅</a>
+      </div>
+    </section>
+
+    <section class="card small">
+      Ultimo aggiornamento dati: <span id="ls">never</span>
+    </section>
+  </main>
+
+  <!-- Script -->
+  <script type="module">
+    import {last} from './data-store.js';
+    document.getElementById('ls').textContent = last();
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
