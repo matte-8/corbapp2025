@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Prossima partita - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <!-- Barra superiore -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Prossima partita</div>
+    </div>
+    <div class="right">
+      <a class="iconbtn" href="./admin.html">⟳</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Card partita -->
+    <section class="card" style="background:linear-gradient(180deg,#7d2631,#6b0f1a);color:#fff">
+      <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:12px;align-items:center">
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;border-radius:12px;background:#fff;margin:0 auto"></div>
+          <div id="home">Corbiolo</div>
+        </div>
+        <div class="pill" style="background:#0001;border-color:#fff2;color:#fff">VS</div>
+        <div style="text-align:center">
+          <div style="width:64px;height:64px;border-radius:12px;background:#fff;margin:0 auto"></div>
+          <div id="away">Avversario</div>
+        </div>
+      </div>
+      <div class="row" style="margin-top:10px">
+        <span>📅 <span id="when"></span></span> · <span>📍 <span id="place"></span></span>
+      </div>
+    </section>
+
+    <!-- Countdown -->
+    <section class="card">
+      <div class="row" style="justify-content:space-between">
+        <h2 class="small">Tempo rimanente</h2>
+      </div>
+      <div class="row" id="cd"></div>
+      <div class="row" style="margin-top:10px">
+        <a class="iconbtn" id="ics">🗓</a><span class="small">Aggiungi al calendario</span>
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    import {get} from './data-store.js';
+
+    const all = get('matches').map(m => ({
+      ...m,
+      date: new Date((m.data || '') + 'T' + (m.ora || '00:00'))
+    }));
+
+    // Trova la prossima (o l'ultima se non ci sono future)
+    const next = all.filter(m => m.date >= new Date())
+                    .sort((a, b) => a.date - b.date)[0]
+             || all.sort((a, b) => b.date - a.date)[0]
+             || null;
+
+    function pad(n) { return n.toString().padStart(2, '0'); }
+
+    if (next) {
+      document.getElementById('home').textContent = next.casa || 'Corbiolo';
+      document.getElementById('away').textContent = next.fuori || 'Avversario';
+      document.getElementById('when').textContent =
+        next.date.toLocaleDateString(undefined, {day:'2-digit',month:'long',year:'numeric'}) +
+        ' · ' +
+        next.date.toLocaleTimeString(undefined, {hour:'2-digit',minute:'2-digit'});
+      document.getElementById('place').textContent = next.luogo || '—';
+
+      const cd = document.getElementById('cd');
+      const tick = () => {
+        const now = new Date();
+        let secs = Math.max(0, Math.floor((next.date - now) / 1000));
+        const d = Math.floor(secs / 86400); secs -= d * 86400;
+        const h = Math.floor(secs / 3600); secs -= h * 3600;
+        const m = Math.floor(secs / 60); const s = secs - m * 60;
+        cd.innerHTML = ['GIORNI','ORE','MIN','SEC']
+          .map((lab, i) => {
+            const val = [d,h,m,s][i];
+            return `<div class="card" style="text-align:center">
+                      <div style="font-weight:800;font-size:22px">${pad(val)}</div>
+                      <div class="small">${lab}</div>
+                    </div>`;
+          }).join('');
+      };
+      tick();
+      setInterval(tick, 1000);
+
+      // Pulsante ICS
+      document.getElementById('ics').addEventListener('click', e => {
+        e.preventDefault();
+        const start = next.date;
+        const end = new Date(start.getTime() + 90*60000); // +90 min
+        const ics = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${(next.casa||'Corbiolo')} vs ${(next.fuori||'Avversario')}
+DTSTART:${start.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'}
+DTEND:${end.toISOString().replace(/[-:]/g,'').split('.')[0]+'Z'}
+LOCATION:${(next.luogo||'')}
+END:VEVENT
+END:VCALENDAR`;
+        const blob = new Blob([ics], {type:'text/calendar'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'prossima-partita.ics';
+        a.click();
+      });
+    }
+
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('./sw.js');
+    }
+  </script>
+</body>
+</html>
