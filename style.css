@@ -193,3 +193,12 @@ a.iconbtn{text-decoration:none}
   .kpi-mini{grid-template-columns:repeat(2,1fr)}
   .kpi-big{grid-template-columns:1fr}
 }
+.social-list{display:flex;gap:10px;flex-wrap:wrap}
+.social-btn{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:10px 14px;border-radius:999px;font-weight:700;
+  border:1px solid var(--ring);background:#fff;color:var(--text)
+}
+.social-btn.ig{background:#fce7f3;border-color:#f9a8d4;color:#9d174d}
+.social-btn.fb{background:#e0ecff;border-color:#93c5fd;color:#1d4ed8}
+.social-btn.web{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
