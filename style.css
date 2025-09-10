@@ -102,16 +102,31 @@ a{color:inherit;text-decoration:none}
 .cal-cell.muted{opacity:.35}
 .cal-dot{position:absolute;bottom:6px;width:8px;height:8px;border-radius:999px;background:var(--granata)}
 
-
-/* Bottone hamburger (3 linee) */
-.iconbtn {
-  background: none;       /* niente sfondo */
-  border: none;           /* niente bordo */
-  font-size: 22px;        /* dimensione icona */
-  color: #fff;            /* bianco, visibile sulla barra */
-  cursor: pointer;
-  line-height: 1;
-  padding: 0;
-  margin: 0;
+/* === Hamburger senza sfondo (override forte) === */
+.iconbtn,
+.iconbtn:focus,
+.iconbtn:active {
+  background: transparent !important;   /* niente sfondo */
+  border: none !important;              /* niente bordo */
+  box-shadow: none !important;          /* niente ombre/pillole */
+  color: #fff !important;               /* bianco sulla topbar */
+  font-size: 22px !important;
+  line-height: 1 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: auto !important;
+  height: auto !important;
+  appearance: none;
+  -webkit-appearance: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0 !important;          /* rimuove eventuali pillole */
 }
+
+/* Se altrove veniva data una dimensione fissa al bottone della topbar, la annulliamo: */
+.topbar .right .iconbtn { width: auto !important; height: auto !important; }
+
+/* Rimuove eventuali stili su <a class="iconbtn"> se usato come anchor */
+a.iconbtn { text-decoration: none !important; }
 
