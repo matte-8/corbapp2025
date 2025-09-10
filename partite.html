@@ -118,13 +118,27 @@
     </section>
   </main>
 
-  <script type="module">
-    import {get} from './data-store.js';
+ <script type="module">
+  import {get} from './data-store.js';
 
-    // Drawer
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.style.right = '0';
-    document.getElementById('drawer-close').onclick = () => drawer.style.right = '-260px';
+  // Drawer
+  const drawer = document.getElementById('drawer');
+  const btn = document.getElementById('menuBtn');
+  const closeBtn = document.getElementById('drawer-close');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    drawer.classList.add('open');
+  });
+  closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
+  // Chiudi toccando fuori
+  document.addEventListener('click', (e) => {
+    if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== btn) {
+      drawer.classList.remove('open');
+    }
+  });
+
+  /* … il resto del tuo codice calendario qui sotto (helpers, buildTwoMonths, ecc.) … */
 
     // Helper date
     const toDateTime = (d, t='00:00') => new Date((d||'')+'T'+(t||'00:00'));
