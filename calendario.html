@@ -19,31 +19,86 @@
     .future-row:last-child{border-bottom:0}
     .home-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a}
     .away-pill{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:#0ea5e9}
+
+    /* Header mese con frecce */
+    .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+    .month-title{display:flex;align-items:center;gap:10px}
+    .month-name{font-size:28px;font-weight:900}
+    .arrows{display:flex;gap:8px}
+    .arrowbtn{border-radius:12px;border:1px solid var(--ring);padding:6px 10px;background:#fff}
+
+    /* DOW lun-dom */
+    .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;color:#6b6b6b;margin-top:4px;margin-bottom:8px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
+    .cal-cell{
+      border:1px solid var(--ring);border-radius:14px;height:46px;
+      display:flex;align-items:center;justify-content:center;background:#fff
+    }
+    .muted{opacity:.35}
+
+    /* Drawer */
+    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
+      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
+    #drawer.open{right:0}
+    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
+    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
   </style>
 </head>
 <body>
+  <!-- Topbar con hamburger -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" style="color:#fff">←</a>
       <div class="title" style="font-weight:700;margin-left:8px">Calendario</div>
     </div>
-    <div class="right"></div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">☰</button>
+    </div>
   </header>
+
+  <!-- Drawer menu -->
+  <nav id="drawer">
+    <span id="drawer-close">✕</span>
+    <h3>Menu</h3>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./sponsor.html">💰 Sponsor</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
     <section class="card">
-      <div class="row" style="justify-content:space-between">
-        <h2 style="margin:0" id="m1"></h2>
-        <div class="legend small">
-          <span class="dot" style="background:#6b0f1a"></span> Casa
-          <span class="dot" style="background:#0ea5e9"></span> Trasferta
+      <!-- Mese 1 -->
+      <div class="month-head">
+        <div class="month-title">
+          <div id="m1" class="month-name"></div>
+          <div class="legend small">
+            <span class="dot" style="background:#6b0f1a"></span> Casa
+            <span class="dot" style="background:#0ea5e9;margin-left:10px"></span> Trasferta
+          </div>
+        </div>
+        <div class="arrows">
+          <button class="arrowbtn" id="prevM" title="Mese precedente">←</button>
+          <button class="arrowbtn" id="nextM" title="Mese successivo">→</button>
         </div>
       </div>
-      <div class="cal-dow"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span></div>
+
+      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
       <div id="grid1" class="cal-grid"></div>
 
-      <h2 style="margin:18px 0 0" id="m2"></h2>
-      <div class="cal-dow"><span>Dom</span><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span></div>
+      <!-- Spazio tra i mesi -->
+      <div style="height:18px"></div>
+
+      <!-- Mese 2 -->
+      <div class="month-head">
+        <div class="month-title">
+          <div id="m2" class="month-name"></div>
+        </div>
+      </div>
+      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
       <div id="grid2" class="cal-grid"></div>
     </section>
 
@@ -56,20 +111,23 @@
   <script type="module">
     import {get} from './data-store.js';
 
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+
     // === Helpers ===
     function toDate(d) {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}/.test(d)) return new Date(d);
       const m = d.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
-      if (m) {
-        const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]);
-        return new Date(yy,mm,dd);
-      }
+      if (m) { const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]); return new Date(yy,mm,dd); }
       return new Date(d);
     }
     const fmtMonth = (d) => d.toLocaleDateString(undefined,{month:'long',year:'numeric'});
     const daysInMonth = (y,m) => new Date(y, m+1, 0).getDate();
-    const startDow = (y,m) => new Date(y,m,1).getDay(); // 0=dom
+    // 0=Mon,1=Tue,...6=Sun
+    const startDowMon = (y,m) => (new Date(y,m,1).getDay()+6)%7;
 
     const calData = (get('calendar')||[]).map(r=>({
       date: toDate(r.data),
@@ -77,20 +135,23 @@
       casa_fuori: (r.casa_fuori||'').toLowerCase()
     })).filter(e=>!isNaN(+e.date));
 
-    // Costruiamo due mesi: corrente e successivo
-    const today = new Date();
-    const months = [
-      new Date(today.getFullYear(), today.getMonth(), 1),
-      new Date(today.getFullYear(), today.getMonth()+1, 1)
-    ];
+    let offset = 0; // mesi di scostamento rispetto ad oggi
 
-    function buildMonth(rootId, labelId, baseDate){
+    function buildTwoMonths(){
+      const base = new Date();
+      const mA = new Date(base.getFullYear(), base.getMonth()+offset, 1);
+      const mB = new Date(base.getFullYear(), base.getMonth()+offset+1, 1);
+      buildMonth('grid1','m1', mA);
+      buildMonth('grid2','m2', mB);
+    }
+
+    function buildMonth(gridId, labelId, baseDate){
       const y = baseDate.getFullYear(), m = baseDate.getMonth();
       document.getElementById(labelId).textContent = fmtMonth(baseDate);
-      const grid = document.getElementById(rootId);
+      const grid = document.getElementById(gridId);
       grid.innerHTML = '';
 
-      const leading = startDow(y,m); // quanti vuoti prima del 1°
+      const leading = startDowMon(y,m); // quanti vuoti prima del 1° (Lunedì-first)
       for(let i=0;i<leading;i++){
         const c = document.createElement('div');
         c.className = 'cal-cell muted';
@@ -120,8 +181,12 @@
       }
     }
 
-    buildMonth('grid1','m1', months[0]);
-    buildMonth('grid2','m2', months[1]);
+    // Frecce mesi
+    document.getElementById('prevM').addEventListener('click', ()=>{ offset -= 1; buildTwoMonths(); scrollToTop(); });
+    document.getElementById('nextM').addEventListener('click', ()=>{ offset += 1; buildTwoMonths(); scrollToTop(); });
+    const scrollToTop = () => window.scrollTo({top:0,behavior:'smooth'});
+
+    buildTwoMonths();
 
     // ---- Lista future sotto (dalla tab partite, ordinata) ----
     const matches = (get('matches')||[]).map(m=>({
