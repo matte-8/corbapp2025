@@ -59,28 +59,35 @@
   </style>
 </head>
 <body>
-  <!-- Topbar -->
+ <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" style="color:#fff">←</a>
-      <div class="title" style="font-weight:700;margin-left:8px">Calendario</div>
+      <div class="title" style="font-weight:700;margin-left:8px">Risultati</div>
     </div>
     <div class="right">
-      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">☰</button>
+      <!-- hamburger SOLO tre linee -->
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu"
+        style="all:unset;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
     </div>
   </header>
 
   <!-- Drawer -->
-  <nav id="drawer">
-    <span id="drawer-close">✕</span>
+  <nav id="drawer" style="position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50">
+    <span id="drawer-close" style="position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer">✕</span>
     <h3>Menu</h3>
-    <a href="./news.html">📰 News</a>
-    <a href="./squadra.html">👥 Squadra</a>
-    <a href="./sponsor.html">💰 Sponsor</a>
-    <a href="./prossima.html">📅 Prossima partita</a>
-    <a href="./partite.html">🏆 Risultati</a>
-    <a href="./calendario.html">📆 Calendario</a>
-    <a href="./admin.html">⚙️ Admin</a>
+    <a href="./news.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📰 News</a>
+    <a href="./squadra.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">👥 Squadra</a>
+    <a href="./sponsor.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">💰 Sponsor</a>
+    <a href="./prossima.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📅 Prossima partita</a>
+    <a href="./partite.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏆 Risultati</a>
+    <a href="./calendario.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📆 Calendario</a>
+    <a href="./admin.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">⚙️ Admin</a>
   </nav>
 
   <main class="container">
