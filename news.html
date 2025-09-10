@@ -9,18 +9,43 @@
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
+  <style>
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:#f5e7ea;
+      border:1px solid #e4cbd3;color:#6b0f1a;font-size:12px;font-weight:700}
+    .news-img{width:100%;height:180px;object-fit:cover;border-radius:12px;margin-bottom:10px}
+    .item{display:block}
+    /* Drawer */
+    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
+      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
+    #drawer.open{right:0}
+    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
+    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
+  </style>
 </head>
 <body>
-  <!-- Topbar -->
+  <!-- Topbar con hamburger -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" style="color:#fff">←</a>
       <div class="title" style="font-weight:700;margin-left:8px">News</div>
     </div>
     <div class="right">
-      <a class="iconbtn" href="./admin.html" title="Admin">⟳</a>
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">☰</button>
     </div>
   </header>
+
+  <!-- Drawer menu -->
+  <nav id="drawer">
+    <span id="drawer-close">✕</span>
+    <h3>Menu</h3>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./sponsor.html">💰 Sponsor</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
     <!-- Ricerca + filtri -->
@@ -29,77 +54,82 @@
         <span>🔎</span>
         <input id="q" placeholder="Cerca notizie...">
       </div>
-      <div class="chips" id="tags" style="margin-top:10px">
-        <span class="chip active" data-tag="">Tutte</span>
-        <span class="chip" data-tag="Match Report">Match Report</span>
-        <span class="chip" data-tag="Player News">Player News</span>
-        <span class="chip" data-tag="Announcement">Announcement</span>
+      <div class="chips" id="cats" style="margin-top:10px;flex-wrap:wrap">
+        <span class="chip active" data-cat="">Tutte</span>
+        <span class="chip" data-cat="rapporto">Rapporto Partita</span>
+        <span class="chip" data-cat="giocatori">Notizie Giocatori</span>
+        <span class="chip" data-cat="annuncio">Annuncio</span>
       </div>
     </section>
 
-    <!-- Elenco news -->
-    <section id="list" class="grid-2"></section>
+    <!-- Lista news -->
+    <section id="newsList"></section>
   </main>
 
   <script type="module">
     import {get} from './data-store.js';
 
-    // Dalla cache: titolo, contenuto, img, tag, nuova (boolean-like)
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+
+    // Normalizza categoria
+    const norm = (v='') => {
+      const s = String(v).trim().toLowerCase();
+      if (['rapporto','match','match report','report','partita'].includes(s)) return 'rapporto';
+      if (['giocatori','player','player news','giocatore'].includes(s)) return 'giocatori';
+      if (['annuncio','announcement','comunicato'].includes(s)) return 'annuncio';
+      return '';
+    };
+    const label = (c) => c==='rapporto' ? 'Rapporto Partita'
+                      : c==='giocatori' ? 'Notizie Giocatori'
+                      : c==='annuncio' ? 'Annuncio' : 'News';
+
+    // Dati dal data-store
     const raw = get('news') || [];
-    // Normalizza tag (se il foglio è in italiano li puoi lasciare così, qui metto default "Match Report")
     const data = raw.map(n => ({
-      titolo: n.titolo || '',
-      contenuto: n.contenuto || '',
-      img: n.img || '',
-      tag: n.tag && n.tag.trim() ? n.tag : 'Match Report',
-      nuova: !!(n.nuova === true || n.nuova === '1' || n.nuova === 'TRUE')
+      titolo: n.titolo || n.title || '',
+      contenuto: n.contenuto || n.body || '',
+      img: n.img || n.image || '',
+      categoria: norm(n.categoria || n.category || '')
     }));
 
-    const list = document.getElementById('list');
+    const listEl = document.getElementById('newsList');
 
     function card(n){
-      const badgeNew = n.nuova ? '<span class="badge badge-green">NEW</span>' : '';
       return `
-        <article class="card news-card">
-          ${n.img ? `<img src="${n.img}" alt="" />` : ''}
-          <div class="row" style="justify-content:space-between;margin-top:8px">
-            <span class="pill">${n.tag}</span>
-            ${badgeNew}
-          </div>
+        <article class="card item">
+          ${n.img ? `<img src="${n.img}" alt="" class="news-img">` : ''}
+          <div class="tag">${label(n.categoria)}</div>
           <h3 style="margin:8px 0 4px 0">${n.titolo}</h3>
-          <p class="small">${n.contenuto}</p>
-        </article>
-      `;
+          <div class="muted">${n.contenuto}</div>
+        </article>`;
     }
 
     function apply(){
       const q = (document.getElementById('q').value || '').toLowerCase();
-      const tag = document.querySelector('#tags .chip.active')?.dataset.tag || '';
-      const rows = data.filter(n => {
-        const matchTag = tag === '' || n.tag === tag;
-        const matchQ = (`${n.titolo} ${n.contenuto} ${n.tag}`).toLowerCase().includes(q);
-        return matchTag && matchQ;
-      });
-      list.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessuna notizia</div>';
+      const cat = document.querySelector('#cats .chip.active')?.dataset.cat || '';
+      const rows = data.filter(n =>
+        (cat==='' || n.categoria===cat) &&
+        (`${n.titolo} ${n.contenuto}`.toLowerCase().includes(q))
+      );
+      listEl.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessuna notizia</div>';
     }
 
-    // Eventi
+    // Eventi filtri/ricerca
     document.getElementById('q').addEventListener('input', apply);
-    document.querySelectorAll('#tags .chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-        chip.classList.add('active');
+    document.querySelectorAll('#cats .chip').forEach(ch => {
+      ch.addEventListener('click', () => {
+        ch.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        ch.classList.add('active');
         apply();
       });
     });
 
-    // Primo render
     apply();
 
-    // PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>
 </html>
