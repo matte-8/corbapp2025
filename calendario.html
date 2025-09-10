@@ -10,33 +10,47 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css">
   <style>
-    .legend{display:flex;gap:16px;align-items:center}
+    :root{
+      --home:#6b0f1a;
+      --away:#0ea5e9;
+    }
+
+    /* ----- Layout responsive calendario ----- */
+    .month-wrap{margin-bottom:18px}
+    .month-head{display:flex;align-items:center;justify-content:space-between}
+    .month-name{font-weight:900;line-height:1.05;
+      font-size:clamp(20px,6vw,28px)}
+    .head-right{display:flex;gap:8px}
+    .arrowbtn{border-radius:12px;border:1px solid var(--ring);
+      background:#fff;padding:6px 10px}
+
+    .legend{display:flex;gap:16px;align-items:center;margin-top:8px}
     .dot{width:10px;height:10px;border-radius:999px}
-    .home{background:#6b0f1a!important;color:#fff!important;border-color:#6b0f1a!important}
-    .away{background:#0ea5e9!important;color:#fff!important;border-color:#0ea5e9!important}
-    .cal-cell.has{font-weight:700;box-shadow:0 2px 10px rgba(0,0,0,.12)}
-    .future-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--ring)}
-    .future-row:last-child{border-bottom:0}
-    .home-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a}
-    .away-pill{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:#0ea5e9}
+    .dot-home{background:var(--home)}
+    .dot-away{background:var(--away)}
 
-    /* Header mese con frecce */
-    .month-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-    .month-title{display:flex;align-items:center;gap:10px}
-    .month-name{font-size:28px;font-weight:900}
-    .arrows{display:flex;gap:8px}
-    .arrowbtn{border-radius:12px;border:1px solid var(--ring);padding:6px 10px;background:#fff}
+    .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;
+      color:#6b6b6b;margin:10px 0 6px}
+    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 
-    /* DOW lun-dom */
-    .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:10px;color:#6b6b6b;margin-top:4px;margin-bottom:8px}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:10px}
     .cal-cell{
-      border:1px solid var(--ring);border-radius:14px;height:46px;
-      display:flex;align-items:center;justify-content:center;background:#fff
+      border:1px solid var(--ring);border-radius:14px;
+      background:#fff;display:flex;align-items:center;justify-content:center;
+      aspect-ratio:1/1; /* celle sempre quadrate e responsive */
+      font-weight:600;font-size:clamp(12px,3.6vw,16px)
     }
     .muted{opacity:.35}
+    .has{color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
+    .home{background:var(--home)!important;border-color:var(--home)!important}
+    .away{background:var(--away)!important;border-color:var(--away)!important}
 
-    /* Drawer */
+    /* lista sotto */
+    .future-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--ring)}
+    .future-row:last-child{border-bottom:0}
+    .home-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:var(--home)}
+    .away-pill{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:var(--away)}
+
+    /* Drawer locale (riusa il tuo .iconbtn globale) */
     #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
       box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
     #drawer.open{right:0}
@@ -45,18 +59,18 @@
   </style>
 </head>
 <body>
-  <!-- Topbar con hamburger -->
+  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" style="color:#fff">←</a>
       <div class="title" style="font-weight:700;margin-left:8px">Calendario</div>
     </div>
     <div class="right">
-     <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">☰</button>
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">☰</button>
     </div>
   </header>
 
-  <!-- Drawer menu -->
+  <!-- Drawer -->
   <nav id="drawer">
     <span id="drawer-close">✕</span>
     <h3>Menu</h3>
@@ -70,33 +84,30 @@
   </nav>
 
   <main class="container">
-    <section class="card">
-      <!-- Mese 1 -->
+    <section class="card month-wrap">
+      <!-- TESTATA mese 1: frecce SOPRA, legenda SOTTO -->
       <div class="month-head">
-        <div class="month-title">
-          <div id="m1" class="month-name"></div>
-          <div class="legend small">
-            <span class="dot" style="background:#6b0f1a"></span> Casa
-            <span class="dot" style="background:#0ea5e9;margin-left:10px"></span> Trasferta
-          </div>
-        </div>
-        <div class="arrows">
+        <div class="month-name" id="m1"></div>
+        <div class="head-right">
           <button class="arrowbtn" id="prevM" title="Mese precedente">←</button>
           <button class="arrowbtn" id="nextM" title="Mese successivo">→</button>
         </div>
+      </div>
+      <div class="legend small">
+        <span class="dot dot-home"></span> Casa
+        <span class="dot dot-away" style="margin-left:12px"></span> Trasferta
       </div>
 
       <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
       <div id="grid1" class="cal-grid"></div>
 
       <!-- Spazio tra i mesi -->
-      <div style="height:18px"></div>
+      <div style="height:16px"></div>
 
       <!-- Mese 2 -->
       <div class="month-head">
-        <div class="month-title">
-          <div id="m2" class="month-name"></div>
-        </div>
+        <div class="month-name" id="m2"></div>
+        <div style="width:68px"></div><!-- placeholder per simmetria -->
       </div>
       <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
       <div id="grid2" class="cal-grid"></div>
@@ -116,7 +127,7 @@
     document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
     document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
 
-    // === Helpers ===
+    // Helpers
     function toDate(d) {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}/.test(d)) return new Date(d);
@@ -126,7 +137,7 @@
     }
     const fmtMonth = (d) => d.toLocaleDateString(undefined,{month:'long',year:'numeric'});
     const daysInMonth = (y,m) => new Date(y, m+1, 0).getDate();
-    // 0=Mon,1=Tue,...6=Sun
+    // 0=Mon (Lunedì-first)
     const startDowMon = (y,m) => (new Date(y,m,1).getDay()+6)%7;
 
     const calData = (get('calendar')||[]).map(r=>({
@@ -135,7 +146,7 @@
       casa_fuori: (r.casa_fuori||'').toLowerCase()
     })).filter(e=>!isNaN(+e.date));
 
-    let offset = 0; // mesi di scostamento rispetto ad oggi
+    let offset = 0; // sposta finestra mesi
 
     function buildTwoMonths(){
       const base = new Date();
@@ -151,7 +162,7 @@
       const grid = document.getElementById(gridId);
       grid.innerHTML = '';
 
-      const leading = startDowMon(y,m); // quanti vuoti prima del 1° (Lunedì-first)
+      const leading = startDowMon(y,m);
       for(let i=0;i<leading;i++){
         const c = document.createElement('div');
         c.className = 'cal-cell muted';
@@ -164,7 +175,6 @@
         cell.className = 'cal-cell';
         cell.textContent = d;
 
-        // evento in quel giorno?
         const match = calData.find(e =>
           e.date.getFullYear()===y && e.date.getMonth()===m && e.date.getDate()===d
         );
@@ -181,14 +191,13 @@
       }
     }
 
-    // Frecce mesi
-    document.getElementById('prevM').addEventListener('click', ()=>{ offset -= 1; buildTwoMonths(); scrollToTop(); });
-    document.getElementById('nextM').addEventListener('click', ()=>{ offset += 1; buildTwoMonths(); scrollToTop(); });
-    const scrollToTop = () => window.scrollTo({top:0,behavior:'smooth'});
+    // Frecce mesi (spostano di 1 mese la finestra)
+    document.getElementById('prevM').addEventListener('click', ()=>{ offset -= 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'}); });
+    document.getElementById('nextM').addEventListener('click', ()=>{ offset += 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'}); });
 
     buildTwoMonths();
 
-    // ---- Lista future sotto (dalla tab partite, ordinata) ----
+    // Lista future (sotto)
     const matches = (get('matches')||[]).map(m=>({
       ...m,
       date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
