@@ -101,3 +101,16 @@ a{color:inherit;text-decoration:none}
   border:1px solid var(--ring);background:#fff;position:relative}
 .cal-cell.muted{opacity:.35}
 .cal-dot{position:absolute;bottom:6px;width:8px;height:8px;border-radius:999px;background:var(--granata)}
+
+
+/* ====== Menu hamburger in topbar ====== */
+.iconbtn {
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #fff;          /* bianco, così si vede sulla topbar bordeaux */
+  padding: 0;
+  margin: 0;
+  line-height: 1;
+  cursor: pointer;
+}
