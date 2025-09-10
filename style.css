@@ -202,3 +202,18 @@ a.iconbtn{text-decoration:none}
 .social-btn.ig{background:#fce7f3;border-color:#f9a8d4;color:#9d174d}
 .social-btn.fb{background:#e0ecff;border-color:#93c5fd;color:#1d4ed8}
 .social-btn.web{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
+}
+/* Drawer: quando è chiuso non deve ricevere eventi */
+#drawer{
+  position:fixed;top:0;right:-260px;width:240px;height:100%;
+  background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);
+  transition:.3s;padding:20px;z-index:50;
+  pointer-events:none;                 /* 👈 aggiungi */
+}
+#drawer.open{
+  right:0;
+  pointer-events:auto;                 /* 👈 aggiungi */
+}
+
+/* Tieni la topbar sempre sopra al contenuto sottostante */
+.topbar{ z-index: 1000; }              /* 👈 assicurati sia alto */
