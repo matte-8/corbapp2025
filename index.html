@@ -8,14 +8,14 @@
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=23">
+  <link rel="stylesheet" href="./style.css?v=24">
 </head>
 <body>
   <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <img src="img/logo_c5.png" alt="logo" style="width:28px;height:28px;border-radius:6px;object-fit:cover">
-      <div class="title">Home</div>
+      <div class="title" style="font-weight:700;margin-left:8px">Home</div>
     </div>
     <div class="right">
       <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
@@ -50,17 +50,17 @@
   </script>
 
   <main class="container">
-    <!-- Tiles -->
-    <section class="tiles">
-      <a class="tile" href="./news.html"><span class="emoji">📰</span>News</a>
-      <a class="tile" href="./squadra.html"><span class="emoji">👥</span>Squadra</a>
-      <a class="tile" href="./video.html"><span class="emoji">🎥</span>Video</a>
-      <a class="tile" href="./prossima.html"><span class="emoji">📅</span>Prossima Partita</a>
-      <a class="tile" href="./partite.html"><span class="emoji">🏆</span>Risultati</a>
-      <a class="tile" href="./calendario.html"><span class="emoji">📆</span>Calendario</a>
+    <!-- Griglia tile -->
+    <section class="grid-2">
+      <a class="card" href="./news.html"      style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">📰</div><div style="font-weight:800;margin-top:6px">News</div></a>
+      <a class="card" href="./squadra.html"   style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">👥</div><div style="font-weight:800;margin-top:6px">Squadra</div></a>
+      <a class="card" href="./video.html"     style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">🎥</div><div style="font-weight:800;margin-top:6px">Video</div></a>
+      <a class="card" href="./prossima.html"  style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">📅</div><div style="font-weight:800;margin-top:6px">Prossima Partita</div></a>
+      <a class="card" href="./partite.html"   style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">🏆</div><div style="font-weight:800;margin-top:6px">Risultati</div></a>
+      <a class="card" href="./calendario.html"style="background:var(--granata);color:#fff;text-align:center;padding:26px"><div style="font-size:40px">📆</div><div style="font-weight:800;margin-top:6px">Calendario</div></a>
     </section>
 
-    <!-- Ultime News -->
+    <!-- Ultime News (2 anteprime) -->
     <section class="card">
       <div class="row" style="justify-content:space-between;align-items:center">
         <h2 style="margin:0">Ultime News</h2>
@@ -83,20 +83,24 @@
   </main>
 
   <script type="module">
-    import {get,lastUpdated} from './data-store.js';
+    import {get, getTimestamp} from './data-store.js';
 
+    // 2 anteprime news
     const list = document.getElementById('homeNews');
-    const rows = (get('news')||[]).slice(0,2); // prendi solo 2 notizie
+    const rows = (get('news')||[]).slice(0,2);
     list.innerHTML = rows.map(n=>`
-      <div class="news-item">
-        <div style="font-weight:700;margin-bottom:2px">${n.titolo||'—'}</div>
-        <div class="small">${(n.contenuto||'').slice(0,90)}${(n.contenuto||'').length>90?'…':''}</div>
+      <div class="player" style="align-items:flex-start">
+        <div style="flex:1">
+          <div style="font-weight:700;margin-bottom:2px">${n.titolo||'—'}</div>
+          <div class="small">${(n.contenuto||'').slice(0,100)}${(n.contenuto||'').length>100?'…':''}</div>
+        </div>
+        <a class="pill" href="./news.html">News</a>
       </div>
     `).join('') || '<div class="small">Nessuna news</div>';
 
-    const u = lastUpdated();
-    document.getElementById('lastUpd').textContent =
-      'Ultimo aggiornamento dati: ' + (u?new Date(u).toLocaleString(): '—');
+    // timestamp
+    const ts = getTimestamp();
+    document.getElementById('lastUpd').textContent = 'Ultimo aggiornamento dati: ' + (ts ? new Date(ts).toLocaleString() : '—');
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
