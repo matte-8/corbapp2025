@@ -8,281 +8,163 @@
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=14">
+  <link rel="stylesheet" href="./style.css?v=24">
 </head>
 <body>
-  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
-      <a href="./partite.html" style="color:#fff">←</a>
+      <a href="./index.html" style="color:#fff">←</a>
       <div class="title" style="font-weight:700;margin-left:8px">Risultati</div>
     </div>
     <div class="right">
-      <!-- hamburger SOLO tre linee -->
-      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu"
-        style="all:unset;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-             stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
       </button>
     </div>
   </header>
 
-   <!-- Drawer -->
-  <nav id="drawer" style="position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50">
-    <span id="drawer-close" style="position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer">✕</span>
+  <nav id="drawer">
+    <span id="drawer-close">✕</span>
     <h3>Menu</h3>
-    <a href="./index.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏠 Home</a>
-    <a href="./news.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📰 News</a>
-    <a href="./squadra.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">👥 Squadra</a>
-    <a href="./sponsor.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">💰 Sponsor</a>
-    <a href="./prossima.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📅 Prossima partita</a>
-    <a href="./partite.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏆 Risultati</a>
-    <a href="./calendario.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📆 Calendario</a>
-    <a href="./admin.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">⚙️ Admin</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
   </nav>
+  <script>
+    (function(){
+      const d=document,dr=d.getElementById('drawer'),b=d.getElementById('menuBtn'),x=d.getElementById('drawer-close');
+      b&&b.addEventListener('click',e=>{e.stopPropagation();dr.classList.add('open')});
+      x&&x.addEventListener('click',()=>dr.classList.remove('open'));
+      d.addEventListener('click',e=>{
+        if(dr.classList.contains('open')&&!dr.contains(e.target)&&e.target!==b) dr.classList.remove('open');
+      });
+    })();
+  </script>
 
   <main class="container">
-    <!-- Ricerca + chip -->
+    <!-- Statistiche stagione (compatto come da mock) -->
+    <section class="card" id="statsCard" style="background:linear-gradient(180deg,var(--granata),var(--granata-2));color:#fff">
+      <div class="row" style="justify-content:space-between;align-items:flex-start">
+        <h2 style="margin:0">Statistiche Stagione</h2>
+        <div id="stagioneLabel" class="small" style="opacity:.9"></div>
+      </div>
+
+      <div class="row" style="margin-top:10px;gap:8px;flex-wrap:nowrap;overflow:auto">
+        <div class="card" style="min-width:100px;background:rgba(255,255,255,.08);border-color:transparent;color:#fff;text-align:center">
+          <div style="font-size:22px;font-weight:800" id="statPartite">0</div>
+          <div class="small">Partite</div>
+        </div>
+        <div class="card" style="min-width:100px;background:rgba(255,255,255,.08);border-color:transparent;color:#fff;text-align:center">
+          <div style="font-size:22px;font-weight:800" id="statVittorie">0</div>
+          <div class="small">Vittorie</div>
+        </div>
+        <div class="card" style="min-width:100px;background:rgba(255,255,255,.08);border-color:transparent;color:#fff;text-align:center">
+          <div style="font-size:22px;font-weight:800" id="statPareggi">0</div>
+          <div class="small">Pareggi</div>
+        </div>
+        <div class="card" style="min-width:100px;background:rgba(255,255,255,.08);border-color:transparent;color:#fff;text-align:center">
+          <div style="font-size:22px;font-weight:800" id="statSconfitte">0</div>
+          <div class="small">Sconfitte</div>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;gap:8px;flex-wrap:nowrap;overflow:auto">
+        <div class="card" style="min-width:120px;background:#fff;border-color:transparent;text-align:center;color:var(--text)">
+          <div class="small">Gol Fatti</div>
+          <div style="font-size:22px;font-weight:800" id="statGF">0</div>
+        </div>
+        <div class="card" style="min-width:120px;background:#fff;border-color:transparent;text-align:center;color:var(--text)">
+          <div class="small">Gol Subiti</div>
+          <div style="font-size:22px;font-weight:800" id="statGS">0</div>
+        </div>
+        <div class="card" style="min-width:120px;background:#fff;border-color:transparent;text-align:center;color:var(--text)">
+          <div class="small">Differenza</div>
+          <div style="font-size:22px;font-weight:800" id="statDiff">0</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Lista risultati (solo già giocati, più recenti in alto) -->
     <section class="card">
-      <div class="search">
-        <span>🔎</span>
-        <input id="q" placeholder="Cerca partite, squadre o competizioni...">
-      </div>
-      <div class="chips" id="chips" style="margin-top:12px">
-        <span class="chip active" data-k="all">Tutte le competizioni</span>
-        <span class="chip" data-k="serie">Campionato</span>
-        <span class="chip" data-k="coppa">Coppa Veneto</span>
-      </div>
-    </section>
-
-    <!-- Statistiche stagione -->
-    <section class="stat-card">
-      <div class="stat-head">
-        <div class="stat-title singleline">📊 Statistiche Stagione</div>
-        <div class="stat-season" id="seasonLabel">Stagione --/--</div>
-      </div>
-
-      <div class="kpi-mini">
-        <div class="mini">
-          <div class="ico">🎮</div>
-          <div class="val" id="k-played">0</div>
-          <div class="lbl">Partite</div>
-        </div>
-        <div class="mini">
-          <div class="ico">🏆</div>
-          <div class="val" id="k-wins">0</div>
-          <div class="lbl">Vittorie</div>
-        </div>
-        <div class="mini">
-          <div class="ico">—</div>
-          <div class="val" id="k-draws">0</div>
-          <div class="lbl">Pareggi</div>
-        </div>
-        <div class="mini">
-          <div class="ico">✖</div>
-          <div class="val" id="k-losses">0</div>
-          <div class="lbl">Sconfitte</div>
-        </div>
-      </div>
-
-      <div class="kpi-big">
-        <div class="big">
-          <div class="ico">🥅</div>
-          <div class="val" id="k-gf">0</div>
-          <div class="lbl">Gol Fatti</div>
-        </div>
-        <div class="big">
-          <div class="ico">🛡️</div>
-          <div class="val" id="k-ga">0</div>
-          <div class="lbl">Gol Subiti</div>
-        </div>
-        <div class="big">
-          <div class="ico">±</div>
-          <div class="val" id="k-gd">0</div>
-          <div class="lbl">Differenza</div>
-        </div>
-      </div>
-
-      <div class="form-wrap">
-        <div class="muted">Forma Attuale:</div>
-        <div id="formDots"></div>
-      </div>
-    </section>
-
-    <!-- Risultati recenti -->
-    <section class="card" id="resultsCard">
-      <h3 style="margin:0 0 10px 0" class="muted">Risultati Recenti</h3>
-      <div id="resultsList"></div>
+      <h2 style="margin:0 0 8px 0">Risultati Recenti</h2>
+      <div id="results"></div>
     </section>
   </main>
 
- <script type="module">
-  import {get} from './data-store.js';
+  <script type="module">
+    import {get} from './data-store.js';
 
-  // Drawer
-  const drawer = document.getElementById('drawer');
-  const btn = document.getElementById('menuBtn');
-  const closeBtn = document.getElementById('drawer-close');
-
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    drawer.classList.add('open');
-  });
-  closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
-  // Chiudi toccando fuori
-  document.addEventListener('click', (e) => {
-    if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== btn) {
-      drawer.classList.remove('open');
-    }
-  });
-
-  /* … il resto del tuo codice calendario qui sotto (helpers, buildTwoMonths, ecc.) … */
-
-    // Helper date
-    const toDateTime = (d, t='00:00') => new Date((d||'')+'T'+(t||'00:00'));
-    const now = new Date();
-
-    // Dati partite dal data-store (Google Sheets -> matches)
-    // Attesi campi: data, ora, casa, fuori, risultato (tipo "2-1") opzionale
-    const raw = (get('matches')||[]).map(m=>({
+    const rows = (get('partite')||[]).map(m => ({
       ...m,
-      date: toDateTime(m.data, m.ora)
+      date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
     })).filter(m => !isNaN(+m.date));
 
-    // Filtra passate (risultati)
-    const past = raw.filter(m => m.date <= now).sort((a,b)=> b.date - a.date);
+    // solo giocate (con risultato presente)
+    const played = rows.filter(r => (r.risultato||'').trim() !== '')
+                       .sort((a,b)=> b.date - a.date);
 
-    // Utils
-    const isHome = m => (m.casa||'').trim().toLowerCase() === 'corbiolo';
-    const parseScore = (s='')=>{
-      const m = String(s).match(/(-?\d+)\s*[-:]\s*(-?\d+)/);
-      if (!m) return null;
-      return {h:+m[1], a:+m[2]};
-    };
-    const outcome = (m)=>{
-      // calcola esito per Corbiolo
-      const sc = parseScore(m.risultato||'');
-      if (!sc) return null;
-      const homeSide = isHome(m);
-      const gf = homeSide ? sc.h : sc.a;
-      const ga = homeSide ? sc.a : sc.h;
-      if (gf>ga) return 'V';
-      if (gf===ga) return 'P';
-      return 'S';
-    };
-
-    // KPI
-    function buildStats(list){
-      let played=0,w=0,d=0,l=0,gf=0,ga=0;
-      list.forEach(m=>{
-        const sc = parseScore(m.risultato||'');
-        if (!sc) return; // se non abbiamo punteggio non contiamo
-        played++;
-        const homeSide = isHome(m);
-        const myGF = homeSide ? sc.h : sc.a;
-        const myGA = homeSide ? sc.a : sc.h;
-        gf += myGF; ga += myGA;
-        if (myGF>myGA) w++; else if (myGF===myGA) d++; else l++;
-      });
-      // Fill UI
-      document.getElementById('k-played').textContent = played;
-      document.getElementById('k-wins').textContent   = w;
-      document.getElementById('k-draws').textContent  = d;
-      document.getElementById('k-losses').textContent = l;
-      document.getElementById('k-gf').textContent     = gf;
-      document.getElementById('k-ga').textContent     = ga;
-      document.getElementById('k-gd').textContent     = (gf-ga>=0?'+':'') + (gf-ga);
-      // Form (ultime 5)
-      const dots = document.getElementById('formDots');
-      const last5 = list.filter(m=>parseScore(m.risultato||'')).slice(0,5).map(outcome);
-      dots.innerHTML = last5.map(ch=>{
-        if (ch==='V') return '<span class="form-dot fW">V</span>';
-        if (ch==='P') return '<span class="form-dot fD">P</span>';
-        if (ch==='S') return '<span class="form-dot fL">S</span>';
-        return '';
-      }).join('');
-    }
-
-    // Stagione (set→giu)
-    function getSeasonLabel(date = new Date()) {
-      const y = date.getFullYear();
-      const m = date.getMonth(); // 0..11
-      let startYear = (m >= 8) ? y : (y - 1);
-      const endYear = startYear + 1;
-      const yy = String(startYear).slice(-2);
-      const yy2 = String(endYear).slice(-2);
-      return `${yy}/${yy2}`;
-    }
-    document.getElementById('seasonLabel').textContent = `Stagione ${getSeasonLabel(now)}`;
-
-    // Render risultati
-    const listEl = document.getElementById('resultsList');
-    const fmtDay = (d)=> d.toLocaleDateString(undefined,{day:'2-digit',month:'2-digit',year:'numeric'});
-
-    function badgeEsito(o){
-      if (o==='V') return '<span class="badge badge-green">VITTORIA</span>';
-      if (o==='P') return '<span class="badge badge-amber">PAREGGIO</span>';
-      if (o==='S') return '<span class="badge badge-red">SCONFITTA</span>';
-      return '';
-    }
-
-    function row(m){
-      const homeSide = isHome(m);
-      const leftTeam  = homeSide ? 'Corbiolo' : (m.casa || 'Avversario');
-      const rightTeam = homeSide ? (m.fuori || 'Avversario') : 'Corbiolo';
-      const out = outcome(m);
-      const dataStr = fmtDay(m.date);
-      const score = (m.risultato||'0-0').replace(':','-');
-      return `
-        <article class="card" style="padding:14px;margin-bottom:10px">
-          <div class="muted" style="margin-bottom:6px">${m.competizione||'Campionato'}</div>
-          <div class="row" style="justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-weight:800;font-size:20px">${leftTeam}</div>
-              <div class="small">${homeSide ? 'Casa' : 'Trasferta'}</div>
-            </div>
-            <div class="score">${score.replace(/\s/g,'').split('-')[0]} - ${score.replace(/\s/g,'').split('-')[1]}</div>
-            <div style="text-align:right">
-              <div style="font-weight:800;font-size:20px">${rightTeam}</div>
-              <div class="small">${homeSide ? 'Trasferta (avv.)' : 'Casa (avv.)'}</div>
-            </div>
-          </div>
-          <div class="row" style="margin-top:8px;justify-content:space-between;align-items:center">
-            ${badgeEsito(out)}
-            <div class="small">${dataStr}</div>
-          </div>
-        </article>`;
-    }
-
-    function apply(){
-      const q = (document.getElementById('q').value||'').toLowerCase().trim();
-      const active = document.querySelector('#chips .chip.active')?.dataset.k || 'all';
-      const filtered = past.filter(m=>{
-        // filtro competizione se mai vorrai usarlo: qui è placeholder
-        const okComp = true; // active==='all' || (m.competizione||'').toLowerCase().includes(active)
-        const hay = `${m.casa||''} ${m.fuori||''} ${m.competizione||''}`.toLowerCase();
-        const okQ = hay.includes(q);
-        return okComp && okQ;
-      });
-      buildStats(filtered);
-      listEl.innerHTML = filtered.length ? filtered.map(row).join('') : '<div class="small">Nessun risultato</div>';
-    }
-
-    document.getElementById('q').addEventListener('input', apply);
-    document.querySelectorAll('#chips .chip').forEach(ch=>{
-      ch.addEventListener('click', ()=>{
-        ch.parentElement.querySelectorAll('.chip').forEach(x=>x.classList.remove('active'));
-        ch.classList.add('active');
-        apply();
-      });
+    // stat
+    let p=0,v=0,n=0,s=0,gf=0,gs=0;
+    played.forEach(r=>{
+      p++;
+      const m = (r.risultato||'').match(/(\d+)\s*[-:]\s*(\d+)/);
+      if (m){
+        const a = parseInt(m[1],10), b = parseInt(m[2],10);
+        const home = (r.casa||'').trim().toLowerCase() === 'corbiolo';
+        const mine = home ? a : b;
+        const opp  = home ? b : a;
+        gf += mine; gs += opp;
+        if (mine>opp) v++; else if (mine===opp) n++; else s++;
+      }
     });
+    const diff = gf-gs;
 
-    // First render
-    apply();
+    // stagione label (settembre anno → giugno anno+1)
+    const now = new Date();
+    const y = now.getMonth()>=8 ? now.getFullYear() : now.getFullYear()-1;
+    document.getElementById('stagioneLabel').textContent = `Stagione ${String(y).slice(2)}/${String(y+1).slice(2)}`;
 
-    // SW
+    // stampa stat
+    document.getElementById('statPartite').textContent = p;
+    document.getElementById('statVittorie').textContent = v;
+    document.getElementById('statPareggi').textContent  = n;
+    document.getElementById('statSconfitte').textContent= s;
+    document.getElementById('statGF').textContent = gf;
+    document.getElementById('statGS').textContent = gs;
+    document.getElementById('statDiff').textContent = (diff>0?'+':'')+diff;
+
+    const results = document.getElementById('results');
+
+    const rowHtml = (r) => {
+      const home = (r.casa||'').trim().toLowerCase() === 'corbiolo';
+      const s1   = home ? 'Corbiolo' : (r.casa||'');
+      const s2   = home ? (r.fuori||'') : 'Corbiolo';
+      const ds   = r.date.toLocaleDateString(undefined,{day:'2-digit',month:'2-digit',year:'numeric'});
+      const logoHome = home ? 'img/logo_c5.png' : (r.logocasa||'img/logo_avv.png');
+      const logoAway = home ? (r.logoavv||'img/logo_avv.png') : 'img/logo_c5.png';
+
+      return `
+        <div class="player" style="align-items:center">
+          <img src="${logoHome}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover"
+               onerror="this.onerror=null;this.src='img/logo_avv.png'">
+          <div style="flex:1;margin:0 10px">
+            <div class="small" style="opacity:.7">${ds}</div>
+            <div style="font-weight:700">${s1} - ${s2}</div>
+          </div>
+          <div class="score">${r.risultato||'-'}</div>
+          <img src="${logoAway}" alt="" style="width:42px;height:42px;border-radius:10px;object-fit:cover;margin-left:10px"
+               onerror="this.onerror=null;this.src='img/logo_avv.png'">
+        </div>`;
+    };
+
+    results.innerHTML = played.length ? played.map(rowHtml).join('') : '<div class="small">Nessun risultato</div>';
+
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>
