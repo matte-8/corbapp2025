@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Video - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=21">
+  <style>
+    /* griglia video */
+    .video-grid{
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(220px,1fr));
+      gap:16px;
+    }
+    .video-card{
+      border:1px solid var(--ring);
+      border-radius:16px;
+      overflow:hidden;
+      background:#fff;
+      box-shadow:0 6px 18px rgba(0,0,0,.06);
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .video-card:active{ transform:scale(.99) }
+    .thumb{
+      position:relative;
+      width:100%;
+      aspect-ratio:16/9;
+      background:#eee;
+      overflow:hidden;
+    }
+    .thumb img{
+      width:100%;height:100%;object-fit:cover;display:block;
+    }
+    /* tasto play */
+    .play{
+      position:absolute;inset:auto 0 0 0;margin:auto;
+      top:0;bottom:0;left:0;right:0;width:56px;height:56px;
+      border-radius:50%;background:rgba(0,0,0,.55);
+      display:flex;align-items:center;justify-content:center;
+      backdrop-filter:blur(2px)
+    }
+    .play svg{ display:block }
+    .caption{ padding:12px 12px 14px 12px; font-weight:600 }
+    .caption .small{ color:var(--muted); font-weight:500 }
+    /* drawer: non blocca i click quando chiuso */
+    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
+      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:1000;pointer-events:none}
+    #drawer.open{right:0;pointer-events:auto}
+    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
+    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
+    .topbar{z-index:1100}
+  </style>
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Video</div>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu"
+        style="all:unset;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Drawer -->
+  <nav id="drawer">
+    <span id="drawer-close">✕</span>
+    <h3>Menu</h3>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <!-- Script menu (non modulo) -->
+  <script>
+    (function(){
+      const drawer   = document.getElementById('drawer');
+      const btn      = document.getElementById('menuBtn');
+      const closeBtn = document.getElementById('drawer-close');
+      if (btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); drawer.classList.add('open'); });
+      if (closeBtn) closeBtn.addEventListener('click', ()=> drawer.classList.remove('open'));
+      document.addEventListener('click', (e)=>{
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target!==btn) {
+          drawer.classList.remove('open');
+        }
+      });
+    })();
+  </script>
+
+  <main class="container">
+    <section class="card">
+      <h2 style="margin:0 0 12px 0">Ultimi video</h2>
+      <div id="videoGrid" class="video-grid"></div>
+    </section>
+  </main>
+
+  <!-- Dati da Google Sheets -->
+  <script type="module">
+    import { get } from './data-store.js';
+
+    // Aspetta che lo style sia caricato (per Safari qualche volta è utile)
+    document.fonts && document.fonts.ready?.then(()=>render());
+    if (!document.fonts) render();
+
+    function sanitizeUrl(u){
+      if (!u) return '#';
+      try { return new URL(u, location.href).toString(); } catch { return u; }
+    }
+    function card(v){
+      const title = v.nome || 'Video';
+      const thumb = v.logo || 'https://placehold.co/800x450?text=Video';
+      const link  = sanitizeUrl(v.link || '#');
+      const host  = (()=>{ try{ return new URL(link).hostname.replace('www.',''); }catch{return ''} })();
+      return `
+        <a class="video-card" href="${link}" target="_blank" rel="noopener">
+          <div class="thumb">
+            <img src="${thumb}" alt="${title}">
+            <span class="play" aria-hidden="true">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"><polygon points="9.5,7.5 18,12 9.5,16.5"/></svg>
+            </span>
+          </div>
+          <div class="caption">
+            <div>${title}</div>
+            <div class="small">${host}</div>
+          </div>
+        </a>`;
+    }
+
+    function render(){
+      const rows = get('video') || []; // <- foglio "video" (nome, logo, link)
+      const grid = document.getElementById('videoGrid');
+      if (!rows.length){
+        grid.innerHTML = '<div class="small">Nessun video disponibile</div>';
+        return;
+      }
+      // Più recenti in alto se hai una colonna "data" (facoltativo)
+      // rows.sort((a,b)=> new Date(b.data||0) - new Date(a.data||0));
+      grid.innerHTML = rows.map(card).join('');
+    }
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+</body>
+</html>
