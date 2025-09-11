@@ -1,50 +1,152 @@
 <!doctype html>
 <html lang="it">
 <head>
-  
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>News - CORB</title>
-  <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=22">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css"><!-- conserva lo stile generale -->
+
+  <style>
+    /* ====== Stili specifici News (tutto in pagina) ====== */
+    .tag{
+      display:inline-block;padding:6px 10px;border-radius:999px;
+      background:#f5e7ea;border:1px solid #e4cbd3;color:#6b0f1a;
+      font-size:12px;font-weight:700
+    }
+    .news-img{
+      width:100%;aspect-ratio:16/9;object-fit:cover;
+      border-radius:12px;margin-bottom:10px
+    }
+    .item{display:block}
+
+    /* Drawer */
+    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
+      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
+    #drawer.open{right:0}
+    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
+    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
+  </style>
 </head>
 <body>
+  <!-- Topbar -->
   <header class="topbar">
-    <div class="nav"><a href="./index.html" style="color:#fff">←</a><div class="title">News</div></div>
-    <div class="right"><button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div>
+    <div class="nav">
+      <a href="./news.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Risultati</div>
+    </div>
+    <div class="right">
+      <!-- hamburger SOLO tre linee -->
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu"
+        style="all:unset;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
   </header>
-  <nav id="drawer"><span id="drawer-close">✕</span><h3>Menu</h3>
-    <a href="./news.html">📰 News</a><a href="./squadra.html">👥 Squadra</a><a href="./video.html">🎥 Video</a>
-    <a href="./prossima.html">📅 Prossima partita</a><a href="./partite.html">🏆 Risultati</a><a href="./calendario.html">📆 Calendario</a><a href="./admin.html">⚙️ Admin</a>
+
+   <!-- Drawer -->
+  <nav id="drawer" style="position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50">
+    <span id="drawer-close" style="position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer">✕</span>
+    <h3>Menu</h3>
+    <a href="./index.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏠 Home</a>
+    <a href="./news.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📰 News</a>
+    <a href="./squadra.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">👥 Squadra</a>
+    <a href="./sponsor.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">💰 Sponsor</a>
+    <a href="./prossima.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📅 Prossima partita</a>
+    <a href="./partite.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏆 Risultati</a>
+    <a href="./calendario.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📆 Calendario</a>
+    <a href="./admin.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">⚙️ Admin</a>
   </nav>
-  <script>(function(){const d=document,dr=d.getElementById('drawer'),b=d.getElementById('menuBtn'),x=d.getElementById('drawer-close');b&&b.addEventListener('click',e=>{e.stopPropagation();dr.classList.add('open')});x&&x.addEventListener('click',()=>dr.classList.remove('open'));d.addEventListener('click',e=>{if(dr.classList.contains('open')&&!dr.contains(e.target)&&e.target!==b)dr.classList.remove('open')});})();</script>
 
   <main class="container">
+    <!-- Ricerca + filtri -->
     <section class="card">
-      <input id="srch" class="card" style="width:100%;padding:12px;border-radius:12px;border:1px solid var(--ring);" placeholder="Cerca notizie...">
-      <div id="newsList" style="margin-top:12px"></div>
+      <div class="search">
+        <span>🔎</span>
+        <input id="q" placeholder="Cerca notizie...">
+      </div>
+      <div class="chips" id="cats" style="margin-top:10px;flex-wrap:wrap">
+        <span class="chip active" data-cat="">Tutte</span>
+        <span class="chip" data-cat="rapporto">Rapporto Partita</span>
+        <span class="chip" data-cat="giocatori">Notizie Giocatori</span>
+        <span class="chip" data-cat="annuncio">Annuncio</span>
+      </div>
     </section>
+
+    <!-- Lista news -->
+    <section id="newsList"></section>
   </main>
 
   <script type="module">
     import {get} from './data-store.js';
-    const all = get('news')||[];
-    let shown = all;
-    const list = document.getElementById('newsList');
-    const render = () => list.innerHTML = shown.map(n=>`
-      <div class="card" style="margin-bottom:12px">
-        <div class="small">News</div>
-        <h3 style="margin:6px 0">${n.titolo||'—'}</h3>
-        <div class="small">${n.contenuto||''}</div>
-      </div>`).join('') || '<div class="small">Nessuna news</div>';
-    render();
-    document.getElementById('srch').addEventListener('input', e=>{
-      const q=e.target.value.toLowerCase();
-      shown = all.filter(n=>(n.titolo||'').toLowerCase().includes(q)||(n.contenuto||'').toLowerCase().includes(q));
-      render();
+
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+
+    // Normalizza categoria (accetta IT/EN)
+    const norm = (v='') => {
+      const s = String(v).trim().toLowerCase();
+      if (['rapporto','match','match report','report','partita'].includes(s)) return 'rapporto';
+      if (['giocatori','player','player news','giocatore'].includes(s)) return 'giocatori';
+      if (['annuncio','announcement','comunicato'].includes(s)) return 'annuncio';
+      return '';
+    };
+    const label = (c) => c==='rapporto' ? 'Rapporto Partita'
+                      : c==='giocatori' ? 'Notizie Giocatori'
+                      : c==='annuncio' ? 'Annuncio' : 'News';
+
+    // Dati
+    const raw = get('news') || [];
+    // Attesi campi: titolo, contenuto, img (opzionale), categoria
+    const data = raw.map(n => ({
+      titolo: n.titolo || n.title || '',
+      contenuto: n.contenuto || n.body || '',
+      img: n.img || n.image || '',
+      categoria: norm(n.categoria || n.category || '')
+    }));
+
+    const listEl = document.getElementById('newsList');
+
+    function card(n){
+      return `
+        <article class="card item">
+          ${n.img ? `<img src="${n.img}" alt="" class="news-img" loading="lazy">` : ''}
+          <div class="tag">${label(n.categoria)}</div>
+          <h3 style="margin:8px 0 4px 0">${n.titolo}</h3>
+          <div class="muted">${n.contenuto}</div>
+        </article>`;
+    }
+
+    function apply(){
+      const q = (document.getElementById('q').value || '').toLowerCase();
+      const cat = document.querySelector('#cats .chip.active')?.dataset.cat || '';
+      const rows = data.filter(n =>
+        (cat==='' || n.categoria===cat) &&
+        (`${n.titolo} ${n.contenuto}`.toLowerCase().includes(q))
+      );
+      listEl.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessuna notizia</div>';
+    }
+
+    // Eventi filtri/ricerca
+    document.getElementById('q').addEventListener('input', apply);
+    document.querySelectorAll('#cats .chip').forEach(ch => {
+      ch.addEventListener('click', () => {
+        ch.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
+        ch.classList.add('active');
+        apply();
+      });
     });
+
+    apply();
+
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>
