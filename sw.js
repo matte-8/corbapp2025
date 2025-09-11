@@ -1,4 +1,4 @@
-const CACHE = "corb-cache-v3";
+const CACHE = "corb-cache-v1";
 const ASSETS = [
   "./","./index.html","./news.html","./squadra.html","./video.html","./prossima.html","./partite.html","./calendario.html","./admin.html",
   "./style.css","./data-store.js","./manifest.json"
