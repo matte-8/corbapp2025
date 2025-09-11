@@ -22,40 +22,42 @@ html,body{
 }
 a{color:inherit;text-decoration:none}
 
-/* ===== Topbar ===== */
+/* --- Topbar --- */
 .topbar{
-  position:sticky;top:0;z-index:5;
-  display:flex;align-items:center;justify-content:space-between;
+  position: sticky; top: 0; z-index: 9999;
+  display:flex; align-items:center; justify-content:space-between;
   padding:14px 16px;
-  background:linear-gradient(180deg,var(--granata),var(--granata-2));
-  color:#fff;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  background:linear-gradient(180deg,#6b0f1a,#7d2631);
+  color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.2);
 }
-.topbar .nav{display:flex;align-items:center;gap:12px}
-.topbar .right a,
-.topbar .right button{
-  color:#fff;background:none;border:0;cursor:pointer;font-size:18px;
+.topbar .nav{display:flex; align-items:center; gap:10px}
+.brand{display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none}
+.brand-logo{width:28px; height:28px; border-radius:6px; display:block}
+.title{font-weight:700}
+
+/* --- Icona hamburger pulita --- */
+.iconbtn{
+  background:transparent !important;
+  border:none !important; box-shadow:none !important;
+  color:#fff !important; padding:0 !important; margin:0 !important;
+  width:auto !important; height:auto !important; line-height:1 !important;
+  display:inline-flex; align-items:center; justify-content:center;
 }
 
-/* ===== Bottone hamburger: SOLO tre linee, nessun sfondo ===== */
-/* (non lasciare nessun altro blocco .iconbtn nel file) */
-.iconbtn,
-.iconbtn:focus,
-.iconbtn:active{
-  background:transparent;      /* niente sfondo */
-  border:none;                 /* niente bordo */
-  box-shadow:none;             /* niente ombre/pillole */
-  color:#fff;                  /* bianco su topbar */
-  font-size:22px;
-  line-height:1;
-  padding:0;margin:0;
-  width:auto;height:auto;
-  appearance:none;-webkit-appearance:none;
-  display:inline-flex;align-items:center;justify-content:center;
-  border-radius:0;
+/* --- Drawer --- */
+.drawer{
+  position:fixed; top:0; right:-280px; width:260px; height:100%;
+  background:#fff; color:#2b1d22;
+  box-shadow:-3px 0 12px rgba(0,0,0,.2);
+  transition: right .28s ease; padding:20px; z-index:10000;
 }
-.topbar .right .iconbtn{width:auto;height:auto}
-a.iconbtn{text-decoration:none}
+.drawer.open{ right:0; }
+.drawer a{ display:block; padding:12px 0; border-bottom:1px solid rgba(0,0,0,.08); color:inherit; text-decoration:none }
+.drawer a:last-child{ border-bottom:0 }
+.drawer-close{
+  position:absolute; top:10px; right:10px; font-size:20px;
+  background:transparent; border:0; cursor:pointer; color:#6b0f1a;
+}
 
 /* ===== Contenitore ===== */
 .container{
