@@ -27,7 +27,7 @@ export async function refreshAll(){
 }
 
 async function loadSheetCSV(sheetName){
-  const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
+  const url = `https://docs.google.com/spreadsheets/d/${143tbH2ZfTHk9bsgL1T7s6PQcSkR-HrCepz0GS--Go8I}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url, { cache: "no-store" });
   const text = await res.text();
   return parseCSV(text);
