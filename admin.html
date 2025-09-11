@@ -16,16 +16,39 @@
   </style>
 </head>
 <body>
-  <!-- Topbar -->
-  <header class="topbar">
-    <div class="nav">
-      <a href="./index.html" style="color:#fff">←</a>
-      <div class="title" style="font-weight:700;margin-left:8px">Admin</div>
-    </div>
-    <div class="right">
-      <a class="iconbtn" href="./index.html" title="Home">🏠</a>
-    </div>
-  </header>
+ <!-- Topbar -->
+<header class="topbar">
+  <div class="nav">
+    <a href="./index.html" class="brand">
+      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+      <span class="title">Home</span>
+    </a>
+  </div>
+  <div class="right">
+    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
+      <!-- hamburger (solo 3 linee) -->
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+        <path d="M3 6h18M3 12h18M3 18h18"/>
+      </svg>
+    </button>
+  </div>
+</header>
+
+<!-- Drawer menu (uguale per tutte le pagine) -->
+<nav class="drawer" data-role="drawer">
+  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+  <h3>Menu</h3>
+  <a href="./index.html">🏠 Home</a>
+  <a href="./news.html">📰 News</a>
+  <a href="./squadra.html">👥 Squadra</a>
+  <a href="./video.html">🎥 Video</a>
+  <a href="./prossima.html">📅 Prossima partita</a>
+  <a href="./partite.html">🏆 Risultati</a>
+  <a href="./calendario.html">📆 Calendario</a>
+  <a href="./admin.html">⚙️ Admin</a>
+</nav>
+
 
   <main class="container">
     <!-- Login PIN -->
