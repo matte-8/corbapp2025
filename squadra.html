@@ -1,39 +1,146 @@
 <!doctype html>
-<html lang="it"><head>
-<meta charset="utf-8"/><meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Squadra - CORB</title>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#6b0f1a">
-<link rel="apple-touch-icon" href="img/icons/icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="stylesheet" href="./style.css?v=22"></head>
+<html lang="it">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Squadra - CORB</title>
+
+  <!-- PWA + stile -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/icons/logo_c5.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=23">
+</head>
 <body>
-<header class="topbar"><div class="nav"><a href="./index.html" style="color:#fff">←</a><div class="title">Squadra</div></div>
-<div class="right"><button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
-<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button></div></header>
-<nav id="drawer"><span id="drawer-close">✕</span><h3>Menu</h3>
-<a href="./news.html">📰 News</a><a href="./squadra.html">👥 Squadra</a><a href="./video.html">🎥 Video</a>
-<a href="./prossima.html">📅 Prossima partita</a><a href="./partite.html">🏆 Risultati</a><a href="./calendario.html">📆 Calendario</a><a href="./admin.html">⚙️ Admin</a></nav>
-<script>(function(){const d=document,dr=d.getElementById('drawer'),b=d.getElementById('menuBtn'),x=d.getElementById('drawer-close');b&&b.addEventListener('click',e=>{e.stopPropagation();dr.classList.add('open')});x&&x.addEventListener('click',()=>dr.classList.remove('open'));d.addEventListener('click',e=>{if(dr.classList.contains('open')&&!dr.contains(e.target)&&e.target!==b)dr.classList.remove('open')});})();</script>
 
-<main class="container">
-  <section class="card">
-    <h2 style="margin:0 0 8px 0">Rosa</h2>
-    <div id="players"></div>
-  </section>
-</main>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" style="color:#fff">←</a>
+      <div class="title" style="font-weight:700;margin-left:8px">Squadra</div>
+    </div>
+    <div class="right">
+      <!-- hamburger a tre linee -->
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu"
+        style="all:unset;display:inline-flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="#ffffff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<script type="module">
-  import {get} from './data-store.js';
-  const ps = get('giocatori')||[];
-  const box = document.getElementById('players');
-  box.innerHTML = ps.map(p=>`
-    <div class="player">
-      <img src="${p.foto||'img/player.png'}" alt="" loading="lazy">
-      <div style="flex:1">
-        <div style="font-weight:800">${p.nome||''}</div>
-        <div class="small">${p.ruolo||''}</div>
+  <!-- Drawer -->
+  <nav id="drawer" style="position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50">
+    <span id="drawer-close" style="position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer">✕</span>
+    <h3>Menu</h3>
+    <a href="./news.html"       style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📰 News</a>
+    <a href="./squadra.html"    style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">👥 Squadra</a>
+    <a href="./video.html"      style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🎥 Video</a>
+    <a href="./prossima.html"   style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📅 Prossima partita</a>
+    <a href="./partite.html"    style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">🏆 Risultati</a>
+    <a href="./calendario.html" style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">📆 Calendario</a>
+    <a href="./admin.html"      style="display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)">⚙️ Admin</a>
+  </nav>
+
+  <!-- JS Drawer (uguale su tutte le pagine) -->
+  <script>
+    (function(){
+      const d=document, dr=d.getElementById('drawer'),
+            b=d.getElementById('menuBtn'), x=d.getElementById('drawer-close');
+      if (b) b.addEventListener('click', e => { e.stopPropagation(); dr.classList.add('open'); });
+      if (x) x.addEventListener('click', () => dr.classList.remove('open'));
+      d.addEventListener('click', e => {
+        if (dr.classList.contains('open') && !dr.contains(e.target) && e.target !== b) dr.classList.remove('open');
+      });
+    })();
+  </script>
+
+  <main class="container">
+    <section class="card">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <h2 style="margin:0">Rosa</h2>
+        <input id="q" type="search" placeholder="Cerca per nome o numero…" 
+               style="border:1px solid var(--ring);border-radius:12px;padding:8px 12px;outline:none;background:#fff;min-width:46%">
       </div>
-      <div class="pill">#${p.numero||''}</div>
-    </div>`).join('') || '<div class="small">Nessun giocatore</div>';
-  if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
-</script>
-</body></html>
+      <div id="players" style="margin-top:12px"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import {get} from './data-store.js';
+
+    const LOGO_CORBIOLO = 'img/logo_c5.png'; // tuo logo
+    const FALLBACK_IMG  = 'img/player.png';
+
+    const root = document.getElementById('players');
+    const q    = document.getElementById('q');
+
+    // dati
+    const rows = (get('giocatori') || []).map(r => ({
+      nome:   r.nome?.trim()   || '',
+      numero: r.numero?.trim() || '',
+      ruolo:  r.ruolo?.trim()  || '',
+      foto:   r.foto?.trim()   || ''
+    }));
+
+    // helper: componente giocatore
+    const card = (p) => `
+      <div class="player">
+        <img src="${p.foto || FALLBACK_IMG}" alt="" loading="lazy"
+             onerror="this.onerror=null;this.src='${FALLBACK_IMG}'">
+        <div style="flex:1">
+          <div style="font-weight:800">${p.nome}</div>
+          <div class="small">${p.ruolo}</div>
+        </div>
+        <div class="pill">#${p.numero}</div>
+      </div>`;
+
+    // raggruppa per ruolo (Pivot, Centrale, ecc.)
+    function groupByRole(list){
+      const map = new Map();
+      list.forEach(p => {
+        const key = p.ruolo || 'Altri';
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(p);
+      });
+      // ordina alfabetico ruoli, poi per numero
+      const ordered = [...map.entries()].sort((a,b)=>a[0].localeCompare(b[0]));
+      ordered.forEach(([k,arr]) => arr.sort((x,y)=>(parseInt(x.numero)||999)-(parseInt(y.numero)||999)));
+      return ordered;
+    }
+
+    function render(list){
+      if (!list.length){
+        root.innerHTML = '<div class="small">Nessun giocatore</div>';
+        return;
+      }
+      const blocks = groupByRole(list).map(([ruolo, arr]) => `
+        <h3 style="margin:14px 0 6px 0">${ruolo}</h3>
+        ${arr.map(card).join('')}
+      `).join('');
+      root.innerHTML = blocks;
+    }
+
+    // ricerca live
+    q.addEventListener('input', () => {
+      const term = q.value.trim().toLowerCase();
+      if (!term) return render(rows);
+      const filtered = rows.filter(p =>
+        p.nome.toLowerCase().includes(term) ||
+        (p.numero||'').toString().includes(term) ||
+        (p.ruolo||'').toLowerCase().includes(term)
+      );
+      render(filtered);
+    });
+
+    // iniziale
+    render(rows);
+
+    // PWA SW
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+</body>
+</html>
