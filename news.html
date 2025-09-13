@@ -1,155 +1,191 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>News - CORB</title>
+
+  <!-- PWA / Icons -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css"><!-- conserva lo stile generale -->
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
 
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css?v=32">
   <style>
-    /* ====== Stili specifici News (tutto in pagina) ====== */
-    .tag{
-      display:inline-block;padding:6px 10px;border-radius:999px;
-      background:#f5e7ea;border:1px solid #e4cbd3;color:#6b0f1a;
-      font-size:12px;font-weight:700
-    }
-    .news-img{
-      width:100%;aspect-ratio:16/9;object-fit:cover;
-      border-radius:12px;margin-bottom:10px
-    }
-    .item{display:block}
-
-    /* Drawer */
-    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
-      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
-    #drawer.open{right:0}
-    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
-    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
+    /* extra minimi specifici pagina */
+    .news-card{padding:14px;border-radius:16px;border:1px solid var(--ring);background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .news-title{font-weight:800;margin:8px 0 4px 0}
+    .news-meta{font-size:12px;color:var(--muted)}
+    .news-body{margin-top:8px}
   </style>
 </head>
 <body>
- <!-- Topbar -->
-<header class="topbar">
-  <div class="nav">
-    <a href="./index.html" class="brand">
-      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
-      <span class="title">News</span>
-    </a>
-  </div>
-  <div class="right">
-    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
-      <!-- hamburger (solo 3 linee) -->
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-  </div>
-</header>
+  <!-- Topbar comune -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <span class="title">News</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<!-- Drawer menu (uguale per tutte le pagine) -->
-<nav class="drawer" data-role="drawer">
-  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
-  <h3>Menu</h3>
-  <a href="./index.html">🏠 Home</a>
-  <a href="./news.html">📰 News</a>
-  <a href="./squadra.html">👥 Squadra</a>
-  <a href="./video.html">🎥 Video</a>
-  <a href="./prossima.html">📅 Prossima partita</a>
-  <a href="./partite.html">🏆 Risultati</a>
-  <a href="./calendario.html">📆 Calendario</a>
-  <a href="./admin.html">⚙️ Admin</a>
-</nav>
+  <!-- Drawer comune -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
     <!-- Ricerca + filtri -->
     <section class="card">
-      <div class="search">
-        <span>🔎</span>
-        <input id="q" placeholder="Cerca notizie...">
+      <div class="search" style="margin-bottom:10px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Cerca nelle news…" />
       </div>
-      <div class="chips" id="cats" style="margin-top:10px;flex-wrap:wrap">
-        <span class="chip active" data-cat="">Tutte</span>
-        <span class="chip" data-cat="rapporto">Rapporto Partita</span>
-        <span class="chip" data-cat="giocatori">Notizie Giocatori</span>
-        <span class="chip" data-cat="annuncio">Annuncio</span>
+      <div class="chips" id="chips">
+        <button class="chip active" data-tag="all">Tutte</button>
+        <button class="chip" data-tag="match">Resoconto partita</button>
+        <button class="chip" data-tag="player">Giocatori</button>
+        <button class="chip" data-tag="announce">Annunci</button>
       </div>
     </section>
 
     <!-- Lista news -->
     <section id="newsList"></section>
+
+    <!-- Ultimo sync -->
+    <section class="card small">
+      Ultimo aggiornamento dati: <span id="ls">never</span>
+    </section>
   </main>
 
   <script type="module">
-    import {get} from './data-store.js';
+    import { last, get } from './data-store.js';
 
-    // Drawer
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
-
-    // Normalizza categoria (accetta IT/EN)
-    const norm = (v='') => {
-      const s = String(v).trim().toLowerCase();
-      if (['rapporto','match','match report','report','partita'].includes(s)) return 'rapporto';
-      if (['giocatori','player','player news','giocatore'].includes(s)) return 'giocatori';
-      if (['annuncio','announcement','comunicato'].includes(s)) return 'annuncio';
-      return '';
-    };
-    const label = (c) => c==='rapporto' ? 'Rapporto Partita'
-                      : c==='giocatori' ? 'Notizie Giocatori'
-                      : c==='annuncio' ? 'Annuncio' : 'News';
-
-    // Dati
-    const raw = get('news') || [];
-    // Attesi campi: titolo, contenuto, img (opzionale), categoria
-    const data = raw.map(n => ({
-      titolo: n.titolo || n.title || '',
-      contenuto: n.contenuto || n.body || '',
-      img: n.img || n.image || '',
-      categoria: norm(n.categoria || n.category || '')
-    }));
-
-    const listEl = document.getElementById('newsList');
-
-    function card(n){
-      return `
-        <article class="card item">
-          ${n.img ? `<img src="${n.img}" alt="" class="news-img" loading="lazy">` : ''}
-          <div class="tag">${label(n.categoria)}</div>
-          <h3 style="margin:8px 0 4px 0">${n.titolo}</h3>
-          <div class="muted">${n.contenuto}</div>
-        </article>`;
-    }
-
-    function apply(){
-      const q = (document.getElementById('q').value || '').toLowerCase();
-      const cat = document.querySelector('#cats .chip.active')?.dataset.cat || '';
-      const rows = data.filter(n =>
-        (cat==='' || n.categoria===cat) &&
-        (`${n.titolo} ${n.contenuto}`.toLowerCase().includes(q))
-      );
-      listEl.innerHTML = rows.length ? rows.map(card).join('') : '<div class="card">Nessuna notizia</div>';
-    }
-
-    // Eventi filtri/ricerca
-    document.getElementById('q').addEventListener('input', apply);
-    document.querySelectorAll('#cats .chip').forEach(ch => {
-      ch.addEventListener('click', () => {
-        ch.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-        ch.classList.add('active');
-        apply();
-      });
+    // ==== MENU (apri/chiudi) ====
+    const drawer   = document.querySelector('[data-role="drawer"]');
+    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
+    const closeBtn = document.querySelector('[data-role="drawer-close"]');
+    function openDrawer(){ drawer?.classList.add('open'); }
+    function closeDrawer(){ drawer?.classList.remove('open'); }
+    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
+    closeBtn?.addEventListener('click', closeDrawer);
+    document.addEventListener('click', (e)=> {
+      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
     });
 
-    apply();
+    // ==== Dati base ====
+    document.getElementById('ls').textContent = last();
 
+    // Normalizza tag dal foglio (inglese/italiano) -> chiavi interne
+    function mapTag(raw=''){
+      const v = raw.toString().trim().toLowerCase();
+      if (['match','match report','resoconto','report','partita','matchreport'].includes(v)) return 'match';
+      if (['player','players','player news','giocatore','giocatori'].includes(v)) return 'player';
+      if (['announcement','annuncio','annunci','announce'].includes(v)) return 'announce';
+      return 'other';
+    }
+    function tagLabel(key){
+      return key==='match' ? 'Resoconto partita'
+           : key==='player' ? 'Giocatori'
+           : key==='announce' ? 'Annuncio'
+           : 'News';
+    }
+
+    // Carica da cache locale (riempita da admin)
+    const raw = (get('news') || []);
+    // Mappa campi attesi: titolo, contenuto, img (opzionale), tag, data (opzionale)
+    const items = raw.map(n => ({
+      titolo: (n.titolo||'').trim(),
+      contenuto: (n.contenuto||'').trim(),
+      img: (n.img||'').trim(),
+      tagKey: mapTag(n.tag || n.tipo || n.categoria || ''),
+      data: (n.data||'').trim() // formati accettati: ISO o gg/mm/aaaa
+    })).reverse(); // più recenti prima (se in foglio le nuove righe sono in fondo)
+
+    // Rendering
+    const list = document.getElementById('newsList');
+    const q    = document.getElementById('q');
+    const chips= document.getElementById('chips');
+
+    function parseDate(s){
+      if (!s) return null;
+      // ISO
+      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
+      // gg/mm/aaaa o g/m/aa
+      const m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
+      if (m){ const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]); return new Date(yy,mm,dd); }
+      const d = new Date(s);
+      return isNaN(+d) ? null : d;
+    }
+    function fmtDate(s){
+      const d = parseDate(s);
+      return d ? d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}) : '';
+    }
+
+    let state = { tag:'all', text:'' };
+
+    function render(){
+      const term = state.text.toLowerCase();
+      const filtered = items.filter(it => {
+        const okTag = (state.tag==='all') ? true : (it.tagKey === state.tag);
+        const hay   = (it.titolo+' '+it.contenuto).toLowerCase();
+        const okTxt = term ? hay.includes(term) : true;
+        return okTag && okTxt;
+      });
+
+      list.innerHTML = filtered.length ? filtered.map(it => {
+        const hasImg = !!it.img;
+        const when = fmtDate(it.data);
+        return `
+          <article class="news-card">
+            ${hasImg ? `<img class="news-img" src="${it.img}" alt="" loading="lazy">` : ``}
+            <div class="pill" style="display:inline-block">${tagLabel(it.tagKey)}</div>
+            <div class="news-title">${it.titolo || 'Senza titolo'}</div>
+            <div class="news-meta">${when ? when+' · ' : ''}${hasImg?'Con immagine':'Testo'}</div>
+            <div class="news-body small" style="-webkit-line-clamp:4;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden">
+              ${it.contenuto}
+            </div>
+          </article>
+        `;
+      }).join('') : `<section class="card small">Nessuna notizia trovata.</section>`;
+    }
+
+    // Eventi ricerca/filtri
+    q.addEventListener('input', (e)=>{ state.text = e.target.value || ''; render(); });
+    chips.addEventListener('click', (e)=>{
+      const b = e.target.closest('.chip'); if (!b) return;
+      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active');
+      state.tag = b.dataset.tag;
+      render();
+    });
+
+    render();
+
+    // SW
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js"></script>
+
+  <!-- JS menu comune (separato opzionale) -->
+  <script src="./ui.js?v=32"></script>
 </body>
 </html>
