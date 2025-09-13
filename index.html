@@ -144,7 +144,10 @@
   </main>
 
   <script type="module">
-    import {last, get} from './data-store.js';
+    import { autoLoad, last, get } from './data-store.js';
+
+    // 👇 assicura i dati al primo accesso
+    await autoLoad();
 
     // Drawer
     const drawer = document.getElementById('drawer');
@@ -157,7 +160,7 @@
     // Ultimo sync
     document.getElementById('ls').textContent = last();
 
-    // ===== Ultima partita con loghi sopra e nome sotto =====
+    // ===== Ultima partita =====
     const matches = (get('matches')||[]).map(m=>({
       ...m,
       date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
@@ -196,7 +199,7 @@
       lastBox.innerHTML = `<div class="small">Nessuna partita disponibile</div>`;
     }
 
-    // ===== Ultime 2 news (spazio tra titolo ed estratto) =====
+    // ===== Ultime 2 news =====
     const news = (get('news')||[])
       .map(n=>({titolo:n.titolo||'', contenuto:n.contenuto||''}))
       .slice(-2).reverse();
