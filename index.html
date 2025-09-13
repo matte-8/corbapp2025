@@ -215,5 +215,10 @@
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
+  <script type="module">
+  import { initMatchNotifications } from './notify.js';
+  initMatchNotifications();
+</script>
+
 </body>
 </html>
