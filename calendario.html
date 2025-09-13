@@ -1,118 +1,69 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Calendario - CORB</title>
+
+  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=19">
-  <style>
-    :root{ --home:#6b0f1a; --away:#0ea5e9; }
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
 
-    /* ----- Layout responsive calendario ----- */
+  <!-- CSS comune -->
+  <link rel="stylesheet" href="./style.css?v=32">
+  <style>
+    /* Extra minimi specifici della pagina */
     .month-wrap{margin-bottom:18px}
     .month-head{display:flex;align-items:center;justify-content:space-between}
     .month-name{font-weight:900;line-height:1.05;font-size:clamp(20px,6vw,28px)}
     .head-right{display:flex;gap:8px}
     .arrowbtn{border-radius:12px;border:1px solid var(--ring);background:#fff;padding:6px 10px}
-
     .legend{display:flex;gap:16px;align-items:center;margin-top:8px}
     .dot{width:10px;height:10px;border-radius:999px}
     .dot-home{background:var(--home)}
     .dot-away{background:var(--away)}
-
-    .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;color:#6b6b6b;margin:10px 0 6px}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    .cal-cell{
-      border:1px solid var(--ring);border-radius:14px;background:#fff;
-      display:flex;align-items:center;justify-content:center;
-      aspect-ratio:1/1; font-weight:600;font-size:clamp(12px,3.6vw,16px)
-    }
-    .muted{opacity:.35}
-    .has{color:#fff;box-shadow:0 2px 10px rgba(0,0,0,.12)}
-    .home{background:var(--home)!important;border-color:var(--home)!important}
-    .away{background:var(--away)!important;border-color:var(--away)!important}
-
-    /* Lista future sotto */
-    .future-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--ring)}
-    .future-row:last-child{border-bottom:0}
-    .home-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:var(--home)}
-    .away-pill{background:rgba(14,165,233,.12);border:1px solid rgba(14,165,233,.35);color:var(--away)}
-
-    /* Drawer (non blocca i click quando è chiuso) */
-    #drawer{
-      position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
-      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:1000;
-      pointer-events:none;
-    }
-    #drawer.open{ right:0; pointer-events:auto; }
-    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
-    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
-    .topbar{ z-index: 1100; }
-
-    /* Badge logo squadre */
-    .team-badge{width:28px;height:28px;border-radius:50%;overflow:hidden;border:2px solid #e8d3d9;background:#fff;flex:0 0 28px}
-    .team-badge img{width:100%;height:100%;object-fit:cover;display:block}
-    .team-line{display:flex;align-items:center;gap:8px}
-    @media (max-width:380px){ .team-badge{width:24px;height:24px} }
+    /* più aria tra intestazione mese e griglia */
+    .cal-dow{margin:12px 0 6px}
+    .month-block{margin-bottom:8px}
   </style>
 </head>
 <body>
-<!-- Topbar -->
-<header class="topbar">
-  <div class="nav">
-    <a href="./index.html" class="brand">
-      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
-      <span class="title">Home</span>
-    </a>
-  </div>
-  <div class="right">
-    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
-      <!-- hamburger (solo 3 linee) -->
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-  </div>
-</header>
+  <!-- Topbar comune -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <span class="title">Calendario</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<!-- Drawer menu (uguale per tutte le pagine) -->
-<nav class="drawer" data-role="drawer">
-  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
-  <h3>Menu</h3>
-  <a href="./index.html">🏠 Home</a>
-  <a href="./news.html">📰 News</a>
-  <a href="./squadra.html">👥 Squadra</a>
-  <a href="./video.html">🎥 Video</a>
-  <a href="./prossima.html">📅 Prossima partita</a>
-  <a href="./partite.html">🏆 Risultati</a>
-  <a href="./calendario.html">📆 Calendario</a>
-  <a href="./admin.html">⚙️ Admin</a>
-</nav>
-
-  <!-- Menu script (non modulo) -->
-  <script>
-    (function(){
-      const drawer   = document.getElementById('drawer');
-      const btn      = document.getElementById('menuBtn');
-      const closeBtn = document.getElementById('drawer-close');
-      if (btn) btn.addEventListener('click', (e)=>{ e.stopPropagation(); drawer.classList.add('open'); });
-      if (closeBtn) closeBtn.addEventListener('click', ()=> drawer.classList.remove('open'));
-      document.addEventListener('click', (e)=>{
-        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target!==btn) {
-          drawer.classList.remove('open');
-        }
-      });
-    })();
-  </script>
+  <!-- Drawer comune -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
     <section class="card month-wrap">
-      <!-- TESTATA mese 1: frecce SOPRA, legenda SOTTO -->
+      <!-- Mese 1: frecce SOPRA, legenda SOTTO -->
       <div class="month-head">
         <div class="month-name" id="m1"></div>
         <div class="head-right">
@@ -125,67 +76,63 @@
         <span class="dot dot-away" style="margin-left:12px"></span> Trasferta
       </div>
 
-      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
-      <div id="grid1" class="cal-grid"></div>
+      <div class="month-block">
+        <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+        <div id="grid1" class="cal-grid"></div>
+      </div>
 
       <!-- Spazio tra i mesi -->
       <div style="height:16px"></div>
 
-      <!-- Mese 2 -->
+      <!-- Mese 2 (solo etichetta, niente frecce) -->
       <div class="month-head">
         <div class="month-name" id="m2"></div>
-        <div style="width:68px"></div><!-- placeholder per simmetria -->
+        <div style="width:68px"></div><!-- per simmetria -->
       </div>
-      <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
-      <div id="grid2" class="cal-grid"></div>
+      <div class="month-block">
+        <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
+        <div id="grid2" class="cal-grid"></div>
+      </div>
     </section>
 
     <section class="card">
       <h2 style="margin:0 0 8px 0">Prossime partite</h2>
       <div id="futureList"></div>
     </section>
+
+    <section class="card small">
+      Ultimo aggiornamento dati: <span id="ls">never</span>
+    </section>
   </main>
 
-  <!-- Modulo SOLO per la logica del calendario -->
   <script type="module">
-    import {get} from './data-store.js';
+    import { last, get } from './data-store.js';
 
-    // Helpers
-    function toDate(d) {
+    // Ultimo sync
+    document.getElementById('ls').textContent = last();
+
+    // ===== Helpers calendario =====
+    const toDate = (d) => {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}/.test(d)) return new Date(d);
       const m = d.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
-      if (m) { const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]); return new Date(yy,mm,dd); }
-      return new Date(d);
-    }
+      if (m){ const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]); return new Date(yy,mm,dd); }
+      const dt = new Date(d);
+      return isNaN(+dt) ? new Date('Invalid') : dt;
+    };
     const fmtMonth = (d) => d.toLocaleDateString(undefined,{month:'long',year:'numeric'});
     const daysInMonth = (y,m) => new Date(y, m+1, 0).getDate();
-    // 0=Mon (Lunedì-first)
+    // Lunedì-first: 0=Mon
     const startDowMon = (y,m) => (new Date(y,m,1).getDay()+6)%7;
 
-    // === LOGHI ===
-    const CORB = 'img/logo_c5.png';
-    const AVV  = 'img/logo_avv.png';
-    const isHome = m => (m.casa||'').trim().toLowerCase() === 'corbiolo';
-    function teamLogo(m, side){
-      if (side==='left'){
-        const name = isHome(m) ? 'corbiolo' : String(m.casa||'').toLowerCase().trim();
-        if (name==='corbiolo') return CORB;
-        return m.logo_casa || AVV;
-      } else {
-        const name = isHome(m) ? String(m.fuori||'').toLowerCase().trim() : 'corbiolo';
-        if (name==='corbiolo') return CORB;
-        return m.logo_avv || m.logo_fuori || AVV;
-      }
-    }
-
+    // Dati calendario dal localStorage (admin)
     const calData = (get('calendar')||[]).map(r=>({
       date: toDate(r.data),
       avversario: r.avversario || '',
       casa_fuori: (r.casa_fuori||'').toLowerCase()
     })).filter(e=>!isNaN(+e.date));
 
-    let offset = 0; // sposta finestra mesi
+    let offset = 0; // finestra di 2 mesi scorrevole
 
     function buildTwoMonths(){
       const base = new Date();
@@ -201,6 +148,7 @@
       const grid = document.getElementById(gridId);
       grid.innerHTML = '';
 
+      // celle vuote prima dell'1 del mese (con settimana che parte da lunedì)
       const leading = startDowMon(y,m);
       for(let i=0;i<leading;i++){
         const c = document.createElement('div');
@@ -221,6 +169,7 @@
           cell.classList.add('has');
           if (match.casa_fuori === 'casa') cell.classList.add('home');
           else cell.classList.add('away');
+          // tooltip ordine squadre corretto
           cell.title = (match.casa_fuori==='casa' ? 'Corbiolo - ' : '') +
                        match.avversario +
                        (match.casa_fuori==='fuori' ? ' - Corbiolo' : '');
@@ -230,13 +179,17 @@
       }
     }
 
-    // Frecce mesi (spostano di 1 mese la finestra)
-    document.getElementById('prevM').addEventListener('click', ()=>{ offset -= 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'}); });
-    document.getElementById('nextM').addEventListener('click', ()=>{ offset += 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'}); });
+    // Frecce per navigare i mesi
+    document.getElementById('prevM').addEventListener('click', ()=>{
+      offset -= 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'});
+    });
+    document.getElementById('nextM').addEventListener('click', ()=>{
+      offset += 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'});
+    });
 
     buildTwoMonths();
 
-    // ---- Lista future sotto (dalla tab partite) ----
+    // ===== Lista future partite sotto =====
     const matches = (get('matches')||[]).map(m=>({
       ...m,
       date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
@@ -245,24 +198,25 @@
     const now = new Date();
     const futures = matches.filter(m=> m.date > now).sort((a,b)=> a.date - b.date);
 
+    const isHome = m => (m.casa||'').trim().toLowerCase() === 'corbiolo';
+    const fmtListDate = (d) => d.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short'});
+
     function row(m){
       const homeSide = isHome(m);
-      const squadra1 = homeSide ? 'Corbiolo' : (m.casa || 'Avversario');
-      const squadra2 = homeSide ? (m.fuori || 'Avversario') : 'Corbiolo';
+      const s1 = homeSide ? 'Corbiolo' : (m.casa||'Avversario');
+      const s2 = homeSide ? (m.fuori||'Avversario') : 'Corbiolo';
       const icon = homeSide ? '🏠' : '✈️';
-      const pillClass = homeSide ? 'home-pill' : 'away-pill';
-      const ds = m.date.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short'});
+      const pillClass = homeSide ? 'badge badge-green' : 'badge badge-amber';
+      const ds = fmtListDate(m.date);
       return `
         <div class="future-row">
-          <div class="team-line">
-            <span class="pill ${pillClass}">${icon}</span>
-            <span class="team-badge"><img src="${teamLogo(m,'left')}" alt=""></span>
-            <strong>${squadra1}</strong>
-            <span class="muted">-</span>
-            <strong>${squadra2}</strong>
-            <span class="team-badge"><img src="${teamLogo(m,'right')}" alt=""></span>
+          <div class="row">
+            <span class="pill" style="margin-right:6px">${icon}</span>
+            <div>
+              <div><strong>${s1} - ${s2}</strong></div>
+              <div class="small">${ds}</div>
+            </div>
           </div>
-          <div class="small">${ds}</div>
         </div>`;
     }
 
@@ -272,6 +226,8 @@
     // SW
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js"></script>
+
+  <!-- JS menu comune -->
+  <script src="./ui.js?v=32"></script>
 </body>
 </html>
