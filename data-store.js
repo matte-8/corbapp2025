@@ -1,4 +1,4 @@
-// ===== Helpers per localStorage =====
+// ===== Helpers localStorage =====
 const safeGetJSON = (k, fallback) => {
   try { return JSON.parse(localStorage.getItem(k)) ?? fallback; }
   catch { return fallback; }
@@ -14,8 +14,7 @@ const safeSet = (k, v) => {
   try { localStorage.setItem(k, v); } catch {}
 };
 
-// ===== Config base =====
-// Questi valori vengono aggiornati da admin.html se cambi Sheet
+// ===== Config =====
 const CFG_KEY = 'corb_cfg';
 const LAST_KEY = 'lastSync';
 
@@ -29,26 +28,50 @@ const DFLT = {
 };
 
 function loadCfg(){
-  try {
-    return {...DFLT, ...JSON.parse(localStorage.getItem(CFG_KEY)||'{}')};
-  } catch {
-    return {...DFLT};
-  }
+  try { return {...DFLT, ...JSON.parse(localStorage.getItem(CFG_KEY)||'{}')}; }
+  catch { return {...DFLT}; }
 }
 
 function csvURL(sheetId, gid){
   return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
 }
 
-// ===== CSV parser semplice =====
-function parseCSV(txt){
-  const rows = txt.split(/\r?\n/).map(r => r.split(','));
-  if (!rows.length) return [];
-  const [hdr, ...data] = rows;
-  const keys = hdr.map(h=>h.trim().toLowerCase());
-  return data.filter(r => r.join('').trim().length).map(r=>{
-    const obj={};
-    keys.forEach((k,i)=> obj[k] = (r[i]||'').trim());
+// ===== parseCSV robusto =====
+function parseCSV(text){
+  const rows = [];
+  let i=0, field='', row=[], inq=false;
+  const pushField = () => { row.push(field); field=''; };
+  const pushRow   = () => { rows.push(row); row=[]; };
+
+  while (i < text.length){
+    const c = text[i];
+    if (inq){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i++; }
+        else { inq = false; }
+      } else {
+        field += c;
+      }
+    } else {
+      if (c === '"'){ inq = true; }
+      else if (c === ','){ pushField(); }
+      else if (c === '\n'){ pushField(); pushRow(); }
+      else if (c === '\r'){ /* skip */ }
+      else { field += c; }
+    }
+    i++;
+  }
+  if (field.length || row.length){ pushField(); pushRow(); }
+
+  const [hdr, ...data] = rows.filter(r => r.length && r.join('').trim().length);
+  if (!hdr) return [];
+  const keys = hdr.map(h => h.trim().toLowerCase());
+
+  return data.map(r=>{
+    const obj = {};
+    for (let k=0; k<keys.length; k++){
+      obj[keys[k]] = (r[k] ?? '').toString().trim();
+    }
     return obj;
   });
 }
@@ -62,8 +85,7 @@ export function last(){
 
 // ===== autoLoad =====
 export async function autoLoad(force=false){
-  // se già in cache e non forzato → esci
-  if (!force && safeGet(LAST_KEY, null)) return;
+  if (!force && safeGet(LAST_KEY, null)) return; // già in cache
 
   const cfg = loadCfg();
   const fetchCSV = async (gid) => {
