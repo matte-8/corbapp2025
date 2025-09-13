@@ -1,99 +1,388 @@
-// ui.js — common UI for CORB app
-(() => {
-  // Call when DOM is ready
-  const ready = (fn) =>
-    document.readyState !== 'loading'
-      ? fn()
-      : document.addEventListener('DOMContentLoaded', fn);
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin - CORB</title>
 
-  // Small helpers
-  const $  = (sel, root=document) => root.querySelector(sel);
-  const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
 
-  // Soft re-render hook (used after admin sync)
-  function softRefresh() {
-    try {
-      if (typeof window.render === 'function') {
-        // page defines a render() that reads from localStorage
-        window.render();
-      } else {
-        // fallback: full reload to pick up new cache/data
-        location.reload();
+  <link rel="stylesheet" href="./style.css?v=33">
+  <style>
+    .admin-wrap{display:grid;gap:16px}
+    .field{display:grid;gap:6px}
+    .field input{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
+    .grid-2-admin{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:700px){.grid-2-admin{grid-template-columns:1fr}}
+    .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
+    .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
+    .btn-ghost{background:#fff}
+    .log{background:#0b1020;color:#cde;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;padding:12px;border-radius:12px;max-height:280px;overflow:auto;font-size:12px}
+    .ok{color:#10b981}.err{color:#ef4444}.muted{opacity:.85}
+    .login-card{display:grid;gap:12px}
+    .login-card input{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
+    .hint{font-size:12px;color:var(--muted)}
+    .url-line{word-break:break-all}
+  </style>
+</head>
+<body>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <span class="title">Admin</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Drawer -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <main class="container">
+    <!-- LOGIN -->
+    <section class="card" id="loginCard">
+      <h2 style="margin:0 0 8px 0">Accesso amministratore</h2>
+      <div class="login-card">
+        <label class="field">
+          <span>Password</span>
+          <input id="pwd" type="password" placeholder="Inserisci password"/>
+        </label>
+        <button id="loginBtn" class="btn btn-primary">Entra</button>
+        <div class="hint">Password: <code>corb25</code></div>
+      </div>
+    </section>
+
+    <!-- PANNELLO -->
+    <section class="card admin-wrap" id="panel" style="display:none">
+      <h2 style="margin:0">Impostazioni e sincronizzazione</h2>
+
+      <div class="grid-2-admin">
+        <label class="field">
+          <span>Google Sheet ID</span>
+          <input id="sheetId" placeholder="ID del tuo Spreadsheet"/>
+        </label>
+        <label class="field">
+          <span>Formato esportazione</span>
+          <input value="CSV (Google export)" disabled/>
+        </label>
+      </div>
+
+      <div class="grid-2-admin">
+        <label class="field"><span>GID Partite</span><input id="gid_matches" placeholder="1730522931"/></label>
+        <label class="field"><span>GID Calendario</span><input id="gid_calendar" placeholder="787175543"/></label>
+      </div>
+      <div class="grid-2-admin">
+        <label class="field"><span>GID News</span><input id="gid_news" placeholder="1408482393"/></label>
+        <label class="field"><span>GID Giocatori</span><input id="gid_players" placeholder="706688113"/></label>
+      </div>
+      <div class="grid-2-admin">
+        <label class="field"><span>GID Video</span><input id="gid_videos" placeholder="1118175028"/></label>
+        <div></div>
+      </div>
+
+      <div class="row" style="justify-content:flex-start;flex-wrap:wrap">
+        <button id="saveCfg" class="btn">💾 Salva impostazioni</button>
+        <button id="testBtn" class="btn btn-ghost">🔍 Verifica collegamenti</button>
+        <button id="showCache" class="btn btn-ghost">📦 Mostra cache</button>
+        <button id="clearCache" class="btn btn-ghost">🧹 Svuota cache</button>
+        <button id="syncBtn" class="btn btn-primary">🔄 Aggiorna adesso</button>
+      </div>
+
+      <div class="small">Ultimo aggiornamento: <span id="lastSync">never</span></div>
+      <div class="log" id="log" aria-live="polite"></div>
+      <div class="hint">
+        Se “Verifica collegamenti” fallisce con 403/404, assicurati che il foglio sia
+        <b>Condiviso: Chiunque con il link → Lettore</b> e che i GID siano corretti.
+      </div>
+    </section>
+  </main>
+
+  <script type="module">
+    // ===== MENU =====
+    const drawer   = document.querySelector('[data-role="drawer"]');
+    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
+    const closeBtn = document.querySelector('[data-role="drawer-close"]');
+    function openDrawer(){ drawer?.classList.add('open'); }
+    function closeDrawer(){ drawer?.classList.remove('open'); }
+    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
+    closeBtn?.addEventListener('click', closeDrawer);
+    document.addEventListener('click', (e)=> {
+      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
+    });
+
+    // ===== CONFIG =====
+    const DFLT = {
+      sheetId: '143tbH2ZfTHk9bsgL1T7s6PQcSkR-HrCepz0GS--Go8I',
+      gid_matches:  '1730522931',   // Partite ✅
+      gid_calendar: '787175543',            // Calendario (metti il tuo se diverso)
+      gid_news:     '1408482393',   // News ✅
+      gid_players:  '706688113',             // Compila se hai il tab
+      gid_videos:   '1118175028'              // Compila se hai il tab
+    };
+    const CFG_KEY = 'corb_cfg';
+    const LAST_KEY = 'lastSync';
+
+    const $ = (id)=>document.getElementById(id);
+    const logEl = $('log');
+    const log = (msg, cls='muted') => {
+      logEl.innerHTML += `<div class="${cls}">${msg}</div>`;
+      logEl.scrollTop = logEl.scrollHeight;
+    };
+
+    function safeGet(key, fallback) {
+      try { return localStorage.getItem(key) ?? fallback; } catch { return fallback; }
+    }
+    function safeSet(key, val) {
+      try { localStorage.setItem(key, val); } catch {}
+    }
+    function safeSetJSON(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch {}
+    }
+    function safeGetJSON(key, fallback) {
+      try { return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)); } catch { return fallback; }
+    }
+
+    function loadCfg(){
+      const saved = safeGet(CFG_KEY, null);
+      if (!saved) return {...DFLT};
+      try { return {...DFLT, ...JSON.parse(saved)}; }
+      catch { return {...DFLT}; }
+    }
+    function saveCfg(cfg){
+      safeSet(CFG_KEY, JSON.stringify(cfg));
+    }
+
+    // ===== LOGIN =====
+    const PASS = 'corb25';
+    const loginCard = $('loginCard');
+    const panel = $('panel');
+    $('loginBtn').addEventListener('click', ()=>{
+      if ($('pwd').value !== PASS){ alert('Password errata'); return; }
+      loginCard.style.display='none';
+      panel.style.display='grid';
+      initPanel();
+    });
+
+    // ===== CSV → JSON =====
+    function parseCSV(text){
+      const rows = [];
+      let i=0, field='', row=[], inq=false;
+      const pushField = () => { row.push(field); field=''; };
+      const pushRow   = () => { rows.push(row); row=[]; };
+      while (i < text.length){
+        const c = text[i];
+        if (inq){
+          if (c === '"'){ if (text[i+1] === '"'){ field += '"'; i++; } else { inq = false; } }
+          else { field += c; }
+        } else {
+          if (c === '"'){ inq = true; }
+          else if (c === ','){ pushField(); }
+          else if (c === '\n'){ pushField(); pushRow(); }
+          else if (c === '\r'){ /* skip */ }
+          else { field += c; }
+        }
+        i++;
       }
-    } catch {
-      location.reload();
-    }
-  }
-
-  // Hydrate "Ultimo aggiornamento dati" if present
-  function hydrateLastSync() {
-    const el = $('#ls');
-    if (!el) return;
-    try {
-      const ts = localStorage.getItem('lastSync');
-      el.textContent = ts ? new Date(ts).toLocaleString() : 'never';
-    } catch {
-      el.textContent = 'never';
-    }
-  }
-
-  // Drawer wiring (works once per page)
-  function attachDrawer() {
-    const drawer   = $('[data-role="drawer"]');
-    const btnOpen  = $('[data-role="menu-btn"]');
-    const btnClose = $('[data-role="drawer-close"]');
-
-    if (!drawer || !btnOpen || !btnClose) return;
-
-    const open  = () => drawer.classList.add('open');
-    const close = () => drawer.classList.remove('open');
-
-    // Avoid double-binding if script loaded twice
-    if (!btnOpen.__bound) {
-      btnOpen.addEventListener('click', (e) => { e.stopPropagation(); open(); });
-      btnOpen.__bound = true;
-    }
-    if (!btnClose.__bound) {
-      btnClose.addEventListener('click', (e) => { e.stopPropagation(); close(); });
-      btnClose.__bound = true;
-    }
-
-    // Click outside closes
-    if (!drawer.__outsideBound) {
-      document.addEventListener('click', (e) => {
-        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== btnOpen) {
-          close();
-        }
+      if (field.length || row.length){ pushField(); pushRow(); }
+      const [hdr, ...data] = rows.filter(r => r.length && r.join('').trim().length);
+      if (!hdr) return [];
+      const keys = hdr.map(h => h.trim().toLowerCase());
+      return data.map(r => {
+        const obj = {};
+        for (let k=0;k<keys.length;k++){ obj[keys[k]] = (r[k] ?? '').toString().trim(); }
+        return obj;
       });
-      drawer.__outsideBound = true;
     }
 
-    // ESC closes
-    if (!drawer.__escBound) {
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') close();
-      });
-      drawer.__escBound = true;
+    // ===== fetch CSV con timeout =====
+    async function fetchCSV(url, msTimeout=12000){
+      const ctrl = new AbortController();
+      const timer = setTimeout(()=>ctrl.abort(), msTimeout);
+      try{
+        const res = await fetch(url, { cache:'no-store', signal: ctrl.signal });
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const txt = await res.text();
+        return parseCSV(txt);
+      } finally {
+        clearTimeout(timer);
+      }
     }
-  }
 
-  // Listen to Admin sync and refresh pages
-  function attachBroadcastRefresh() {
-    try {
-      const bc = new BroadcastChannel('corb-sync');
-      bc.onmessage = (ev) => {
-        if (ev?.data?.type === 'data-updated') {
-          softRefresh();
+    function csvURL(sheetId, gid){
+      return `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+    }
+
+    // ===== SYNC =====
+    async function syncAll(){
+      const cfg = currentCfg();
+      log('Inizio aggiornamento…');
+
+      const write = (key, data) => safeSetJSON(key, data);
+
+      try{
+        // PARTITE (obbligatorio per le pagine principali)
+        {
+          const url = csvURL(cfg.sheetId, cfg.gid_matches);
+          log(`Scarico PARTITE… <div class="url-line hint">${url}</div>`);
+          const rows = await fetchCSV(url);
+          write('matches', rows);
+          log(`<b class="ok">✔ Partite (${rows.length})</b>`, 'ok');
         }
+
+        // CALENDARIO (se configurato)
+        if (cfg.gid_calendar){
+          const url = csvURL(cfg.sheetId, cfg.gid_calendar);
+          log(`Scarico CALENDARIO… <div class="url-line hint">${url}</div>`);
+          const rows = await fetchCSV(url);
+          write('calendar', rows);
+          log(`<b class="ok">✔ Calendario (${rows.length})</b>`, 'ok');
+        }
+
+        // NEWS
+        {
+          const url = csvURL(cfg.sheetId, cfg.gid_news);
+          log(`Scarico NEWS… <div class="url-line hint">${url}</div>`);
+          const rows = await fetchCSV(url);
+          write('news', rows);
+          log(`<b class="ok">✔ News (${rows.length})</b>`, 'ok');
+        }
+
+        // GIOCATORI (se configurato)
+        if (cfg.gid_players){
+          const url = csvURL(cfg.sheetId, cfg.gid_players);
+          log(`Scarico GIOCATORI… <div class="url-line hint">${url}</div>`);
+          const rows = await fetchCSV(url);
+          write('giocatori', rows);
+          log(`<b class="ok">✔ Giocatori (${rows.length})</b>`, 'ok');
+        }
+
+        // VIDEO (se configurato)
+        if (cfg.gid_videos){
+          const url = csvURL(cfg.sheetId, cfg.gid_videos);
+          log(`Scarico VIDEO… <div class="url-line hint">${url}</div>`);
+          const rows = await fetchCSV(url);
+          write('video', rows);
+          log(`<b class="ok">✔ Video (${rows.length})</b>`, 'ok');
+        }
+
+        const ts = new Date().toISOString();
+        safeSet(LAST_KEY, ts);
+        $('lastSync').textContent = new Date(ts).toLocaleString();
+        log(`<b class="ok">✔ Completato alle ${$('lastSync').textContent}</b>`, 'ok');
+
+        try{
+          const bc = new BroadcastChannel('corb-sync');
+          bc.postMessage({type:'data-updated', at: ts});
+          bc.close();
+        }catch(e){}
+
+        alert('Aggiornamento completato!');
+      }catch(err){
+        console.error(err);
+        log(`<b class="err">✖ Errore: ${err.message}</b>`, 'err');
+        log(`Suggerimenti:
+        <ul>
+          <li>Il foglio è pubblico? (Condividi → Chiunque con il link → Lettore)</li>
+          <li>Sheet ID e GID sono corretti?</li>
+          <li>Riprova più tardi: potrebbe essere rete lenta o blocco temporaneo.</li>
+        </ul>`, 'muted');
+        alert('Errore durante l’aggiornamento. Controlla il log e riprova.');
+      }
+    }
+
+    // ===== TEST URL =====
+    async function testLinks(){
+      const cfg = currentCfg();
+      const tests = [
+        ['Partite',  cfg.gid_matches],
+        ['Calendario', cfg.gid_calendar],
+        ['News',     cfg.gid_news],
+        ['Giocatori',cfg.gid_players],
+        ['Video',    cfg.gid_videos],
+      ];
+      log('<b>🔍 Verifica collegamenti</b>');
+      for (const [label, gid] of tests){
+        if (!gid){ log(`• ${label}: (saltato, GID vuoto)`, 'muted'); continue; }
+        const url = csvURL(cfg.sheetId, gid);
+        try{
+          const res = await fetch(url, {cache:'no-store'});
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+          const sample = (await res.text()).slice(0,120).replace(/\n/g,' ⏎ ');
+          log(`✔ ${label}: OK <div class="url-line hint">${url}</div><div class="hint">Anteprima: ${sample}…</div>`, 'ok');
+        }catch(e){
+          log(`✖ ${label}: ${e.message} <div class="url-line hint">${url}</div>`, 'err');
+        }
+      }
+    }
+
+    // ===== UI pannello =====
+    function currentCfg(){
+      return {
+        sheetId: $('sheetId').value.trim(),
+        gid_matches: $('gid_matches').value.trim(),
+        gid_calendar:$('gid_calendar').value.trim(),
+        gid_news:    $('gid_news').value.trim(),
+        gid_players: $('gid_players').value.trim(),
+        gid_videos:  $('gid_videos').value.trim()
       };
-    } catch {
-      // BroadcastChannel not supported — nothing to do
     }
-  }
+    function initPanel(){
+      const cfg = loadCfg();
+      $('sheetId').value     = cfg.sheetId;
+      $('gid_matches').value = cfg.gid_matches;
+      $('gid_calendar').value= cfg.gid_calendar;
+      $('gid_news').value    = cfg.gid_news;
+      $('gid_players').value = cfg.gid_players;
+      $('gid_videos').value  = cfg.gid_videos;
 
-  ready(() => {
-    attachDrawer();
-    hydrateLastSync();
-    attachBroadcastRefresh();
-  });
-})();
+      const last = safeGet(LAST_KEY, null);
+      $('lastSync').textContent = last ? new Date(last).toLocaleString() : 'never';
+
+      $('saveCfg').onclick = ()=>{ saveCfg(currentCfg()); log('<b class="ok">✔ Impostazioni salvate</b>','ok'); };
+      $('syncBtn').onclick = ()=>{ saveCfg(currentCfg()); syncAll(); };
+      $('testBtn').onclick = ()=>{ saveCfg(currentCfg()); testLinks(); };
+      $('showCache').onclick = ()=>{
+        const dump = {
+          matches:   safeGetJSON('matches', null),
+          calendar:  safeGetJSON('calendar', null),
+          news:      safeGetJSON('news', null),
+          giocatori: safeGetJSON('giocatori', null),
+          video:     safeGetJSON('video', null),
+          lastSync:  safeGet(LAST_KEY, 'never')
+        };
+        log('<b>📦 Cache attuale</b>');
+        log(`<pre class="muted">${(JSON.stringify(dump, null, 2))}</pre>`);
+      };
+      $('clearCache').onclick = ()=>{
+        ['matches','calendar','news','giocatori','video',LAST_KEY].forEach(k=>safeSet(k,''));
+        log('<b class="ok">✔ Cache svuotata</b>','ok');
+      };
+    }
+  </script>
+
+  <!-- JS menu comune -->
+  <script src="./ui.js?v=33"></script>
+</body>
+</html>
