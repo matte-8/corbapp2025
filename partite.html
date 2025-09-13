@@ -10,78 +10,43 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* --- layout card statistiche coerente con il design scelto --- */
+    /* Stat card */
     .kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-    .kpi{
-      background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;
-      padding:10px 6px;text-align:center;min-height:84px;
-      display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px
-    }
-    .kpi .ico{font-size:18px;line-height:1}
-    .kpi .val{font-weight:900;font-size:22px;line-height:1}
-    .kpi .lbl{font-size:12px;opacity:.95}
-
+    .kpi{background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;
+      padding:10px 6px;text-align:center;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .kpi .ico{font-size:18px}.kpi .val{font-weight:900;font-size:22px}.kpi .lbl{font-size:12px;opacity:.95}
     .kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-    .kpi-big{
-      background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;
-      padding:12px 10px;text-align:center;min-height:88px;
-      display:flex;flex-direction:column;justify-content:center;gap:6px
-    }
-    .kpi-big .ico{font-size:18px}
-    .kpi-big .val{font-weight:900;font-size:26px}
-    .kpi-big .lbl{font-size:13px;opacity:.95}
-
+    .kpi-big{background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;
+      padding:12px 10px;text-align:center;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .kpi-big .ico{font-size:18px}.kpi-big .val{font-weight:900;font-size:26px}.kpi-big .lbl{font-size:13px;opacity:.95}
     .form-wrap{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
     .form-dot{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:12px}
     .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
-
-    /* --- righe partite giocate --- */
-    .match-row{
-      display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;
-      padding:12px 0;border-bottom:1px solid var(--ring)
-    }
+    /* Lista partite */
+    .match-row{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ring)}
     .match-row:last-child{border-bottom:0}
-    .team{
-      display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center
-    }
+    .team{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
     .team .logo{width:44px;height:44px;border-radius:10px;object-fit:contain;display:block}
     .team .name{font-weight:700;margin-top:6px}
-    .score-badge{
-      display:flex;align-items:center;justify-content:center;
-      width:64px;height:64px;border-radius:14px;
-      background:#f5eef0;color:#7d2631;font-weight:900;font-size:22px
-    }
-
-    /* evita overflow di qualsiasi immagine/iframe */
-    .media-fluid{display:block;width:100%;max-width:100%;height:auto;border-radius:12px}
-
-    /* migliora spazi su schermi piccoli */
-    @media(max-width:380px){
-      .kpi .val{font-size:20px}
-      .kpi-big .val{font-size:24px}
-      .score-badge{width:58px;height:58px;font-size:20px}
-    }
+    .score-badge{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:#f5eef0;color:#7d2631;font-weight:900;font-size:22px}
+    @media(max-width:380px){.kpi .val{font-size:20px}.kpi-big .val{font-size:24px}.score-badge{width:58px;height:58px;font-size:20px}}
   </style>
 </head>
 <body>
-  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" class="brand">
-        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
         <span class="title">Risultati</span>
       </a>
     </div>
     <div class="right">
       <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
-          <path d="M3 6h18M3 12h18M3 18h18"/>
-        </svg>
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
       </button>
     </div>
   </header>
 
-  <!-- Drawer -->
   <nav id="drawer" class="drawer">
     <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
@@ -96,13 +61,9 @@
   </nav>
 
   <main class="container">
-    <!-- Statistiche stagione -->
     <section class="stat-card">
       <div class="stat-head">
-        <div class="stat-title">
-          <span style="font-size:18px">📊</span>
-          <span>Statistiche Stagione</span>
-        </div>
+        <div class="stat-title"><span>📊</span><span>Statistiche Stagione</span></div>
         <div class="stat-range small" id="seasonLabel">Stagione</div>
       </div>
 
@@ -125,7 +86,6 @@
       </div>
     </section>
 
-    <!-- Elenco risultati giocati -->
     <section class="card">
       <h2 style="margin:0 0 8px 0">Tutte le partite giocate</h2>
       <div id="played"></div>
@@ -135,24 +95,25 @@
   <script type="module">
     import {get} from './data-store.js';
 
-    // Drawer
+    /* ------- Drawer ------- */
     const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+    const openBtn = document.getElementById('menuBtn');
+    const closeBtn = document.getElementById('drawer-close');
+    openBtn.addEventListener('click', (e)=>{ e.stopPropagation(); drawer.classList.add('open'); });
+    closeBtn.addEventListener('click', ()=> drawer.classList.remove('open'));
     document.addEventListener('click', (e)=>{
-      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== openBtn){
         drawer.classList.remove('open');
       }
     });
 
-    // Helpers
+    /* ------- Helpers & Costanti ------- */
     const CORB = 'corbiolo';
-    const logoCorb = 'img/logo_c5.png';
-    const logoAvv  = 'img/logo_avv.png';
+    const LOGO_CORB = 'img/logo_c5.png';
+    const LOGO_AVV  = 'img/logo_avv.png';
 
-    const toDate = (m) => {
-      const d = (m.data||'') + 'T' + (m.ora||'00:00');
-      const dt = new Date(d);
+    const toDate = (m)=>{
+      const dt = new Date((m.data||'')+'T'+(m.ora||'00:00'));
       return isNaN(+dt) ? new Date(m.data||'') : dt;
     };
     const parseScore = (s='')=>{
@@ -161,90 +122,72 @@
     };
     const fmtDay = (d)=> d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
 
+    /* ------- Dati ------- */
     const raw = (get('matches')||[]).map(x=>({...x, date: toDate(x)}));
-    // giocate = hanno risultato valido
     const played = raw.filter(x=> parseScore(x.risultato));
 
-    // ---- STATISTICHE
+    /* ------- Statistiche ------- */
     let P=0,V=0,N=0,S=0,GF=0,GA=0;
-    // forma (ultime 5)
     const recent = [...played].sort((a,b)=> b.date - a.date).slice(0,5);
 
     played.forEach(m=>{
-      const home = (m.casa||'').trim().toLowerCase();
-      const away = (m.fuori||'').trim().toLowerCase();
-      const sc = parseScore(m.risultato);
-      if (!sc) return;
-
-      // gol lato Corbiolo
-      const corbHome = home===CORB;
+      const homeLC = (m.casa||'').trim().toLowerCase();
+      const sc = parseScore(m.risultato); if(!sc) return;
+      const corbHome = homeLC===CORB;
       const gf = corbHome ? sc.gh : sc.ga;
       const ga = corbHome ? sc.ga : sc.gh;
-
       P++; GF+=gf; GA+=ga;
       if (gf>ga) V++; else if (gf===ga) N++; else S++;
     });
 
     const diff = GF-GA;
-    document.getElementById('kPartite').textContent = P;
-    document.getElementById('kVittorie').textContent = V;
-    document.getElementById('kPareggi').textContent = N;
-    document.getElementById('kSconfitte').textContent = S;
-    document.getElementById('kFatti').textContent = GF;
-    document.getElementById('kSubiti').textContent = GA;
-    document.getElementById('kDiff').textContent = (diff>=0?'+':'') + diff;
+    kPartite.textContent=P; kVittorie.textContent=V; kPareggi.textContent=N; kSconfitte.textContent=S;
+    kFatti.textContent=GF;  kSubiti.textContent=GA;  kDiff.textContent=(diff>=0?'+':'')+diff;
 
-    const formWrap = document.getElementById('formDots');
-    formWrap.innerHTML = recent.map(m=>{
-      const home = (m.casa||'').trim().toLowerCase();
+    formDots.innerHTML = recent.map(m=>{
+      const homeLC = (m.casa||'').trim().toLowerCase();
       const sc = parseScore(m.risultato);
-      const gf = home===CORB ? sc.gh : sc.ga;
-      const ga = home===CORB ? sc.ga : sc.gh;
-      const type = gf>ga ? 'fW' : (gf===ga ? 'fD' : 'fL');
-      const label = gf>ga ? 'V' : (gf===ga ? 'P' : 'S');
-      return `<span class="form-dot ${type}">${label}</span>`;
+      const gf = (homeLC===CORB)? sc.gh : sc.ga;
+      const ga = (homeLC===CORB)? sc.ga : sc.gh;
+      const cls = gf>ga ? 'fW' : (gf===ga ? 'fD' : 'fL');
+      const lab = gf>ga ? 'V'  : (gf===ga ? 'P'  : 'S');
+      return `<span class="form-dot ${cls}">${lab}</span>`;
     }).join('');
 
-    // Stagione label (set/ott -> giu)
+    // stagione es. 25/26
     const now = new Date();
-    const y = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1; // stagione che inizia nell'autunno precedente
-    document.getElementById('seasonLabel').textContent = `Stagione ${String(y).slice(-2)}/${String(y+1).slice(-2)}`;
+    const y = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
+    seasonLabel.textContent = `Stagione ${String(y).slice(-2)}/${String(y+1).slice(-2)}`;
 
-    // ---- LISTA PARTITE GIOCATE (ordina dalla più recente)
-    const out = document.getElementById('played');
-    const rows = [...played].sort((a,b)=> b.date - a.date).map(m=>{
-      const homeName = (m.casa||'Corbiolo').trim();
-      const awayName = (m.fuori||'Avversario').trim();
-      const sc = parseScore(m.risultato)||{gh:'-',ga:'-'};
+    /* ------- Lista partite giocate (HOME a sinistra, AWAY a destra) ------- */
+    const rowsHTML = [...played].sort((a,b)=> b.date - a.date).map(m=>{
+      const homeName = (m.casa || 'Corbiolo').trim();
+      const awayName = (m.fuori || 'Avversario').trim();
+      const sc = parseScore(m.risultato) || {gh:'-',ga:'-'};
 
-      const corbHome = homeName.toLowerCase()=== 'corbiolo';
-      const leftName  = corbHome ? homeName : awayName;
-      const rightName = corbHome ? awayName : homeName;
+      // loghi coerenti con la posizione
+      const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_casa || LOGO_AVV);
+      const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_fuori || LOGO_AVV);
 
-      const leftLogo  = (leftName.toLowerCase()==='corbiolo') ? logoCorb : (m.logo_casa || m.logo_fuori || logoAvv);
-      const rightLogo = (rightName.toLowerCase()==='corbiolo') ? logoCorb : (m.logo_fuori || m.logo_casa || logoAvv);
-
-      const scoreTxt = corbHome ? `${sc.gh} - ${sc.ga}` : `${sc.ga} - ${sc.gh}`;
-
+      const scoreTxt = `${sc.gh} - ${sc.ga}`; // sempre "home - away"
       const day = fmtDay(m.date);
 
       return `
         <div class="match-row">
           <div class="team">
-            <img class="logo" src="${leftLogo}" onerror="this.src='${logoAvv}'" alt="">
-            <div class="name">${leftName}</div>
+            <img class="logo" src="${homeLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            <div class="name">${homeName}</div>
           </div>
           <div class="score-badge">${scoreTxt}</div>
           <div class="team">
-            <img class="logo" src="${rightLogo}" onerror="this.src='${logoAvv}'" alt="">
-            <div class="name">${rightName}</div>
+            <img class="logo" src="${awayLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            <div class="name">${awayName}</div>
           </div>
           <div class="small muted" style="grid-column:1/-1;text-align:center;margin-top:6px">${day}</div>
-        </div>
-      `;
+        </div>`;
     }).join('');
 
-    out.innerHTML = rows || '<div class="small">Nessuna partita giocata.</div>';
+    document.getElementById('played').innerHTML = rowsHTML || '<div class="small">Nessuna partita giocata.</div>';
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
