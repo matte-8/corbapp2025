@@ -4,41 +4,58 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Squadra - CORB</title>
-
-  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
-
-  <!-- CSS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* extra minimi pagina */
-    .role-title{font-weight:800;margin:6px 0 2px}
+    /* sicurezza anti overflow */
+    html,body{overflow-x:hidden}
+    main.container{max-width:960px;margin:auto;padding:16px}
+
+    .searchbar{
+      display:flex;gap:8px;align-items:center;
+      border:1px solid var(--ring);border-radius:12px;
+      padding:10px 12px;background:#fff
+    }
+    .searchbar input{border:0;outline:0;flex:1;background:transparent;font-size:16px}
+
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;cursor:pointer}
+    .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
+
+    .role-title{font-size:18px;font-weight:800;margin:14px 0 8px 0}
+
+    .player{
+      display:flex;align-items:center;gap:12px;width:100%;
+      background:#fff;border:1px solid var(--ring);border-radius:16px;padding:12px;
+      box-shadow:0 6px 18px rgba(0,0,0,.06)
+    }
+    .player img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;flex:0 0 56px}
+    .number-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a;
+      border-radius:999px;font-weight:800;padding:6px 10px}
   </style>
 </head>
 <body>
-  <!-- Topbar comune -->
   <header class="topbar">
     <div class="nav">
-      <a href="./index.html" class="brand" aria-label="Home">
-        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" alt="" class="brand-logo">
         <span class="title">Squadra</span>
       </a>
     </div>
     <div class="right">
-      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Drawer comune -->
-  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
-    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
     <a href="./news.html">📰 News</a>
@@ -51,159 +68,111 @@
   </nav>
 
   <main class="container">
-    <!-- Ricerca + filtro ruolo -->
     <section class="card">
-      <div class="search" style="margin-bottom:10px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Cerca giocatore…" />
+      <div class="searchbar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2" stroke-linecap="round"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
+        <input id="q" type="search" placeholder="Cerca giocatore per nome o numero…">
       </div>
       <div class="chips" id="chips">
-        <button class="chip active" data-rolekey="all">Tutti</button>
-        <button class="chip" data-rolekey="portiere">Portieri</button>
-        <button class="chip" data-rolekey="difensore">Difensori</button>
-        <button class="chip" data-rolekey="centrocampista">Centrocampisti</button>
-        <button class="chip" data-rolekey="attaccante">Attaccanti</button>
+        <button class="chip active" data-role="all">Tutti</button>
+        <button class="chip" data-role="portiere">Portiere</button>
+        <button class="chip" data-role="centrale">Centrale</button>
+        <button class="chip" data-role="laterale">Laterale</button>
+        <button class="chip" data-role="pivot">Pivot</button>
       </div>
     </section>
 
-    <!-- Lista giocatori -->
     <section class="card">
       <h2 style="margin:0 0 8px 0">Rosa</h2>
-      <div id="players"></div>
+      <div id="list"></div>
     </section>
 
-    <!-- Ultimo sync -->
     <section class="card small">
       Ultimo aggiornamento dati: <span id="ls">never</span>
     </section>
   </main>
 
   <script type="module">
-    import { last, get } from './data-store.js';
+    import {get,last} from './data-store.js';
 
-    // ==== MENU (apri/chiudi) ====
-    const drawer   = document.querySelector('[data-role="drawer"]');
-    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
-    const closeBtn = document.querySelector('[data-role="drawer-close"]');
-    function openDrawer(){ drawer?.classList.add('open'); }
-    function closeDrawer(){ drawer?.classList.remove('open'); }
-    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
-    closeBtn?.addEventListener('click', closeDrawer);
-    document.addEventListener('click', (e)=> {
-      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
-    });
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
 
-    // ==== Dati base ====
     document.getElementById('ls').textContent = last();
 
-    // Carica giocatori dal localStorage (admin)
-    // Colonne attese: nome, ruolo, numero, foto (url)
-    const raw = (get('giocatori') || []);
-
-    // Normalizza ruoli in chiavi interne
-    function roleKey(r=''){
-      const v = r.toString().trim().toLowerCase();
-      if (v.startsWith('port')) return 'portiere';
-      if (v.startsWith('dif'))  return 'difensore';
-      if (v.startsWith('cen'))  return 'centrocampista';
-      if (v.startsWith('att'))  return 'attaccante';
-      return 'altro';
-    }
-    function roleLabel(k){
-      return k==='portiere'?'Portiere':
-             k==='difensore'?'Difensore':
-             k==='centrocampista'?'Centrocampista':
-             k==='attaccante'?'Attaccante':'Altro';
-    }
-
-    const players = raw.map(p => ({
+    // === dati
+    const RAW = (get('giocatori')||[]).map(p=>({
       nome: (p.nome||'').trim(),
-      ruolo: roleKey(p.ruolo||''),
-      ruoloRaw: (p.ruolo||'').trim(),
       numero: (p.numero||'').toString().trim(),
-      foto: (p.foto||p.img||'').trim()
-    })).sort((a,b) => {
-      // Ordina per ruolo poi numero poi nome
-      const r = a.ruolo.localeCompare(b.ruolo);
-      if (r!==0) return r;
-      const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
-      if (!isNaN(na) && !isNaN(nb) && na!==nb) return na-nb;
-      return a.nome.localeCompare(b.nome);
-    });
+      ruolo: (p.ruolo||'').toString().trim().toLowerCase(), // <- normalizzato
+      foto: p.foto || ''
+    }));
 
-    // Stato filtri
-    let state = { role:'all', text:'' };
+    // mappa sinonimi ruoli -> standard desiderato
+    const MAP = {
+      'portiere':'Portiere',
+      'centrale':'Centrale',
+      'laterale':'Laterale',
+      'pivot':'Pivot'
+    };
+    const stdRole = r => MAP[r] || 'Altro';
 
+    const listEl = document.getElementById('list');
     const q = document.getElementById('q');
-    const chips = document.getElementById('chips');
-    const wrap = document.getElementById('players');
+    let currentRole = 'all';
 
-    // Rendering lista piatta (con separatori di ruolo)
     function render(){
-      const term = state.text.toLowerCase();
-      const filtered = players.filter(p => {
-        const okRole = (state.role==='all') ? true : (p.ruolo===state.role);
-        const okText = term ? (p.nome.toLowerCase().includes(term)) : true;
-        return okRole && okText;
+      const term = q.value.trim().toLowerCase();
+      const filtered = RAW.filter(p=>{
+        const roleOK = currentRole==='all' ? true : p.ruolo===currentRole;
+        const textOK = !term || p.nome.toLowerCase().includes(term) || p.numero.includes(term);
+        return roleOK && textOK;
       });
 
-      if (!filtered.length){
-        wrap.innerHTML = `<div class="small">Nessun giocatore trovato.</div>`;
-        return;
-      }
-
-      // raggruppa per ruolo per un piccolo titolo
+      // group by ruolo standard nell’ordine desiderato
+      const order = ['portiere','centrale','laterale','pivot','altro'];
       const groups = {};
-      for (const p of filtered){
-        const key = p.ruolo;
+      filtered.forEach(p=>{
+        const key = p.ruolo && order.includes(p.ruolo) ? p.ruolo : 'altro';
         (groups[key] ||= []).push(p);
-      }
+      });
 
-      // ordine ruoli
-      const order = ['portiere','difensore','centrocampista','attaccante','altro'];
-      const html = order.filter(k => groups[k]?.length).map(k => {
-        const rows = groups[k].map(p => {
-          const img = p.foto || 'img/player.png';
-          const num = p.numero ? `#${p.numero}` : '';
-          return `
+      const html = order
+        .filter(k=>groups[k]?.length)
+        .map(k=>{
+          const title = stdRole(k) === 'Altro' ? 'Altro' : stdRole(k);
+          const items = groups[k].map(p=>`
             <div class="player">
-              <img src="${img}" alt="">
-              <div style="flex:1">
-                <div style="font-weight:800">${p.nome}</div>
-                <div class="small">${p.ruoloRaw || roleLabel(p.ruolo)}</div>
+              <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
+                <div class="small">${stdRole(p.ruolo)}</div>
               </div>
-              ${num ? `<div class="pill">${num}</div>` : ``}
+              ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
             </div>
-          `;
+          `).join('');
+          return `<div class="role-title">${title}</div>${items}`;
         }).join('');
-        return `
-          <div>
-            <div class="role-title">${roleLabel(k)}</div>
-            ${rows}
-          </div>
-        `;
-      }).join('');
 
-      wrap.innerHTML = html;
+      listEl.innerHTML = html || '<div class="small">Nessun giocatore trovato</div>';
     }
 
-    // Eventi ricerca / chip
-    q.addEventListener('input', (e)=>{ state.text = e.target.value || ''; render(); });
-    chips.addEventListener('click', (e)=>{
-      const b = e.target.closest('.chip'); if(!b) return;
-      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-      b.classList.add('active');
-      state.role = b.dataset.rolekey;
+    // eventi filtri
+    document.getElementById('chips').addEventListener('click', (e)=>{
+      const btn = e.target.closest('.chip'); if(!btn) return;
+      document.querySelectorAll('#chips .chip').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      currentRole = btn.dataset.role; // all | portiere | centrale | laterale | pivot
       render();
     });
+    q.addEventListener('input', render);
 
     render();
 
-    // SW
-    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-
-  <!-- JS menu comune -->
-  <script src="./ui.js?v=33"></script>
 </body>
 </html>
