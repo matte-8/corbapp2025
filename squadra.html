@@ -10,7 +10,6 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* sicurezza anti overflow */
     html,body{overflow-x:hidden}
     main.container{max-width:960px;margin:auto;padding:16px}
 
@@ -93,7 +92,10 @@
   </main>
 
   <script type="module">
-    import {get,last} from './data-store.js';
+    import { autoLoad, get, last } from './data-store.js';
+
+    // 👇 assicura i dati al primo accesso
+    await autoLoad();
 
     // Drawer
     const drawer = document.getElementById('drawer');
@@ -107,11 +109,11 @@
     const RAW = (get('giocatori')||[]).map(p=>({
       nome: (p.nome||'').trim(),
       numero: (p.numero||'').toString().trim(),
-      ruolo: (p.ruolo||'').toString().trim().toLowerCase(), // <- normalizzato
+      ruolo: (p.ruolo||'').toString().trim().toLowerCase(),
       foto: p.foto || ''
     }));
 
-    // mappa sinonimi ruoli -> standard desiderato
+    // mappa sinonimi ruoli -> standard
     const MAP = {
       'portiere':'Portiere',
       'centrale':'Centrale',
@@ -132,7 +134,6 @@
         return roleOK && textOK;
       });
 
-      // group by ruolo standard nell’ordine desiderato
       const order = ['portiere','centrale','laterale','pivot','altro'];
       const groups = {};
       filtered.forEach(p=>{
@@ -165,7 +166,7 @@
       const btn = e.target.closest('.chip'); if(!btn) return;
       document.querySelectorAll('#chips .chip').forEach(c=>c.classList.remove('active'));
       btn.classList.add('active');
-      currentRole = btn.dataset.role; // all | portiere | centrale | laterale | pivot
+      currentRole = btn.dataset.role;
       render();
     });
     q.addEventListener('input', render);
