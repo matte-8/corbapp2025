@@ -1,184 +1,293 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Admin - CORB</title>
+
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+
+  <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    .btn{padding:10px 14px;border-radius:12px;border:1px solid var(--ring);background:#fff;cursor:pointer}
-    .btn.primary{background:#6b0f1a;color:#fff;border-color:#6b0f1a}
-    .log{white-space:pre-wrap;font-family:ui-monospace,monospace;background:#fff;border:1px solid var(--ring);border-radius:12px;padding:10px;max-height:220px;overflow:auto}
+    .admin-wrap{display:grid;gap:16px}
+    .field{display:grid;gap:6px}
+    .field input{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
+    .grid-2-admin{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media (max-width:700px){.grid-2-admin{grid-template-columns:1fr}}
+    .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
+    .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
+    .log{background:#0b1020;color:#cde;font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;padding:12px;border-radius:12px;max-height:240px;overflow:auto;font-size:12px}
+    .ok{color:#10b981}.err{color:#ef4444}.muted{opacity:.85}
+    .login-card{display:grid;gap:12px}
+    .login-card input{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
   </style>
 </head>
 <body>
- <!-- Topbar -->
-<header class="topbar">
-  <div class="nav">
-    <a href="./index.html" class="brand">
-      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
-      <span class="title">Admin</span>
-    </a>
-  </div>
-  <div class="right">
-    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
-      <!-- hamburger (solo 3 linee) -->
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-  </div>
-</header>
+  <!-- Topbar -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <span class="title">Admin</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<!-- Drawer menu (uguale per tutte le pagine) -->
-<nav class="drawer" data-role="drawer">
-  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
-  <h3>Menu</h3>
-  <a href="./index.html">🏠 Home</a>
-  <a href="./news.html">📰 News</a>
-  <a href="./squadra.html">👥 Squadra</a>
-  <a href="./video.html">🎥 Video</a>
-  <a href="./prossima.html">📅 Prossima partita</a>
-  <a href="./partite.html">🏆 Risultati</a>
-  <a href="./calendario.html">📆 Calendario</a>
-  <a href="./admin.html">⚙️ Admin</a>
-</nav>
-
+  <!-- Drawer -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
-    <!-- Login PIN -->
-    <section class="card">
-      <h1>Area Admin</h1>
-      <p class="small">Inserisci PIN per sbloccare i comandi (default: <b>corb25</b>).</p>
-      <div class="row">
-        <input id="pin" class="search" placeholder="PIN" style="max-width:220px">
-        <button id="go" class="btn">Entra</button>
-        <span id="status" class="small"></span>
+    <!-- LOGIN -->
+    <section class="card" id="loginCard">
+      <h2 style="margin:0 0 8px 0">Accesso amministratore</h2>
+      <div class="login-card">
+        <label class="field">
+          <span>Password</span>
+          <input id="pwd" type="password" placeholder="Inserisci password"/>
+        </label>
+        <button id="loginBtn" class="btn btn-primary">Entra</button>
+        <div class="small muted">Password: <code>corb25</code></div>
       </div>
     </section>
 
-    <!-- Pannello -->
-    <section class="card" id="panel" style="display:none">
-      <div class="row" style="justify-content:space-between;align-items:center">
-        <h2 style="margin:0">Sincronizzazione</h2>
-        <div class="small">Ultimo sync: <span id="ls">never</span></div>
+    <!-- PANNELLO -->
+    <section class="card admin-wrap" id="panel" style="display:none">
+      <h2 style="margin:0">Impostazioni e sincronizzazione</h2>
+
+      <div class="grid-2-admin">
+        <label class="field">
+          <span>Google Sheet ID</span>
+          <input id="sheetId" placeholder="ID del tuo Spreadsheet"/>
+        </label>
+        <label class="field">
+          <span>Formato esportazione</span>
+          <input value="CSV (Google export)" disabled/>
+        </label>
       </div>
 
-      <div class="row" style="margin-top:10px">
-        <button id="syncAll" class="btn primary">⟳ Aggiorna TUTTO</button>
-        <button id="clear" class="btn">✕ Svuota cache</button>
+      <div class="grid-2-admin">
+        <label class="field"><span>GID Partite</span><input id="gid_matches" placeholder="es. 1408482393"/></label>
+        <label class="field"><span>GID Calendario</span><input id="gid_calendar" placeholder="es. 0"/></label>
+      </div>
+      <div class="grid-2-admin">
+        <label class="field"><span>GID News</span><input id="gid_news" placeholder="es. 1118175028"/></label>
+        <label class="field"><span>GID Giocatori</span><input id="gid_players" placeholder=""/></label>
+      </div>
+      <div class="grid-2-admin">
+        <label class="field"><span>GID Video</span><input id="gid_videos" placeholder=""/></label>
+        <div></div>
       </div>
 
-      <div class="section" style="margin-top:12px">
-        <h3 class="small" style="margin:0 0 6px 0">Log</h3>
-        <div id="log" class="log">Pronto.</div>
+      <div class="row" style="justify-content:flex-start">
+        <button id="saveCfg" class="btn">💾 Salva impostazioni</button>
+        <button id="syncBtn" class="btn btn-primary">🔄 Aggiorna adesso</button>
       </div>
 
-      <p class="small" style="margin-top:10px">
-        Le pagine pubbliche leggono solo dalla cache locale. Nessun aggiornamento automatico:
-        i dati cambiano solo quando premi <b>Aggiorna</b>.
-      </p>
+      <div class="small">Ultimo aggiornamento: <span id="lastSync">never</span></div>
+      <div class="log" id="log" aria-live="polite"></div>
     </section>
   </main>
 
   <script type="module">
-    import { set, setLast, last, clearAll } from './data-store.js';
+    // ===== MENU =====
+    const drawer   = document.querySelector('[data-role="drawer"]');
+    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
+    const closeBtn = document.querySelector('[data-role="drawer-close"]');
+    function openDrawer(){ drawer?.classList.add('open'); }
+    function closeDrawer(){ drawer?.classList.remove('open'); }
+    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
+    closeBtn?.addEventListener('click', closeDrawer);
+    document.addEventListener('click', (e)=> {
+      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
+    });
 
-    // === CONFIG ===
-    const PIN = 'corb25';
-    const SHEET_ID = '143tbH2ZfTHk9bsgL1T7s6PQcSkR-HrCepz0GS--Go8I';
-    // GID: news, giocatori, sponsor, partite, calendario
-    const CSV = {
-      news:      `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1408482393`,
-      players:   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=706688113`,
-      sponsors:  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1118175028`,
-      matches:   `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=1730522931`,
-      calendar:  `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&gid=787175543`
+    // ===== CONFIG =====
+    const DFLT = {
+      sheetId: '143tbH2ZfTHk9bsgL1T7s6PQcSkR-HrCepz0GS--Go8I',
+      gid_matches:  '1730522931',   // Partite ✅
+      gid_calendar: '787175543',            // Calendario (se diverso, incolla il tuo)
+      gid_news:     '1408482393',   // News ✅
+      gid_players:  '706688113',             // prenderà da localStorage se già salvato
+      gid_videos:   '1118175028'              // prenderà da localStorage se già salvato
+    };
+    const CFG_KEY = 'corb_cfg';
+    const LAST_KEY = 'lastSync';
+
+    const $ = (id)=>document.getElementById(id);
+    const log = (msg, cls='muted') => {
+      const el = $('log'); el.innerHTML += `<div class="${cls}">${msg}</div>`;
+      el.scrollTop = el.scrollHeight;
     };
 
-    // === UI refs ===
-    const elPanel = document.getElementById('panel');
-    const elLS = document.getElementById('ls');
-    const elLog = document.getElementById('log');
-    const log = (m) => { elLog.textContent += '\\n' + m; elLog.scrollTop = elLog.scrollHeight; };
+    function loadCfg(){
+      const saved = localStorage.getItem(CFG_KEY);
+      if (!saved) return {...DFLT};
+      try {
+        const parsed = JSON.parse(saved);
+        // merge con DFLT per garantire i valori noti
+        return {...DFLT, ...parsed};
+      } catch { return {...DFLT}; }
+    }
+    function saveCfg(cfg){
+      localStorage.setItem(CFG_KEY, JSON.stringify(cfg));
+    }
 
-    // CSV robust parser (comma inside quotes)
-    const parseCSV = (txt) => {
-      const lines = txt.replace(/\r/g,'').split('\n').filter(x=>x.trim().length);
-      if (!lines.length) return [];
-      const headers = splitCSVLine(lines[0]).map(h=>h.trim().toLowerCase());
-      return lines.slice(1).map(line => {
-        const cells = splitCSVLine(line);
+    // ===== LOGIN =====
+    const PASS = 'corb25';
+    const loginCard = $('loginCard');
+    const panel = $('panel');
+    $('loginBtn').addEventListener('click', ()=>{
+      if ($('pwd').value !== PASS){ alert('Password errata'); return; }
+      loginCard.style.display='none';
+      panel.style.display='grid';
+      initPanel();
+    });
+
+    // ===== CSV → JSON =====
+    function parseCSV(text){
+      const rows = [];
+      let i=0, field='', row=[], inq=false;
+      const pushField = () => { row.push(field); field=''; };
+      const pushRow   = () => { rows.push(row); row=[]; };
+      while (i < text.length){
+        const c = text[i];
+        if (inq){
+          if (c === '"'){ if (text[i+1] === '"'){ field += '"'; i++; } else { inq = false; } }
+          else { field += c; }
+        } else {
+          if (c === '"'){ inq = true; }
+          else if (c === ','){ pushField(); }
+          else if (c === '\n'){ pushField(); pushRow(); }
+          else if (c === '\r'){ /* skip */ }
+          else { field += c; }
+        }
+        i++;
+      }
+      if (field.length || row.length){ pushField(); pushRow(); }
+      const [hdr, ...data] = rows.filter(r => r.length && r.join('').trim().length);
+      if (!hdr) return [];
+      const keys = hdr.map(h => h.trim().toLowerCase());
+      return data.map(r => {
         const obj = {};
-        headers.forEach((h,i)=> obj[h] = (cells[i] ?? '').replace(/^"|"$/g,''));
+        for (let k=0;k<keys.length;k++){ obj[keys[k]] = (r[k] ?? '').toString().trim(); }
         return obj;
       });
-    };
-    function splitCSVLine(line) {
-      const out = []; let cur = ''; let q = false;
-      for (let i=0;i<line.length;i++){
-        const ch = line[i];
-        if (ch === '"'){ q = !q; cur += ch; }
-        else if (ch === ',' && !q){ out.push(cur); cur=''; }
-        else { cur += ch; }
-      }
-      out.push(cur);
-      return out;
     }
 
-    async function pull(key, mapTo, storeKey){
-      const res = await fetch(CSV[key], { cache:'no-store' });
-      if(!res.ok) throw new Error(`${key}: HTTP ${res.status}`);
-      const rows = parseCSV(await res.text());
-      const mapped = rows.map(mapTo);
-      set(storeKey, mapped);
-      log(`✔ ${storeKey}: ${mapped.length} record`);
+    async function fetchGSheetCSV(sheetId, gid){
+      const url = `https://docs.google.com/spreadsheets/d/${sheetId}/export?format=csv&gid=${gid}`;
+      const res = await fetch(url, {cache:'no-store'});
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const text = await res.text();
+      return parseCSV(text);
     }
 
+    // ===== SYNC =====
     async function syncAll(){
-      elLog.textContent = 'Avvio sync…';
+      const cfg = currentCfg();
+      log('Inizio aggiornamento…');
+
       try{
-        await Promise.all([
-          pull('players',  r => ({ nome:r.nome, numero:r.numero, ruolo:r.ruolo, foto:r.foto }), 'players'),
-          pull('news',     r => ({ titolo:r.titolo, contenuto:r.contenuto, img:r.img, tag:r.tag||'', nuova:(r.nuova||'')==='1' }), 'news'),
-          pull('sponsors', r => ({ nome:r.nome, logo:r.logo, link:r.link }), 'sponsors'),
-          pull('matches',  r => ({ data:r.data, ora:r.ora, casa:r.casa, logocasa:r.logocasa, fuori:r.fuori, logoavv:r.logoavv, risultato:r.risultato, competizione:r.competizione||'', luogo:r.luogo||'', mvp:r.mvp||'' }), 'matches'),
-          pull('calendar', r => ({ data:r.data, avversario:r.avversario, casa_fuori:r.casa_fuori }), 'calendar')
-        ]);
-        const ts = new Date().toLocaleString();
-        setLast(ts);
-        elLS.textContent = ts;
-        log('🎉 Fatto!');
-        alert('Aggiornamento completato');
+        log('Scarico PARTITE…');
+        const matches = await fetchGSheetCSV(cfg.sheetId, cfg.gid_matches);
+        localStorage.setItem('matches', JSON.stringify(matches));
+        log(`<b class="ok">✔ Partite (${matches.length})</b>`, 'ok');
+
+        if (cfg.gid_calendar){
+          log('Scarico CALENDARIO…');
+          const calendar = await fetchGSheetCSV(cfg.sheetId, cfg.gid_calendar);
+          localStorage.setItem('calendar', JSON.stringify(calendar));
+          log(`<b class="ok">✔ Calendario (${calendar.length})</b>`, 'ok');
+        }
+
+        log('Scarico NEWS…');
+        const news = await fetchGSheetCSV(cfg.sheetId, cfg.gid_news);
+        localStorage.setItem('news', JSON.stringify(news));
+        log(`<b class="ok">✔ News (${news.length})</b>`, 'ok');
+
+        if (cfg.gid_players){
+          log('Scarico GIOCATORI…');
+          const players = await fetchGSheetCSV(cfg.sheetId, cfg.gid_players);
+          localStorage.setItem('giocatori', JSON.stringify(players));
+          log(`<b class="ok">✔ Giocatori (${players.length})</b>`, 'ok');
+        }
+
+        if (cfg.gid_videos){
+          log('Scarico VIDEO…');
+          const videos = await fetchGSheetCSV(cfg.sheetId, cfg.gid_videos);
+          localStorage.setItem('video', JSON.stringify(videos));
+          log(`<b class="ok">✔ Video (${videos.length})</b>`, 'ok');
+        }
+
+        const ts = new Date().toISOString();
+        localStorage.setItem(LAST_KEY, ts);
+        $('lastSync').textContent = new Date(ts).toLocaleString();
+        log(`<b class="ok">✔ Completato alle ${$('lastSync').textContent}</b>`, 'ok');
+
+        try{
+          const bc = new BroadcastChannel('corb-sync');
+          bc.postMessage({type:'data-updated', at: ts});
+          bc.close();
+        }catch(e){}
+
+        alert('Aggiornamento completato!');
       }catch(err){
-        log('❌ Errore: ' + (err?.message||err));
-        alert('Errore durante l\'aggiornamento');
+        console.error(err);
+        log(`<b class="err">✖ Errore: ${err.message}</b>`, 'err');
+        alert('Errore durante l’aggiornamento. Riprova.');
       }
     }
 
-    // Login PIN
-    document.getElementById('go').addEventListener('click', () => {
-      const ok = (document.getElementById('pin').value || '').trim() === PIN;
-      document.getElementById('status').textContent = ok ? 'OK' : 'PIN errato';
-      elPanel.style.display = ok ? 'block' : 'none';
-      elLS.textContent = last();
-    });
+    // ===== UI pannello =====
+    function currentCfg(){
+      return {
+        sheetId: $('sheetId').value.trim(),
+        gid_matches: $('gid_matches').value.trim(),
+        gid_calendar:$('gid_calendar').value.trim(),
+        gid_news:    $('gid_news').value.trim(),
+        gid_players: $('gid_players').value.trim(),
+        gid_videos:  $('gid_videos').value.trim()
+      };
+    }
+    function initPanel(){
+      const cfg = loadCfg();
+      $('sheetId').value     = cfg.sheetId;
+      $('gid_matches').value = cfg.gid_matches;
+      $('gid_calendar').value= cfg.gid_calendar;
+      $('gid_news').value    = cfg.gid_news;
+      $('gid_players').value = cfg.gid_players;
+      $('gid_videos').value  = cfg.gid_videos;
 
-    // Bottoni
-    document.getElementById('syncAll').addEventListener('click', syncAll);
-    document.getElementById('clear').addEventListener('click', () => {
-      clearAll(); elLS.textContent = 'never'; elLog.textContent = 'Cache svuotata.'; alert('Cache svuotata');
-    });
+      const last = localStorage.getItem('lastSync');
+      $('lastSync').textContent = last ? new Date(last).toLocaleString() : 'never';
 
-    // PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
+      $('saveCfg').onclick = ()=>{ saveCfg(currentCfg()); log('<b class="ok">✔ Impostazioni salvate</b>','ok'); };
+      $('syncBtn').onclick = ()=>{ saveCfg(currentCfg()); syncAll(); };
     }
   </script>
+
+  <!-- JS menu comune -->
+  <script src="./ui.js?v=33"></script>
 </body>
 </html>
