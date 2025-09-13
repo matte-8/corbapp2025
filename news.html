@@ -4,44 +4,41 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>News - CORB</title>
-
-  <!-- PWA / Icons -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
-
-  <!-- CSS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* extra minimi specifici pagina */
-    .news-card{padding:14px;border-radius:16px;border:1px solid var(--ring);background:#fff;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .news-title{font-weight:800;margin:8px 0 4px 0}
-    .news-meta{font-size:12px;color:var(--muted)}
-    .news-body{margin-top:8px}
+    .news-list{display:grid;gap:12px}
+    .news-item .pill{margin-bottom:6px}
+    .ellipsis{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600}
+    .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
   </style>
 </head>
 <body>
-  <!-- Topbar comune -->
+  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
-      <a href="./index.html" class="brand" aria-label="Home">
+      <a href="./index.html" class="brand">
         <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
         <span class="title">News</span>
       </a>
     </div>
     <div class="right">
-      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
-        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
       </button>
     </div>
   </header>
 
-  <!-- Drawer comune -->
-  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
-    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+  <!-- Drawer -->
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
     <a href="./news.html">📰 News</a>
@@ -54,138 +51,83 @@
   </nav>
 
   <main class="container">
-    <!-- Ricerca + filtri -->
     <section class="card">
-      <div class="search" style="margin-bottom:10px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.5-3.5"/></svg>
-        <input id="q" type="search" placeholder="Cerca nelle news…" />
+      <div class="search">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <input id="q" type="search" placeholder="Cerca nelle news…">
       </div>
-      <div class="chips" id="chips">
-        <button class="chip active" data-tag="all">Tutte</button>
-        <button class="chip" data-tag="match">Resoconto partita</button>
-        <button class="chip" data-tag="player">Giocatori</button>
-        <button class="chip" data-tag="announce">Annunci</button>
+
+      <div class="chips" style="margin-top:10px">
+        <button class="chip active" data-tag="Tutte">Tutte</button>
+        <button class="chip" data-tag="Resoconto partita">Resoconto partita</button>
+        <button class="chip" data-tag="Giocatori">Giocatori</button>
+        <button class="chip" data-tag="Annunci">Annunci</button>
       </div>
     </section>
 
-    <!-- Lista news -->
-    <section id="newsList"></section>
-
-    <!-- Ultimo sync -->
-    <section class="card small">
-      Ultimo aggiornamento dati: <span id="ls">never</span>
-    </section>
+    <section id="newsWrap" class="news-list"></section>
   </main>
 
   <script type="module">
-    import { last, get } from './data-store.js';
+    import {get} from './data-store.js';
 
-    // ==== MENU (apri/chiudi) ====
-    const drawer   = document.querySelector('[data-role="drawer"]');
-    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
-    const closeBtn = document.querySelector('[data-role="drawer-close"]');
-    function openDrawer(){ drawer?.classList.add('open'); }
-    function closeDrawer(){ drawer?.classList.remove('open'); }
-    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
-    closeBtn?.addEventListener('click', closeDrawer);
-    document.addEventListener('click', (e)=> {
-      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
+        drawer.classList.remove('open');
+      }
     });
 
-    // ==== Dati base ====
-    document.getElementById('ls').textContent = last();
+    // Normalizza URL immagini (accetta path relativi tipo img/… e URL assoluti)
+    const normalizeImageUrl = (u) => {
+      if (!u) return '';
+      if (/^https?:\/\//i.test(u)) return u;
+      return u.startsWith('./') || u.startsWith('img/') ? u : ('img/' + u);
+    };
 
-    // Normalizza tag dal foglio (inglese/italiano) -> chiavi interne
-    function mapTag(raw=''){
-      const v = raw.toString().trim().toLowerCase();
-      if (['match','match report','resoconto','report','partita','matchreport'].includes(v)) return 'match';
-      if (['player','players','player news','giocatore','giocatori'].includes(v)) return 'player';
-      if (['announcement','annuncio','annunci','announce'].includes(v)) return 'announce';
-      return 'other';
-    }
-    function tagLabel(key){
-      return key==='match' ? 'Resoconto partita'
-           : key==='player' ? 'Giocatori'
-           : key==='announce' ? 'Annuncio'
-           : 'News';
-    }
+    // Dati
+    const all = (get('news')||[]).map(n=>({
+      titolo: n.titolo||'',
+      contenuto: n.contenuto||'',
+      img: normalizeImageUrl(n.img||''),
+      tag: n.tag || 'News'
+    }));
 
-    // Carica da cache locale (riempita da admin)
-    const raw = (get('news') || []);
-    // Mappa campi attesi: titolo, contenuto, img (opzionale), tag, data (opzionale)
-    const items = raw.map(n => ({
-      titolo: (n.titolo||'').trim(),
-      contenuto: (n.contenuto||'').trim(),
-      img: (n.img||'').trim(),
-      tagKey: mapTag(n.tag || n.tipo || n.categoria || ''),
-      data: (n.data||'').trim() // formati accettati: ISO o gg/mm/aaaa
-    })).reverse(); // più recenti prima (se in foglio le nuove righe sono in fondo)
-
-    // Rendering
-    const list = document.getElementById('newsList');
-    const q    = document.getElementById('q');
-    const chips= document.getElementById('chips');
-
-    function parseDate(s){
-      if (!s) return null;
-      // ISO
-      if (/^\d{4}-\d{2}-\d{2}/.test(s)) return new Date(s);
-      // gg/mm/aaaa o g/m/aa
-      const m = s.match(/^(\d{1,2})[\/\-\.](\d{1,2})[\/\-\.](\d{2,4})$/);
-      if (m){ const dd=+m[1], mm=+m[2]-1, yy=(+m[3]<100?2000+ +m[3]:+m[3]); return new Date(yy,mm,dd); }
-      const d = new Date(s);
-      return isNaN(+d) ? null : d;
-    }
-    function fmtDate(s){
-      const d = parseDate(s);
-      return d ? d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'}) : '';
-    }
-
-    let state = { tag:'all', text:'' };
+    const wrap = document.getElementById('newsWrap');
+    const q = document.getElementById('q');
+    const chips = [...document.querySelectorAll('.chip')];
+    let tag = 'Tutte', term = '';
 
     function render(){
-      const term = state.text.toLowerCase();
-      const filtered = items.filter(it => {
-        const okTag = (state.tag==='all') ? true : (it.tagKey === state.tag);
-        const hay   = (it.titolo+' '+it.contenuto).toLowerCase();
-        const okTxt = term ? hay.includes(term) : true;
-        return okTag && okTxt;
-      });
+      const list = all.filter(n => 
+        (tag==='Tutte' || n.tag===tag) &&
+        (term==='' || (n.titolo+n.contenuto).toLowerCase().includes(term))
+      );
 
-      list.innerHTML = filtered.length ? filtered.map(it => {
-        const hasImg = !!it.img;
-        const when = fmtDate(it.data);
-        return `
-          <article class="news-card">
-            ${hasImg ? `<img class="news-img" src="${it.img}" alt="" loading="lazy">` : ``}
-            <div class="pill" style="display:inline-block">${tagLabel(it.tagKey)}</div>
-            <div class="news-title">${it.titolo || 'Senza titolo'}</div>
-            <div class="news-meta">${when ? when+' · ' : ''}${hasImg?'Con immagine':'Testo'}</div>
-            <div class="news-body small" style="-webkit-line-clamp:4;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden">
-              ${it.contenuto}
-            </div>
-          </article>
-        `;
-      }).join('') : `<section class="card small">Nessuna notizia trovata.</section>`;
+      wrap.innerHTML = list.length ? list.map(n => `
+        <article class="card news-item">
+          ${n.img ? `<img src="${n.img}" alt="" class="media-fluid" loading="lazy" onerror="this.style.display='none'">` : ''}
+          <span class="pill">${n.tag}</span>
+          <h3 style="margin:6px 0 4px 0">${n.titolo}</h3>
+          <div class="small ellipsis">${n.contenuto}</div>
+        </article>
+      `).join('') : `<div class="card small">Nessuna news trovata.</div>`;
     }
 
-    // Eventi ricerca/filtri
-    q.addEventListener('input', (e)=>{ state.text = e.target.value || ''; render(); });
-    chips.addEventListener('click', (e)=>{
-      const b = e.target.closest('.chip'); if (!b) return;
-      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
-      b.classList.add('active');
-      state.tag = b.dataset.tag;
+    chips.forEach(c => c.addEventListener('click', ()=>{
+      chips.forEach(x=>x.classList.remove('active'));
+      c.classList.add('active');
+      tag = c.dataset.tag;
       render();
-    });
+    }));
+    q.addEventListener('input', e => { term = e.target.value.trim().toLowerCase(); render(); });
 
     render();
 
-    // SW
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-
-  <!-- JS menu comune (separato opzionale) -->
-  <script src="./ui.js?v=33"></script>
 </body>
 </html>
