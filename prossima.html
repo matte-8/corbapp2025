@@ -67,7 +67,6 @@
       </div>
 
       <div id="nextBlock" class="versus" style="margin-top:10px"></div>
-
       <div id="nextMeta" class="metaRow"></div>
     </section>
 
@@ -82,7 +81,10 @@
   </main>
 
   <script type="module">
-    import {get,last} from './data-store.js';
+    import { autoLoad, get, last } from './data-store.js';
+
+    // 👇 assicura i dati al primo accesso
+    await autoLoad();
 
     /* Drawer */
     const drawer = document.getElementById('drawer');
@@ -138,7 +140,7 @@
       nextMeta.innerHTML = '';
     }
 
-    /* ========== Partite future (lista, con loghi) ========== */
+    /* ========== Partite future ========== */
     const fWrap = document.getElementById('futureList');
     fWrap.innerHTML = future.length ? future.map(m=>{
       const homeName = (m.casa||'Corbiolo').trim();
