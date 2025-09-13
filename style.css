@@ -9,6 +9,10 @@
   --green:#10b981;
   --red:#ef4444;
   --amber:#f59e0b;
+
+  /* calendario */
+  --home:#6b0f1a;
+  --away:#0ea5e9;
 }
 
 /* ===== Reset di base ===== */
@@ -22,41 +26,51 @@ html,body{
 }
 a{color:inherit;text-decoration:none}
 
-/* --- Topbar --- */
+/* ===== Topbar (comune) ===== */
 .topbar{
-  position: sticky; top: 0; z-index: 9999;
+  position: sticky; top: 0; z-index: 1500;
   display:flex; align-items:center; justify-content:space-between;
   padding:14px 16px;
-  background:linear-gradient(180deg,#6b0f1a,#7d2631);
+  background:linear-gradient(180deg,var(--granata),var(--granata-2));
   color:#fff; box-shadow:0 2px 8px rgba(0,0,0,.2);
 }
 .topbar .nav{display:flex; align-items:center; gap:10px}
 .brand{display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none}
-.brand-logo{width:28px; height:28px; border-radius:6px; display:block}
+.brand-logo{width:28px; height:28px; border-radius:6px; display:block; object-fit:cover}
 .title{font-weight:700}
 
-/* --- Icona hamburger pulita --- */
-.iconbtn{
-  background:transparent !important;
-  border:none !important; box-shadow:none !important;
-  color:#fff !important; padding:0 !important; margin:0 !important;
-  width:auto !important; height:auto !important; line-height:1 !important;
+/* ===== Icona hamburger pulita ===== */
+.iconbtn,
+.iconbtn:focus,
+.iconbtn:active{
+  all:unset;
   display:inline-flex; align-items:center; justify-content:center;
+  cursor:pointer; color:#fff; line-height:1;
 }
 
-/* --- Drawer --- */
+/* ===== Drawer (comune) ===== */
 .drawer{
-  position:fixed; top:0; right:-280px; width:260px; height:100%;
-  background:#fff; color:#2b1d22;
-  box-shadow:-3px 0 12px rgba(0,0,0,.2);
-  transition: right .28s ease; padding:20px; z-index:10000;
+  position:fixed; top:0; right:-260px; width:240px; height:100%;
+  background:#fff; color:var(--text);
+  box-shadow:-3px 0 12px rgba(0,0,0,.22);
+  transition:right .28s ease;
+  padding:20px; z-index: 2000;
+  pointer-events:none;                 /* quando è chiuso non intercetta click */
 }
-.drawer.open{ right:0; }
-.drawer a{ display:block; padding:12px 0; border-bottom:1px solid rgba(0,0,0,.08); color:inherit; text-decoration:none }
+.drawer.open{
+  right:0;
+  pointer-events:auto;                /* quando è aperto, cliccabile */
+}
+.drawer h3{ margin:0 0 8px 0; }
+.drawer a{
+  display:block; padding:12px 0;
+  border-bottom:1px solid var(--ring);
+  color:inherit; text-decoration:none;
+}
 .drawer a:last-child{ border-bottom:0 }
 .drawer-close{
   position:absolute; top:10px; right:10px; font-size:20px;
-  background:transparent; border:0; cursor:pointer; color:#6b0f1a;
+  background:transparent; border:0; cursor:pointer; color:var(--granata);
 }
 
 /* ===== Contenitore ===== */
@@ -108,7 +122,7 @@ a{color:inherit;text-decoration:none}
   background:#f5eef0;font-weight:800;font-size:22px;color:#7d2631;
 }
 
-/* ===== Ricerca / Chips (stile generale) ===== */
+/* ===== Ricerca / Chips ===== */
 .search{display:flex;gap:8px;align-items:center;border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
 .search input{border:0;outline:0;flex:1;background:transparent;font-size:16px}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
@@ -118,11 +132,7 @@ a{color:inherit;text-decoration:none}
 }
 .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
 
-/* ===== Calendario (responsive) ===== */
-:root{
-  --home:#6b0f1a;
-  --away:#0ea5e9;
-}
+/* ===== Calendario ===== */
 .month-wrap{margin-bottom:18px}
 .month-head{display:flex;align-items:center;justify-content:space-between}
 .month-name{font-weight:900;line-height:1.05;font-size:clamp(20px,6vw,28px)}
@@ -138,7 +148,7 @@ a{color:inherit;text-decoration:none}
 .cal-cell{
   border:1px solid var(--ring);border-radius:14px;background:#fff;
   display:flex;align-items:center;justify-content:center;
-  aspect-ratio:1/1;            /* celle sempre quadrate e responsive */
+  aspect-ratio:1/1;
   font-weight:600;font-size:clamp(12px,3.6vw,16px)
 }
 .cal-cell.muted{opacity:.35}
@@ -195,6 +205,8 @@ a{color:inherit;text-decoration:none}
   .kpi-mini{grid-template-columns:repeat(2,1fr)}
   .kpi-big{grid-template-columns:1fr}
 }
+
+/* ===== Social ===== */
 .social-list{display:flex;gap:10px;flex-wrap:wrap}
 .social-btn{
   display:inline-flex;align-items:center;gap:8px;
@@ -204,18 +216,3 @@ a{color:inherit;text-decoration:none}
 .social-btn.ig{background:#fce7f3;border-color:#f9a8d4;color:#9d174d}
 .social-btn.fb{background:#e0ecff;border-color:#93c5fd;color:#1d4ed8}
 .social-btn.web{background:#eef2ff;border-color:#c7d2fe;color:#4338ca}
-}
-/* Drawer: quando è chiuso non deve ricevere eventi */
-#drawer{
-  position:fixed;top:0;right:-260px;width:240px;height:100%;
-  background:#fff;box-shadow:-3px 0 12px rgba(0,0,0,.2);
-  transition:.3s;padding:20px;z-index:50;
-  pointer-events:none;                 /* 👈 aggiungi */
-}
-#drawer.open{
-  right:0;
-  pointer-events:auto;                 /* 👈 aggiungi */
-}
-
-/* Tieni la topbar sempre sopra al contenuto sottostante */
-.topbar{ z-index: 1000; }              /* 👈 assicurati sia alto */
