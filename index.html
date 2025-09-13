@@ -4,13 +4,18 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Home - CORB</title>
+
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/logo_c5.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=31">
+
+  <!-- icona iOS -->
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+
+  <!-- CSS principale (puoi tenere il tuo) -->
+  <link rel="stylesheet" href="./style.css?v=32" />
+
   <style>
-    
     /* sfondo morbido */
     .soft-bg{position:fixed;inset:0;z-index:0;
       background:linear-gradient(180deg,#efe1e5 0%, #f3e8eb 45%, #f7f5f6 85%, #ffffff 100%)}
@@ -21,10 +26,9 @@
     .home-box{display:flex;flex-direction:column;align-items:center;justify-content:center;
       min-height:118px;border-radius:18px;background:var(--granata);color:#fff;
       box-shadow:0 6px 20px rgba(0,0,0,.15);font-weight:600;text-align:center}
+    .home-emoji{font-size:28px;margin-bottom:8px;line-height:1}
 
-   .home-emoji{font-size:28px;margin-bottom:8px;line-height:1}
-
-    /* pannelli granata */
+    /* pannello granata */
     .panel-granata{background:var(--granata);color:#fff;border-radius:18px;padding:16px;
       box-shadow:0 10px 30px rgba(0,0,0,.12)}
 
@@ -33,51 +37,43 @@
       padding:12px 0;border-bottom:1px solid #ffffff22}
     .news-mini .item:last-child{border-bottom:0}
     .ellipsis{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
-
-    /* drawer locale (se vuoi tenerlo inline) */
-    #drawer{position:fixed;top:0;right:-260px;width:240px;height:100%;background:#fff;
-      box-shadow:-3px 0 12px rgba(0,0,0,.2);transition:.3s;padding:20px;z-index:50}
-    #drawer.open{right:0}
-    #drawer a{display:block;padding:12px 0;border-bottom:1px solid var(--ring);color:var(--text)}
-    #drawer-close{position:absolute;top:12px;right:12px;font-size:20px;cursor:pointer}
   </style>
 </head>
 <body>
   <div class="soft-bg"></div>
 
- <!-- Topbar -->
-<header class="topbar">
-  <div class="nav">
-    <a href="./index.html" class="brand">
-      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
-      <span class="title">Home</span>
-    </a>
-  </div>
-  <div class="right">
-    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
-      <!-- hamburger (solo 3 linee) -->
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-  </div>
-</header>
+  <!-- ===== Topbar comune ===== -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo" />
+        <span class="title">Home</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <!-- hamburger “tre linee” -->
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-<!-- Drawer menu (uguale per tutte le pagine) -->
-<nav class="drawer" data-role="drawer">
-  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
-  <h3>Menu</h3>
-  <a href="./index.html">🏠 Home</a>
-  <a href="./news.html">📰 News</a>
-  <a href="./squadra.html">👥 Squadra</a>
-  <a href="./video.html">🎥 Video</a>
-  <a href="./prossima.html">📅 Prossima partita</a>
-  <a href="./partite.html">🏆 Risultati</a>
-  <a href="./calendario.html">📆 Calendario</a>
-  <a href="./admin.html">⚙️ Admin</a>
-</nav>
-
+  <!-- ===== Drawer comune ===== -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container" style="position:relative;z-index:1">
     <!-- 6 box -->
@@ -96,9 +92,7 @@
         <h2 style="margin:0">Ultima partita</h2>
         <a class="pill" href="./partite.html">Vedi risultati</a>
       </div>
-      <div id="lastMatch" class="row" style="gap:12px;margin-top:8px;align-items:center;justify-content:space-between">
-        <!-- riempito da JS -->
-      </div>
+      <div id="lastMatch" class="row" style="gap:12px;margin-top:8px;align-items:center;justify-content:space-between"></div>
     </section>
 
     <!-- Ultime news -->
@@ -126,13 +120,9 @@
     </section>
   </main>
 
+  <!-- Dati -->
   <script type="module">
     import {last, get} from './data-store.js';
-
-    // Drawer
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
 
     // Ultimo sync
     document.getElementById('ls').textContent = last();
@@ -186,6 +176,8 @@
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js"></script>
+
+  <!-- JS del menu comune -->
+  <script src="./ui.js?v=32"></script>
 </body>
 </html>
