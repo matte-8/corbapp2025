@@ -4,10 +4,14 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>News - CORB</title>
+
+  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
+
+  <!-- Stili -->
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
     .news-list{display:grid;gap:12px}
@@ -18,12 +22,12 @@
     .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
   </style>
 </head>
-  
+
 <body>
   <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
-      <a href="./index.html" class="brand">
+      <a href="./index.html" class="brand" aria-label="Home">
         <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
         <span class="title">News</span>
       </a>
@@ -38,7 +42,7 @@
   </header>
 
   <!-- Drawer -->
-  <nav id="drawer" class="drawer">
+  <nav id="drawer" class="drawer" aria-label="Menu laterale">
     <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
@@ -54,11 +58,13 @@
   <main class="container">
     <section class="card">
       <div class="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
         <input id="q" type="search" placeholder="Cerca nelle news…">
       </div>
 
-      <div class="chips" style="margin-top:10px">
+      <div class="chips" style="margin-top:10px" id="chips">
         <button class="chip active" data-tag="Tutte">Tutte</button>
         <button class="chip" data-tag="Resoconto partita">Resoconto partita</button>
         <button class="chip" data-tag="Giocatori">Giocatori</button>
@@ -72,15 +78,22 @@
   <script type="module">
     import { autoLoad, get } from './data-store.js';
 
-    // 👇 assicura i dati al primo accesso
+    // Carica dati se la cache è vuota (primo accesso/dispositivo nuovo)
     await autoLoad();
 
-    // Drawer
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
-    document.addEventListener('click', (e)=>{
-      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
+    /* ===== Drawer con stopPropagation e contains ===== */
+    const drawer   = document.getElementById('drawer');
+    const menuBtn  = document.getElementById('menuBtn');
+    const closeBtn = document.getElementById('drawer-close');
+
+    menuBtn.addEventListener('click', (e) => {
+      e.stopPropagation();                // evita che il click sul bottone venga “visto” dal listener globale
+      drawer.classList.add('open');
+    });
+    closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
+    document.addEventListener('click', (e) => {
+      const clickOnButton = (e.target === menuBtn) || menuBtn.contains(e.target);
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && !clickOnButton) {
         drawer.classList.remove('open');
       }
     });
@@ -102,11 +115,11 @@
 
     const wrap = document.getElementById('newsWrap');
     const q = document.getElementById('q');
-    const chips = [...document.querySelectorAll('.chip')];
+    const chips = [...document.querySelectorAll('#chips .chip')];
     let tag = 'Tutte', term = '';
 
     function render(){
-      const list = all.filter(n => 
+      const list = all.filter(n =>
         (tag==='Tutte' || n.tag===tag) &&
         (term==='' || (n.titolo+n.contenuto).toLowerCase().includes(term))
       );
@@ -115,7 +128,7 @@
         <article class="card news-item">
           ${n.img ? `<img src="${n.img}" alt="" class="media-fluid" loading="lazy" onerror="this.style.display='none'">` : ''}
           <span class="pill">${n.tag}</span>
-          <h3 style="margin:6px 0 4px 0">${n.titolo}</h3>
+          <h3 style="margin:6px 0 8px 0">${n.titolo}</h3>
           <div class="small ellipsis">${n.contenuto}</div>
         </article>
       `).join('') : `<div class="card small">Nessuna news trovata.</div>`;
