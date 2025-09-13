@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Impostazioni - CORB</title>
+
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+
+  <link rel="stylesheet" href="./style.css?v=33">
+  <style>
+    .switch{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--ring);border-radius:12px;background:#fff}
+    .switch label{font-weight:700}
+    .desc{font-size:13px;color:var(--muted);margin-top:6px}
+    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
+    .stat{font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Impostazioni</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <h2 style="margin:0 0 8px 0">Notifiche partite</h2>
+
+      <div class="switch">
+        <label for="toggle">Promemoria giorno-partita (12:00)</label>
+        <input id="toggle" type="checkbox" />
+      </div>
+      <div class="desc">
+        Ricevi un promemoria a mezzogiorno il giorno delle partite. Su Android/PWA funziona al meglio.
+      </div>
+
+      <div class="actions">
+        <button id="askPerm" class="btn">Richiedi permesso</button>
+        <button id="testNotif" class="btn btn-primary">Invia notifica di prova</button>
+      </div>
+
+      <div class="stat" id="permState" style="margin-top:8px">Permesso: —</div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { getSettings, setSettings } from './notify.js';
+
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
+
+    const toggle   = document.getElementById('toggle');
+    const askPerm  = document.getElementById('askPerm');
+    const testBtn  = document.getElementById('testNotif');
+    const permEl   = document.getElementById('permState');
+
+    // stato iniziale
+    const s = getSettings();
+    toggle.checked = !!s.notifyMatches;
+    permEl.textContent = 'Permesso: ' + (Notification?.permission || 'non supportato');
+
+    toggle.addEventListener('change', ()=>{
+      const cur = getSettings();
+      setSettings({...cur, notifyMatches: toggle.checked});
+      alert('Impostazione salvata.');
+    });
+
+    askPerm.addEventListener('click', async ()=>{
+      if (!('Notification' in window)) { alert('Notifiche non supportate su questo dispositivo.'); return; }
+      const res = await Notification.requestPermission();
+      permEl.textContent = 'Permesso: ' + res;
+      if (res !== 'granted') alert('Per ricevere notifiche devi consentirle.');
+    });
+
+    testBtn.addEventListener('click', async ()=>{
+      if (!('serviceWorker' in navigator)) return alert('SW non disponibile.');
+      const reg = await navigator.serviceWorker.ready;
+      reg.active?.postMessage({
+        type: 'notify',
+        title: 'CORB • Test',
+        body: 'Questa è una notifica di prova.',
+        data: {url: './index.html'}
+      });
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+</body>
+</html>
