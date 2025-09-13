@@ -1,141 +1,209 @@
 <!doctype html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Squadra - CORB</title>
+
+  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/icons/icon-192.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="./style.css?v=32">
+  <style>
+    /* extra minimi pagina */
+    .role-title{font-weight:800;margin:6px 0 2px}
+  </style>
 </head>
+<body>
+  <!-- Topbar comune -->
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand" aria-label="Home">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
+        <span class="title">Squadra</span>
+      </a>
+    </div>
+    <div class="right">
+      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
 
-  <body>
- <!-- Topbar -->
-<header class="topbar">
-  <div class="nav">
-    <a href="./index.html" class="brand">
-      <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
-      <span class="title">Squadra</span>
-    </a>
-  </div>
-  <div class="right">
-    <button data-role="menu-btn" class="iconbtn" aria-label="Menu" title="Menu">
-      <!-- hamburger (solo 3 linee) -->
-      <svg width="26" height="26" viewBox="0 0 24 24" fill="none"
-           stroke="#ffffff" stroke-width="2" stroke-linecap="round">
-        <path d="M3 6h18M3 12h18M3 18h18"/>
-      </svg>
-    </button>
-  </div>
-</header>
-
-<!-- Drawer menu (uguale per tutte le pagine) -->
-<nav class="drawer" data-role="drawer">
-  <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
-  <h3>Menu</h3>
-  <a href="./index.html">🏠 Home</a>
-  <a href="./news.html">📰 News</a>
-  <a href="./squadra.html">👥 Squadra</a>
-  <a href="./video.html">🎥 Video</a>
-  <a href="./prossima.html">📅 Prossima partita</a>
-  <a href="./partite.html">🏆 Risultati</a>
-  <a href="./calendario.html">📆 Calendario</a>
-  <a href="./admin.html">⚙️ Admin</a>
-</nav>
-
+  <!-- Drawer comune -->
+  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
+    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
 
   <main class="container">
-    <!-- Search + filtri -->
+    <!-- Ricerca + filtro ruolo -->
     <section class="card">
-      <div class="search">
-        <span>🔎</span>
-        <input id="q" placeholder="Cerca giocatore per nome o numero…">
+      <div class="search" style="margin-bottom:10px">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="M21 21l-3.5-3.5"/></svg>
+        <input id="q" type="search" placeholder="Cerca giocatore…" />
       </div>
-      <div class="chips" id="roles" style="margin-top:10px">
-        <span class="chip active" data-role="">Tutti</span>
-        <span class="chip" data-role="Portiere">Portieri</span>
-        <span class="chip" data-role="Difensore">Difensori</span>
-        <span class="chip" data-role="Centrale">Centrali</span>
-        <span class="chip" data-role="Pivot">Pivot</span>
+      <div class="chips" id="chips">
+        <button class="chip active" data-rolekey="all">Tutti</button>
+        <button class="chip" data-rolekey="portiere">Portieri</button>
+        <button class="chip" data-rolekey="difensore">Difensori</button>
+        <button class="chip" data-rolekey="centrocampista">Centrocampisti</button>
+        <button class="chip" data-rolekey="attaccante">Attaccanti</button>
       </div>
     </section>
 
     <!-- Lista giocatori -->
-    <section id="players"></section>
+    <section class="card">
+      <h2 style="margin:0 0 8px 0">Rosa</h2>
+      <div id="players"></div>
+    </section>
+
+    <!-- Ultimo sync -->
+    <section class="card small">
+      Ultimo aggiornamento dati: <span id="ls">never</span>
+    </section>
   </main>
 
   <script type="module">
-    import {get} from './data-store.js';
+    import { last, get } from './data-store.js';
 
-    // Dalla cache (aggiornata via admin.html)
-    const roster = (get('players') || [])
-      .map(p => ({
-        nome: p.nome || '',
-        numero: p.numero || '',
-        ruolo: p.ruolo || '',
-        foto: p.foto || ''
-      }))
-      // Ordina per numero (se numerico), poi per nome
-      .sort((a,b) => {
-        const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
-        if(!isNaN(na) && !isNaN(nb)) return na - nb;
-        if(!isNaN(na)) return -1;
-        if(!isNaN(nb)) return 1;
-        return (a.nome||'').localeCompare(b.nome||'');
-      });
-
-    const wrap = document.getElementById('players');
-
-    function playerCard(p){
-      return `
-        <div class="player">
-          <img src="${p.foto}" alt="${p.nome}">
-          <div>
-            <div class="row">
-              <span class="pill">#${p.numero || '—'}</span>
-              <strong>${p.nome}</strong>
-            </div>
-            <div class="small">${p.ruolo}</div>
-          </div>
-        </div>`;
-    }
-
-    function render(){
-      const q = (document.getElementById('q').value || '').toLowerCase();
-      const role = document.querySelector('#roles .chip.active')?.dataset.role || '';
-
-      const rows = roster.filter(p => {
-        const txt = `${p.nome} ${p.numero} ${p.ruolo}`.toLowerCase();
-        const matchQ = txt.includes(q);
-        const matchR = role === '' || (p.ruolo || '').toLowerCase().includes(role.toLowerCase());
-        return matchQ && matchR;
-      });
-
-      wrap.innerHTML = rows.length
-        ? rows.map(playerCard).join('')
-        : '<div class="card">Nessun giocatore</div>';
-    }
-
-    // Eventi filtri/ricerca
-    document.getElementById('q').addEventListener('input', render);
-    document.querySelectorAll('#roles .chip').forEach(chip => {
-      chip.addEventListener('click', () => {
-        chip.parentElement.querySelectorAll('.chip').forEach(x => x.classList.remove('active'));
-        chip.classList.add('active');
-        render();
-      });
+    // ==== MENU (apri/chiudi) ====
+    const drawer   = document.querySelector('[data-role="drawer"]');
+    const menuBtn  = document.querySelector('[data-role="menu-btn"]');
+    const closeBtn = document.querySelector('[data-role="drawer-close"]');
+    function openDrawer(){ drawer?.classList.add('open'); }
+    function closeDrawer(){ drawer?.classList.remove('open'); }
+    menuBtn?.addEventListener('click', (e)=>{ e.stopPropagation(); openDrawer(); });
+    closeBtn?.addEventListener('click', closeDrawer);
+    document.addEventListener('click', (e)=> {
+      if (drawer?.classList.contains('open') && !drawer.contains(e.target) && e.target!==menuBtn) closeDrawer();
     });
 
-    // Primo render
+    // ==== Dati base ====
+    document.getElementById('ls').textContent = last();
+
+    // Carica giocatori dal localStorage (admin)
+    // Colonne attese: nome, ruolo, numero, foto (url)
+    const raw = (get('giocatori') || []);
+
+    // Normalizza ruoli in chiavi interne
+    function roleKey(r=''){
+      const v = r.toString().trim().toLowerCase();
+      if (v.startsWith('port')) return 'portiere';
+      if (v.startsWith('dif'))  return 'difensore';
+      if (v.startsWith('cen'))  return 'centrocampista';
+      if (v.startsWith('att'))  return 'attaccante';
+      return 'altro';
+    }
+    function roleLabel(k){
+      return k==='portiere'?'Portiere':
+             k==='difensore'?'Difensore':
+             k==='centrocampista'?'Centrocampista':
+             k==='attaccante'?'Attaccante':'Altro';
+    }
+
+    const players = raw.map(p => ({
+      nome: (p.nome||'').trim(),
+      ruolo: roleKey(p.ruolo||''),
+      ruoloRaw: (p.ruolo||'').trim(),
+      numero: (p.numero||'').toString().trim(),
+      foto: (p.foto||p.img||'').trim()
+    })).sort((a,b) => {
+      // Ordina per ruolo poi numero poi nome
+      const r = a.ruolo.localeCompare(b.ruolo);
+      if (r!==0) return r;
+      const na = parseInt(a.numero,10), nb = parseInt(b.numero,10);
+      if (!isNaN(na) && !isNaN(nb) && na!==nb) return na-nb;
+      return a.nome.localeCompare(b.nome);
+    });
+
+    // Stato filtri
+    let state = { role:'all', text:'' };
+
+    const q = document.getElementById('q');
+    const chips = document.getElementById('chips');
+    const wrap = document.getElementById('players');
+
+    // Rendering lista piatta (con separatori di ruolo)
+    function render(){
+      const term = state.text.toLowerCase();
+      const filtered = players.filter(p => {
+        const okRole = (state.role==='all') ? true : (p.ruolo===state.role);
+        const okText = term ? (p.nome.toLowerCase().includes(term)) : true;
+        return okRole && okText;
+      });
+
+      if (!filtered.length){
+        wrap.innerHTML = `<div class="small">Nessun giocatore trovato.</div>`;
+        return;
+      }
+
+      // raggruppa per ruolo per un piccolo titolo
+      const groups = {};
+      for (const p of filtered){
+        const key = p.ruolo;
+        (groups[key] ||= []).push(p);
+      }
+
+      // ordine ruoli
+      const order = ['portiere','difensore','centrocampista','attaccante','altro'];
+      const html = order.filter(k => groups[k]?.length).map(k => {
+        const rows = groups[k].map(p => {
+          const img = p.foto || 'img/player.png';
+          const num = p.numero ? `#${p.numero}` : '';
+          return `
+            <div class="player">
+              <img src="${img}" alt="">
+              <div style="flex:1">
+                <div style="font-weight:800">${p.nome}</div>
+                <div class="small">${p.ruoloRaw || roleLabel(p.ruolo)}</div>
+              </div>
+              ${num ? `<div class="pill">${num}</div>` : ``}
+            </div>
+          `;
+        }).join('');
+        return `
+          <div>
+            <div class="role-title">${roleLabel(k)}</div>
+            ${rows}
+          </div>
+        `;
+      }).join('');
+
+      wrap.innerHTML = html;
+    }
+
+    // Eventi ricerca / chip
+    q.addEventListener('input', (e)=>{ state.text = e.target.value || ''; render(); });
+    chips.addEventListener('click', (e)=>{
+      const b = e.target.closest('.chip'); if(!b) return;
+      chips.querySelectorAll('.chip').forEach(c=>c.classList.remove('active'));
+      b.classList.add('active');
+      state.role = b.dataset.rolekey;
+      render();
+    });
+
     render();
 
-    // PWA
-    if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('./sw.js');
-    }
+    // SW
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js"></script>
+
+  <!-- JS menu comune -->
+  <script src="./ui.js?v=32"></script>
 </body>
 </html>
