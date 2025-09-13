@@ -1,32 +1,27 @@
-<script>
 (() => {
-  // Evita doppie inizializzazioni se lo script venisse incluso due volte
-  if (window.__uiInit) return; window.__uiInit = true;
+  function ready(fn){ document.readyState !== 'loading' ? fn() : document.addEventListener('DOMContentLoaded', fn); }
 
-  const q = sel => document.querySelector(sel);
-  const btn  = q('[data-role="menu-btn"]');
-  const drw  = q('[data-role="drawer"]');
-  const cls  = q('[data-role="drawer-close"]');
+  ready(() => {
+    const drawer   = document.querySelector('[data-role="drawer"]');
+    const btnOpen  = document.querySelector('[data-role="menu-btn"]');
+    const btnClose = document.querySelector('[data-role="drawer-close"]');
 
-  if (!btn || !drw || !cls) return;
+    if (!drawer || !btnOpen || !btnClose) return;
 
-  const open  = e => { e?.stopPropagation?.(); drw.classList.add('open'); };
-  const close = () => drw.classList.remove('open');
+    const open  = () => drawer.classList.add('open');
+    const close = () => drawer.classList.remove('open');
 
-  btn.addEventListener('click', open);
-  cls.addEventListener('click', close);
+    btnOpen.addEventListener('click', (e) => { e.stopPropagation(); open(); });
+    btnClose.addEventListener('click', close);
 
-  // Chiudi se tocchi fuori
-  document.addEventListener('click', (e) => {
-    if (!drw.classList.contains('open')) return;
-    const insideDrawer = drw.contains(e.target);
-    const isButton = btn.contains(e.target);
-    if (!insideDrawer && !isButton) close();
-  });
+    // chiudi cliccando fuori
+    document.addEventListener('click', (e) => {
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== btnOpen) {
+        close();
+      }
+    });
 
-  // Chiudi con ESC
-  document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') close();
+    // chiudi con ESC
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
   });
 })();
-</script>
