@@ -63,7 +63,7 @@
 
   <main class="container">
     <section class="card month-wrap">
-      <!-- Mese 1: frecce SOPRA, legenda SOTTO -->
+      <!-- Mese 1 -->
       <div class="month-head">
         <div class="month-name" id="m1"></div>
         <div class="head-right">
@@ -81,13 +81,12 @@
         <div id="grid1" class="cal-grid"></div>
       </div>
 
-      <!-- Spazio tra i mesi -->
       <div style="height:16px"></div>
 
-      <!-- Mese 2 (solo etichetta, niente frecce) -->
+      <!-- Mese 2 -->
       <div class="month-head">
         <div class="month-name" id="m2"></div>
-        <div style="width:68px"></div><!-- per simmetria -->
+        <div style="width:68px"></div>
       </div>
       <div class="month-block">
         <div class="cal-dow"><span>Lun</span><span>Mar</span><span>Mer</span><span>Gio</span><span>Ven</span><span>Sab</span><span>Dom</span></div>
@@ -106,7 +105,10 @@
   </main>
 
   <script type="module">
-    import { last, get } from './data-store.js';
+    import { autoLoad, last, get } from './data-store.js';
+
+    // 👇 assicura che i dati siano caricati anche per chi entra la prima volta
+    await autoLoad();
 
     // Ultimo sync
     document.getElementById('ls').textContent = last();
@@ -122,17 +124,15 @@
     };
     const fmtMonth = (d) => d.toLocaleDateString(undefined,{month:'long',year:'numeric'});
     const daysInMonth = (y,m) => new Date(y, m+1, 0).getDate();
-    // Lunedì-first: 0=Mon
     const startDowMon = (y,m) => (new Date(y,m,1).getDay()+6)%7;
 
-    // Dati calendario dal localStorage (admin)
     const calData = (get('calendar')||[]).map(r=>({
       date: toDate(r.data),
       avversario: r.avversario || '',
       casa_fuori: (r.casa_fuori||'').toLowerCase()
     })).filter(e=>!isNaN(+e.date));
 
-    let offset = 0; // finestra di 2 mesi scorrevole
+    let offset = 0;
 
     function buildTwoMonths(){
       const base = new Date();
@@ -148,7 +148,6 @@
       const grid = document.getElementById(gridId);
       grid.innerHTML = '';
 
-      // celle vuote prima dell'1 del mese (con settimana che parte da lunedì)
       const leading = startDowMon(y,m);
       for(let i=0;i<leading;i++){
         const c = document.createElement('div');
@@ -169,7 +168,6 @@
           cell.classList.add('has');
           if (match.casa_fuori === 'casa') cell.classList.add('home');
           else cell.classList.add('away');
-          // tooltip ordine squadre corretto
           cell.title = (match.casa_fuori==='casa' ? 'Corbiolo - ' : '') +
                        match.avversario +
                        (match.casa_fuori==='fuori' ? ' - Corbiolo' : '');
@@ -179,7 +177,6 @@
       }
     }
 
-    // Frecce per navigare i mesi
     document.getElementById('prevM').addEventListener('click', ()=>{
       offset -= 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'});
     });
@@ -189,7 +186,7 @@
 
     buildTwoMonths();
 
-    // ===== Lista future partite sotto =====
+    // ===== Lista future partite =====
     const matches = (get('matches')||[]).map(m=>({
       ...m,
       date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
@@ -206,7 +203,6 @@
       const s1 = homeSide ? 'Corbiolo' : (m.casa||'Avversario');
       const s2 = homeSide ? (m.fuori||'Avversario') : 'Corbiolo';
       const icon = homeSide ? '🏠' : '✈️';
-      const pillClass = homeSide ? 'badge badge-green' : 'badge badge-amber';
       const ds = fmtListDate(m.date);
       return `
         <div class="future-row">
@@ -223,11 +219,9 @@
     const list = document.getElementById('futureList');
     list.innerHTML = futures.length ? futures.map(row).join('') : '<div class="small">Nessuna partita in programma</div>';
 
-    // SW
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 
-  <!-- JS menu comune -->
   <script src="./ui.js?v=33"></script>
 </body>
 </html>
