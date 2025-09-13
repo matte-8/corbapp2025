@@ -70,7 +70,10 @@
   </main>
 
   <script type="module">
-    import {get} from './data-store.js';
+    import { autoLoad, get } from './data-store.js';
+
+    // 👇 assicura i dati al primo accesso
+    await autoLoad();
 
     // Drawer
     const drawer = document.getElementById('drawer');
@@ -82,7 +85,7 @@
       }
     });
 
-    // Normalizza URL immagini (accetta path relativi tipo img/… e URL assoluti)
+    // Normalizza URL immagini
     const normalizeImageUrl = (u) => {
       if (!u) return '';
       if (/^https?:\/\//i.test(u)) return u;
