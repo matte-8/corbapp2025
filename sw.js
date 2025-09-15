@@ -13,6 +13,7 @@ const ASSETS = [
   "./img/logo_c5.png","./img/logo_avv.png","./img/player1.png",
 ];
 
+
 self.addEventListener("install", e=>{
   e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
   self.skipWaiting();
