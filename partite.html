@@ -10,19 +10,15 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* Stat card */
     .kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
-    .kpi{background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;
-      padding:10px 6px;text-align:center;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .kpi{background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;padding:10px 6px;text-align:center;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
     .kpi .ico{font-size:18px}.kpi .val{font-weight:900;font-size:22px}.kpi .lbl{font-size:12px;opacity:.95}
     .kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
-    .kpi-big{background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;
-      padding:12px 10px;text-align:center;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .kpi-big{background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;padding:12px 10px;text-align:center;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:6px}
     .kpi-big .ico{font-size:18px}.kpi-big .val{font-weight:900;font-size:26px}.kpi-big .lbl{font-size:13px;opacity:.95}
     .form-wrap{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
     .form-dot{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:12px}
     .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
-    /* Lista partite */
     .match-row{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ring)}
     .match-row:last-child{border-bottom:0}
     .team{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
@@ -94,9 +90,9 @@
   </main>
 
   <script type="module">
-    import {get} from './data-store.js';
+    import {autoLoad, get} from './data-store.js';
+    await autoLoad(); // 👈
 
-    /* ------- Drawer ------- */
     const drawer = document.getElementById('drawer');
     const openBtn = document.getElementById('menuBtn');
     const closeBtn = document.getElementById('drawer-close');
@@ -108,26 +104,17 @@
       }
     });
 
-    /* ------- Helpers & Costanti ------- */
     const CORB = 'corbiolo';
     const LOGO_CORB = 'img/logo_c5.png';
     const LOGO_AVV  = 'img/logo_avv.png';
 
-    const toDate = (m)=>{
-      const dt = new Date((m.data||'')+'T'+(m.ora||'00:00'));
-      return isNaN(+dt) ? new Date(m.data||'') : dt;
-    };
-    const parseScore = (s='')=>{
-      const m = String(s).trim().match(/(\d+)\s*[-–]\s*(\d+)/);
-      return m ? {gh:+m[1], ga:+m[2]} : null;
-    };
+    const toDate = (m)=>{ const dt = new Date((m.data||'')+'T'+(m.ora||'00:00')); return isNaN(+dt) ? new Date(m.data||'') : dt; };
+    const parseScore = (s='')=>{ const m = String(s).trim().match(/(\d+)\s*[-–]\s*(\d+)/); return m ? {gh:+m[1], ga:+m[2]} : null; };
     const fmtDay = (d)=> d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
 
-    /* ------- Dati ------- */
     const raw = (get('matches')||[]).map(x=>({...x, date: toDate(x)}));
     const played = raw.filter(x=> parseScore(x.risultato));
 
-    /* ------- Statistiche ------- */
     let P=0,V=0,N=0,S=0,GF=0,GA=0;
     const recent = [...played].sort((a,b)=> b.date - a.date).slice(0,5);
 
@@ -140,7 +127,6 @@
       P++; GF+=gf; GA+=ga;
       if (gf>ga) V++; else if (gf===ga) N++; else S++;
     });
-
     const diff = GF-GA;
     kPartite.textContent=P; kVittorie.textContent=V; kPareggi.textContent=N; kSconfitte.textContent=S;
     kFatti.textContent=GF;  kSubiti.textContent=GA;  kDiff.textContent=(diff>=0?'+':'')+diff;
@@ -155,22 +141,17 @@
       return `<span class="form-dot ${cls}">${lab}</span>`;
     }).join('');
 
-    // stagione es. 25/26
     const now = new Date();
     const y = now.getMonth()>=7 ? now.getFullYear() : now.getFullYear()-1;
     seasonLabel.textContent = `Stagione ${String(y).slice(-2)}/${String(y+1).slice(-2)}`;
 
-    /* ------- Lista partite giocate (HOME a sinistra, AWAY a destra) ------- */
     const rowsHTML = [...played].sort((a,b)=> b.date - a.date).map(m=>{
       const homeName = (m.casa || 'Corbiolo').trim();
       const awayName = (m.fuori || 'Avversario').trim();
       const sc = parseScore(m.risultato) || {gh:'-',ga:'-'};
-
-      // loghi coerenti con la posizione
       const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_casa || LOGO_AVV);
       const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_fuori || LOGO_AVV);
-
-      const scoreTxt = `${sc.gh} - ${sc.ga}`; // sempre "home - away"
+      const scoreTxt = `${sc.gh} - ${sc.ga}`;
       const day = fmtDay(m.date);
 
       return `
@@ -192,5 +173,6 @@
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
+  <script src="./ui.js?v=33"></script>
 </body>
 </html>
