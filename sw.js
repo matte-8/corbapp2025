@@ -1,11 +1,11 @@
 // sw.js
-const CACHE = "corb-cache-v4"; // <- bumpa quando fai modifiche
+const CACHE = "corb-cache-v5"; // <- bumpa quando fai modifiche
 const ASSETS = [
   "./",
   "./index.html","./news.html","./squadra.html","./video.html",
   "./prossima.html","./partite.html","./calendario.html","./admin.html",
   "./settings.html",                 // se l’hai aggiunta
-  "./style.css?v=33",
+  "./style.css?v=34",
   "./data-store.js",
   "./ui.js",
   "./manifest.json",
