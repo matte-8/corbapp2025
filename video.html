@@ -4,36 +4,29 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Video - CORB</title>
-
-  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
-
-  <!-- Stili -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
     .video-list{display:grid;gap:12px}
     .video-card .title{font-weight:700;margin:8px 0 4px 0}
-    /* wrapper 16:9 per embed/immagini */
     .ratio{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#eee}
     .ratio::before{content:"";display:block;padding-top:56.25%}
     .ratio > iframe, .ratio > img{position:absolute;inset:0;width:100%;height:100%;border:0}
   </style>
 </head>
 <body>
-  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
-      <a href="./index.html" class="brand" aria-label="Home">
+      <a href="./index.html" class="brand">
         <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
         <span class="title">Video</span>
       </a>
     </div>
     <div class="right">
       <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
-        <!-- hamburger (solo 3 linee) -->
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
@@ -41,8 +34,7 @@
     </div>
   </header>
 
-  <!-- Drawer -->
-  <nav id="drawer" class="drawer" aria-label="Menu laterale">
+  <nav id="drawer" class="drawer">
     <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
@@ -65,32 +57,21 @@
 
   <script type="module">
     import { autoLoad, get } from './data-store.js';
+    await autoLoad(); // 👈
 
-    // Assicura i dati al primo accesso (se cache vuota)
-    await autoLoad();
-
-    /* ===== Drawer: fix bubbling click ===== */
-    const drawer   = document.getElementById('drawer');
-    const menuBtn  = document.getElementById('menuBtn');
-    const closeBtn = document.getElementById('drawer-close');
-
-    menuBtn.addEventListener('click', (e) => {
-      e.stopPropagation();               // evita chiusura immediata dal listener globale
-      drawer.classList.add('open');
-    });
-    closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
-    document.addEventListener('click', (e) => {
-      // chiudi cliccando fuori (e non sul bottone)
-      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== menuBtn && !menuBtn.contains(e.target)) {
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
         drawer.classList.remove('open');
       }
     });
 
-    /* ===== Video ===== */
     const list = get('video') || [];
     const box = document.getElementById('videos');
 
-    // supporto link YouTube / Vimeo / file MP4 / pagina esterna
     const isYouTube = (u)=> /youtube\.com\/watch\?v=|youtu\.be\//i.test(u||'');
     const ytId = (u)=>{
       if (!u) return '';
@@ -98,27 +79,25 @@
       const m2 = u.match(/youtu\.be\/([^?&]+)/); if (m2) return m2[1];
       return '';
     };
-    // normalizza logo (accetta URL assoluto o file in /img)
-    const normLogo = (u)=> !u ? '' : (/^https?:\/\//i.test(u) ? u : `img/${u}`);
 
     function card(v){
       const titolo = v.nome || 'Video';
-      const thumb  = normLogo(v.logo || '');
-      const link   = v.link || '';
+      const thumb = v.logo ? (v.logo.startsWith('http') ? v.logo : `img/${v.logo}`) : '';
+      const link  = v.link || '';
 
       if (isYouTube(link)){
         const id = ytId(link);
         const src = `https://www.youtube.com/embed/${id}`;
         return `
           <article class="card video-card">
-            <div class="ratio"><iframe src="${src}" allowfullscreen loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe></div>
+            <div class="ratio"><iframe src="${src}" allowfullscreen loading="lazy"></iframe></div>
             <div class="title">${titolo}</div>
             <a class="small" href="${link}" target="_blank" rel="noopener">${link}</a>
           </article>`;
       } else {
         return `
           <article class="card video-card">
-            <a href="${link || '#'}" ${link ? 'target="_blank" rel="noopener"' : ''}>
+            <a href="${link}" target="_blank" rel="noopener">
               <div class="ratio">
                 ${thumb ? `<img src="${thumb}" alt="" onerror="this.style.display='none'">` : ''}
               </div>
@@ -133,8 +112,8 @@
       ? list.map(card).join('')
       : `<div class="small">Nessun video disponibile.</div>`;
 
-    // PWA
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
+  <script src="./ui.js?v=33"></script>
 </body>
 </html>
