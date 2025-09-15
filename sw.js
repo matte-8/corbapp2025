@@ -10,7 +10,7 @@ const ASSETS = [
   "./ui.js",
   "./manifest.json",
   // icone/logo
-  "./img/logo_c5.png","./img/logo_avv.png","./img/player.png",
+  "./img/logo_c5.png","./img/logo_avv.png","./img/player1.png",
 ];
 
 self.addEventListener("install", e=>{
