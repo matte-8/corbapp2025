@@ -4,21 +4,51 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>News - CORB</title>
+
+  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
-  <link rel="apple-touch-icon" href="img/logo_c5.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+
+  <!-- CSS -->
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
     .news-list{display:grid;gap:12px}
-    .news-item .pill{margin-bottom:6px}
-    .ellipsis{-webkit-line-clamp:3;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+
+    /* Immagini 16:9 fluide */
+    .media-fluid{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:12px;margin-bottom:10px}
+
+    /* Contenuto collassabile: di base clamp a 3 righe */
+    .content{color:var(--text)}
+    .clamp{
+      display:-webkit-box;
+      -webkit-line-clamp:3;
+      -webkit-box-orient:vertical;
+      overflow:hidden;
+    }
+
+    /* Pulsantino toggle */
+    .toggle{
+      margin-top:8px;
+      border:1px solid var(--ring);
+      background:#fff;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:700;
+      font-size:13px;
+      cursor:pointer;
+    }
+
+    /* chips (filtri) */
     .chips{display:flex;gap:8px;flex-wrap:wrap}
-    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600}
+    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;cursor:pointer}
     .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
   </style>
 </head>
+
 <body>
+  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" class="brand">
@@ -35,6 +65,7 @@
     </div>
   </header>
 
+  <!-- Drawer -->
   <nav id="drawer" class="drawer">
     <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
@@ -52,7 +83,9 @@
   <main class="container">
     <section class="card">
       <div class="search">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7"><circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/></svg>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:.7">
+          <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.3-4.3"/>
+        </svg>
         <input id="q" type="search" placeholder="Cerca nelle news…">
       </div>
 
@@ -69,25 +102,28 @@
 
   <script type="module">
     import { autoLoad, get } from './data-store.js';
-    await autoLoad(); // 👈
+
+    // Assicura dati al primo accesso (se la cache è vuota)
+    await autoLoad();
 
     // Drawer
     const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
-    document.addEventListener('click', (e)=>{
-      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
-        drawer.classList.remove('open');
-      }
-    });
+    const openBtn = document.getElementById('menuBtn');
+    const closeBtn = document.getElementById('drawer-close');
+    openBtn.onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    closeBtn.onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click',(e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open'); });
 
+    // Normalizza URL immagini
     const normalizeImageUrl = (u) => {
       if (!u) return '';
       if (/^https?:\/\//i.test(u)) return u;
       return u.startsWith('./') || u.startsWith('img/') ? u : ('img/' + u);
     };
 
-    const all = (get('news')||[]).map(n=>({
+    // Dati: TUTTE le news
+    const all = (get('news')||[]).map((n,i)=>({
+      id: i,
       titolo: n.titolo||'',
       contenuto: n.contenuto||'',
       img: normalizeImageUrl(n.img||''),
@@ -99,22 +135,28 @@
     const chips = [...document.querySelectorAll('.chip')];
     let tag = 'Tutte', term = '';
 
-    function render(){
-      const list = all.filter(n => 
-        (tag==='Tutte' || n.tag===tag) &&
-        (term==='' || (n.titolo+n.contenuto).toLowerCase().includes(term))
-      );
-
-      wrap.innerHTML = list.length ? list.map(n => `
-        <article class="card news-item">
+    function tmpl(n){
+      return `
+        <article class="card news-item" data-id="${n.id}">
           ${n.img ? `<img src="${n.img}" alt="" class="media-fluid" loading="lazy" onerror="this.style.display='none'">` : ''}
           <span class="pill">${n.tag}</span>
-          <h3 style="margin:6px 0 4px 0">${n.titolo}</h3>
-          <div class="small ellipsis">${n.contenuto}</div>
-        </article>
-      `).join('') : `<div class="card small">Nessuna news trovata.</div>`;
+          <h3 style="margin:6px 0 6px 0">${n.titolo}</h3>
+          <div class="small content clamp">${n.contenuto}</div>
+          <button class="toggle" aria-expanded="false">Mostra tutto ⌄</button>
+        </article>`;
     }
 
+    function render(){
+      const list = all.filter(n =>
+        (tag==='Tutte' || n.tag===tag) &&
+        (term==='' || (n.titolo + ' ' + n.contenuto).toLowerCase().includes(term))
+      );
+      wrap.innerHTML = list.length
+        ? list.map(tmpl).join('')
+        : `<div class="card small">Nessuna news trovata.</div>`;
+    }
+
+    // Filtri
     chips.forEach(c => c.addEventListener('click', ()=>{
       chips.forEach(x=>x.classList.remove('active'));
       c.classList.add('active');
@@ -123,10 +165,28 @@
     }));
     q.addEventListener('input', e => { term = e.target.value.trim().toLowerCase(); render(); });
 
+    // Toggle espansione/collapse (delegation)
+    wrap.addEventListener('click', (e)=>{
+      const btn = e.target.closest('.toggle');
+      if(!btn) return;
+      const card = btn.closest('.news-item');
+      const content = card.querySelector('.content');
+      const expanded = btn.getAttribute('aria-expanded') === 'true';
+      // toggle clamp
+      if (expanded){
+        content.classList.add('clamp');
+        btn.setAttribute('aria-expanded','false');
+        btn.textContent = 'Mostra tutto ⌄';
+      } else {
+        content.classList.remove('clamp');
+        btn.setAttribute('aria-expanded','true');
+        btn.textContent = 'Chiudi ∧';
+      }
+    });
+
     render();
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js?v=33"></script>
 </body>
 </html>
