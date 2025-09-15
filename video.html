@@ -85,7 +85,7 @@
       const titolo = v.nome || 'Video';
       const thumb = v.logo ? (v.logo.startsWith('http') ? v.logo : `img/${v.logo}`) : '';
       const link  = v.link || '';
-
+      
       if (isYouTube(link)){
         const id = ytId(link);
         const src = `https://www.youtube.com/embed/${id}`;
