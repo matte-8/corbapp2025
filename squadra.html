@@ -2,99 +2,28 @@
 <html lang="it">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#6b0f1a">
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Squadra - CORB</title>
-
-  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
-
-  <!-- CSS comune -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="stylesheet" href="./style.css?v=33">
-
   <style>
-    /* Anti-zoom iOS e no overflow orizzontale */
-    html{
-      -webkit-text-size-adjust:100%;
-      overflow-x:hidden;
-    }
-    body{overflow-x:hidden}
-
-    /* contenitore sicuro */
-    main.container{
-      max-width:960px;
-      margin:auto;
-      padding:16px;
-    }
-
-    /* barra ricerca */
-    .searchbar{
-      display:flex;gap:8px;align-items:center;
-      border:1px solid var(--ring);border-radius:12px;
-      padding:10px 12px;background:#fff
-    }
-    .searchbar input{
-      border:0;outline:0;flex:1;background:transparent;font-size:16px;
-      min-width:0; /* evita overflow su iOS */
-    }
-
-    /* chips ruoli */
+    html,body{overflow-x:hidden}
+    main.container{max-width:960px;margin:auto;padding:16px}
+    .searchbar{display:flex;gap:8px;align-items:center;border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
+    .searchbar input{border:0;outline:0;flex:1;background:transparent;font-size:16px}
     .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
-    .chip{
-      border:1px solid var(--ring);background:#fff;border-radius:999px;
-      padding:8px 12px;font-weight:600;cursor:pointer
-    }
+    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;cursor:pointer}
     .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
-
-    .role-title{
-      font-size:16px;font-weight:800;margin:12px 0 8px 0;
-      line-height:1
-    }
-
-    /* lista giocatori: griglia singola colonna con gap compatto */
-    #list{display:grid;gap:10px}
-
-    /* card giocatore compatta e fluida */
-    .player{
-      display:flex;align-items:center;gap:10px;width:100%;
-      background:#fff;border:1px solid var(--ring);border-radius:14px;padding:10px 12px;
-      box-shadow:0 6px 18px rgba(0,0,0,.06);
-      min-width:0; /* importantissimo per ellissi */
-    }
-    .player img{
-      width:52px;height:52px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;
-      flex:0 0 52px
-    }
-    .player .meta{
-      flex:1;min-width:0; /* abilita ellissi */
-    }
-    .player .name{
-      font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap
-    }
-    .player .role{font-size:13px;color:var(--muted)}
-    .number-pill{
-      background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a;
-      border-radius:999px;font-weight:800;padding:6px 10px;font-size:12px;flex:0 0 auto
-    }
-
-    /* Responsive tightening */
-    @media (max-width:380px){
-      .player{padding:8px 10px;border-radius:12px}
-      .player img{width:48px;height:48px;flex-basis:48px}
-      .number-pill{padding:5px 9px;font-size:11px}
-      .chip{padding:7px 10px}
-    }
-    @media (max-width:330px){
-      .player img{width:44px;height:44px;flex-basis:44px}
-      .number-pill{padding:4px 8px;font-size:10px}
-      .name{font-size:15px}
-    }
+    .role-title{font-size:18px;font-weight:800;margin:14px 0 8px 0}
+    .player{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:1px solid var(--ring);border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .player img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;flex:0 0 56px}
+    .number-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a;border-radius:999px;font-weight:800;padding:6px 10px}
   </style>
 </head>
 <body>
-  <!-- Topbar -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" class="brand">
@@ -111,7 +40,6 @@
     </div>
   </header>
 
-  <!-- Drawer -->
   <nav id="drawer" class="drawer">
     <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
@@ -127,7 +55,6 @@
   </nav>
 
   <main class="container">
-    <!-- filtro -->
     <section class="card">
       <div class="searchbar">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2" stroke-linecap="round"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
@@ -142,7 +69,6 @@
       </div>
     </section>
 
-    <!-- lista -->
     <section class="card">
       <h2 style="margin:0 0 8px 0">Rosa</h2>
       <div id="list"></div>
@@ -155,30 +81,24 @@
 
   <script type="module">
     import { autoLoad, get, last } from './data-store.js';
-
-    // Assicura dati al primo accesso
-    await autoLoad();
+    await autoLoad(); // 👈
 
     // Drawer
     const drawer = document.getElementById('drawer');
     document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
     document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
-    document.addEventListener('click', (e)=>{
-      if (drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open');
-    });
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
 
     document.getElementById('ls').textContent = last();
 
-    // === dati giocatori
     const RAW = (get('giocatori')||[]).map(p=>({
       nome: (p.nome||'').trim(),
-      numero: (p.numero??'').toString().trim(),
+      numero: (p.numero||'').toString().trim(),
       ruolo: (p.ruolo||'').toString().trim().toLowerCase(),
       foto: p.foto || ''
     }));
 
-    // Ruoli standard
-    const MAP = { portiere:'Portiere', centrale:'Centrale', laterale:'Laterale', pivot:'Pivot' };
+    const MAP = { 'portiere':'Portiere','centrale':'Centrale','laterale':'Laterale','pivot':'Pivot' };
     const stdRole = r => MAP[r] || 'Altro';
 
     const listEl = document.getElementById('list');
@@ -193,7 +113,6 @@
         return roleOK && textOK;
       });
 
-      // grouped order
       const order = ['portiere','centrale','laterale','pivot','altro'];
       const groups = {};
       filtered.forEach(p=>{
@@ -201,27 +120,24 @@
         (groups[key] ||= []).push(p);
       });
 
-      const html = order
-        .filter(k => groups[k]?.length)
-        .map(k=>{
-          const title = stdRole(k) === 'Altro' ? 'Altro' : stdRole(k);
-          const items = groups[k].map(p=>`
-            <div class="player">
-              <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
-              <div class="meta">
-                <div class="name">${p.nome}</div>
-                <div class="role">${stdRole(p.ruolo)}</div>
-              </div>
-              ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
+      const html = order.filter(k=>groups[k]?.length).map(k=>{
+        const title = stdRole(k) === 'Altro' ? 'Altro' : stdRole(k);
+        const items = groups[k].map(p=>`
+          <div class="player">
+            <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
+            <div style="flex:1;min-width:0">
+              <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
+              <div class="small">${stdRole(p.ruolo)}</div>
             </div>
-          `).join('');
-          return `<div class="role-title">${title}</div>${items}`;
-        }).join('');
+            ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
+          </div>
+        `).join('');
+        return `<div class="role-title">${title}</div>${items}`;
+      }).join('');
 
       listEl.innerHTML = html || '<div class="small">Nessun giocatore trovato</div>';
     }
 
-    // eventi filtri
     document.getElementById('chips').addEventListener('click', (e)=>{
       const btn = e.target.closest('.chip'); if(!btn) return;
       document.querySelectorAll('#chips .chip').forEach(c=>c.classList.remove('active'));
@@ -235,5 +151,6 @@
 
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
+  <script src="./ui.js?v=33"></script>
 </body>
 </html>
