@@ -4,17 +4,12 @@
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Calendario - CORB</title>
-
-  <!-- PWA / Icone -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
-
-  <!-- CSS comune -->
   <link rel="stylesheet" href="./style.css?v=33">
   <style>
-    /* Extra minimi specifici della pagina */
     .month-wrap{margin-bottom:18px}
     .month-head{display:flex;align-items:center;justify-content:space-between}
     .month-name{font-weight:900;line-height:1.05;font-size:clamp(20px,6vw,28px)}
@@ -22,15 +17,12 @@
     .arrowbtn{border-radius:12px;border:1px solid var(--ring);background:#fff;padding:6px 10px}
     .legend{display:flex;gap:16px;align-items:center;margin-top:8px}
     .dot{width:10px;height:10px;border-radius:999px}
-    .dot-home{background:var(--home)}
-    .dot-away{background:var(--away)}
-    /* più aria tra intestazione mese e griglia */
+    .dot-home{background:var(--home)} .dot-away{background:var(--away)}
     .cal-dow{margin:12px 0 6px}
     .month-block{margin-bottom:8px}
   </style>
 </head>
 <body>
-  <!-- Topbar comune -->
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" class="brand" aria-label="Home">
@@ -39,7 +31,7 @@
       </a>
     </div>
     <div class="right">
-      <button data-role="menu-btn" class="iconbtn" aria-label="Apri menu" title="Menu">
+      <button id="menuBtn" class="iconbtn" aria-label="Apri menu" title="Menu">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
@@ -47,9 +39,8 @@
     </div>
   </header>
 
-  <!-- Drawer comune -->
-  <nav class="drawer" data-role="drawer" aria-label="Menu laterale">
-    <button class="drawer-close" data-role="drawer-close" aria-label="Chiudi">✕</button>
+  <nav id="drawer" class="drawer" aria-label="Menu laterale">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
     <a href="./news.html">📰 News</a>
@@ -58,12 +49,12 @@
     <a href="./prossima.html">📅 Prossima partita</a>
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
     <a href="./admin.html">⚙️ Admin</a>
   </nav>
 
   <main class="container">
     <section class="card month-wrap">
-      <!-- Mese 1 -->
       <div class="month-head">
         <div class="month-name" id="m1"></div>
         <div class="head-right">
@@ -83,7 +74,6 @@
 
       <div style="height:16px"></div>
 
-      <!-- Mese 2 -->
       <div class="month-head">
         <div class="month-name" id="m2"></div>
         <div style="width:68px"></div>
@@ -106,14 +96,19 @@
 
   <script type="module">
     import { autoLoad, last, get } from './data-store.js';
+    await autoLoad(); // 👈
 
-    // 👇 assicura che i dati siano caricati anche per chi entra la prima volta
-    await autoLoad();
-
-    // Ultimo sync
     document.getElementById('ls').textContent = last();
 
-    // ===== Helpers calendario =====
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
+    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
+        drawer.classList.remove('open');
+      }
+    });
+
     const toDate = (d) => {
       if (!d) return new Date('Invalid');
       if (/^\d{4}-\d{2}-\d{2}/.test(d)) return new Date(d);
@@ -150,9 +145,7 @@
 
       const leading = startDowMon(y,m);
       for(let i=0;i<leading;i++){
-        const c = document.createElement('div');
-        c.className = 'cal-cell muted';
-        grid.appendChild(c);
+        const c = document.createElement('div'); c.className = 'cal-cell muted'; grid.appendChild(c);
       }
 
       const nDays = daysInMonth(y,m);
@@ -186,7 +179,6 @@
 
     buildTwoMonths();
 
-    // ===== Lista future partite =====
     const matches = (get('matches')||[]).map(m=>({
       ...m,
       date: new Date((m.data||'')+'T'+(m.ora||'00:00'))
@@ -198,7 +190,8 @@
     const isHome = m => (m.casa||'').trim().toLowerCase() === 'corbiolo';
     const fmtListDate = (d) => d.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short'});
 
-    function row(m){
+    const list = document.getElementById('futureList');
+    list.innerHTML = futures.length ? futures.map(m=>{
       const homeSide = isHome(m);
       const s1 = homeSide ? 'Corbiolo' : (m.casa||'Avversario');
       const s2 = homeSide ? (m.fuori||'Avversario') : 'Corbiolo';
@@ -214,14 +207,10 @@
             </div>
           </div>
         </div>`;
-    }
-
-    const list = document.getElementById('futureList');
-    list.innerHTML = futures.length ? futures.map(row).join('') : '<div class="small">Nessuna partita in programma</div>';
+    }).join('') : '<div class="small">Nessuna partita in programma</div>';
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-
   <script src="./ui.js?v=33"></script>
 </body>
 </html>
