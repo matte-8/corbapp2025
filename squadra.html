@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="it">
 <head>
-  
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Squadra - CORB</title>
@@ -81,8 +80,7 @@
   </main>
 
   <script type="module">
-    import { autoLoad, get, last } from './data-store.js';
-    await autoLoad(); // 👈
+    import { get, last } from './data-store.js';
 
     // Drawer
     const drawer = document.getElementById('drawer');
@@ -92,6 +90,7 @@
 
     document.getElementById('ls').textContent = last();
 
+    // Dati dalla cache (popolata da Admin → Aggiorna)
     const RAW = (get('giocatori')||[]).map(p=>({
       nome: (p.nome||'').trim(),
       numero: (p.numero||'').toString().trim(),
@@ -99,7 +98,7 @@
       foto: p.foto || ''
     }));
 
-    const MAP = { 'portiere':'Portiere','centrale':'Centrale','laterale':'Laterale','pivot':'Pivot' };
+    const MAP = { portiere:'Portiere', centrale:'Centrale', laterale:'Laterale', pivot:'Pivot' };
     const stdRole = r => MAP[r] || 'Altro';
 
     const listEl = document.getElementById('list');
@@ -121,20 +120,22 @@
         (groups[key] ||= []).push(p);
       });
 
-      const html = order.filter(k=>groups[k]?.length).map(k=>{
-        const title = stdRole(k) === 'Altro' ? 'Altro' : stdRole(k);
-        const items = groups[k].map(p=>`
-          <div class="player">
-            <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
-            <div style="flex:1;min-width:0">
-              <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
-              <div class="small">${stdRole(p.ruolo)}</div>
+      const html = order
+        .filter(k=>groups[k]?.length)
+        .map(k=>{
+          const title = stdRole(k)==='Altro' ? 'Altro' : stdRole(k);
+          const items = groups[k].map(p=>`
+            <div class="player">
+              <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
+                <div class="small">${stdRole(p.ruolo)}</div>
+              </div>
+              ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
             </div>
-            ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
-          </div>
-        `).join('');
-        return `<div class="role-title">${title}</div>${items}`;
-      }).join('');
+          `).join('');
+          return `<div class="role-title">${title}</div>${items}`;
+        }).join('');
 
       listEl.innerHTML = html || '<div class="small">Nessun giocatore trovato</div>';
     }
@@ -152,6 +153,7 @@
 
     if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
+
   <script src="./ui.js?v=34"></script>
 </body>
 </html>
