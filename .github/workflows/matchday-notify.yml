@@ -1,0 +1,29 @@
+name: Notifica giorno-partita
+
+on:
+  schedule:
+    # 7:00 UTC ≈ 9:00 in Italia (l'ora esatta può variare di ±1h con l'ora legale/solare, va bene per un promemoria)
+    - cron: '0 7 * * *'
+  workflow_dispatch: {} # permette anche di farlo partire a mano da GitHub, per testare
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installa dipendenze
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Controlla partite di oggi e invia notifiche
+        working-directory: ./scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node notify-matchday.js
