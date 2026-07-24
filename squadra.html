@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Squadra - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=34">
+  <style>
+    html,body{overflow-x:hidden}
+    main.container{max-width:960px;margin:auto;padding:16px}
+    .searchbar{display:flex;gap:8px;align-items:center;border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff}
+    .searchbar input{border:0;outline:0;flex:1;background:transparent;font-size:16px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+    .chip{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 12px;font-weight:600;cursor:pointer}
+    .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
+    .role-title{font-size:18px;font-weight:800;margin:14px 0 8px 0}
+    .player{display:flex;align-items:center;gap:12px;width:100%;background:#fff;border:1px solid var(--ring);border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
+    .player img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;flex:0 0 56px}
+    .number-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a;border-radius:999px;font-weight:800;padding:6px 10px}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" alt="" class="brand-logo">
+        <span class="title">Squadra</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round">
+          <path d="M3 6h18M3 12h18M3 18h18"/>
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <div class="searchbar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#7a5d66" stroke-width="2" stroke-linecap="round"><path d="M21 21l-4.35-4.35"/><circle cx="11" cy="11" r="7"/></svg>
+        <input id="q" type="search" placeholder="Cerca giocatore per nome o numero…">
+      </div>
+      <div class="chips" id="chips">
+        <button class="chip active" data-role="all">Tutti</button>
+        <button class="chip" data-role="portiere">Portiere</button>
+        <button class="chip" data-role="centrale">Centrale</button>
+        <button class="chip" data-role="laterale">Laterale</button>
+        <button class="chip" data-role="pivot">Pivot</button>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 8px 0">Rosa</h2>
+      <div id="list"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { subscribePlayers } from './data-store.js';
+
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
+
+    let RAW = []; // 👈 aggiornato ad ogni cambiamento in Firestore
+
+    const MAP = { portiere:'Portiere', centrale:'Centrale', laterale:'Laterale', pivot:'Pivot' };
+    const stdRole = r => MAP[r] || 'Altro';
+
+    const listEl = document.getElementById('list');
+    const q = document.getElementById('q');
+    let currentRole = 'all';
+
+    function render(){
+      const term = q.value.trim().toLowerCase();
+      const filtered = RAW.filter(p=>{
+        const roleOK = currentRole==='all' ? true : p.ruolo===currentRole;
+        const textOK = !term || p.nome.toLowerCase().includes(term) || p.numero.includes(term);
+        return roleOK && textOK;
+      });
+
+      const order = ['portiere','centrale','laterale','pivot','altro'];
+      const groups = {};
+      filtered.forEach(p=>{
+        const key = p.ruolo && order.includes(p.ruolo) ? p.ruolo : 'altro';
+        (groups[key] ||= []).push(p);
+      });
+
+      const html = order
+        .filter(k=>groups[k]?.length)
+        .map(k=>{
+          const title = stdRole(k)==='Altro' ? 'Altro' : stdRole(k);
+          const items = groups[k].map(p=>`
+            <div class="player">
+              <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
+              <div style="flex:1;min-width:0">
+                <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
+                <div class="small">${stdRole(p.ruolo)}</div>
+              </div>
+              ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
+            </div>
+          `).join('');
+          return `<div class="role-title">${title}</div>${items}`;
+        }).join('');
+
+      listEl.innerHTML = html || '<div class="small">Nessun giocatore trovato</div>';
+    }
+
+    document.getElementById('chips').addEventListener('click', (e)=>{
+      const btn = e.target.closest('.chip'); if(!btn) return;
+      document.querySelectorAll('#chips .chip').forEach(c=>c.classList.remove('active'));
+      btn.classList.add('active');
+      currentRole = btn.dataset.role;
+      render();
+    });
+    q.addEventListener('input', render);
+
+    // 👇 si aggiorna da solo appena l'admin aggiunge/modifica un giocatore
+    subscribePlayers((rows) => {
+      RAW = (rows||[]).map(p=>({
+        nome: (p.nome||'').trim(),
+        numero: (p.numero||'').toString().trim(),
+        ruolo: (p.ruolo||'').toString().trim().toLowerCase(),
+        foto: p.foto || ''
+      }));
+      render();
+    });
+
+    if('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+
+  <script src="./ui.js?v=34"></script>
+  <script defer src="./install-prompt.js?v=1"></script>
+</body>
+</html>
