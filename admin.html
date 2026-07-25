@@ -15,23 +15,23 @@
   <style>
     .admin-wrap{display:grid;gap:16px}
     .field{display:grid;gap:6px}
-    .field input,.field textarea,.field select{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:#fff;font:inherit}
+    .field input,.field textarea,.field select{border:1px solid var(--ring);border-radius:12px;padding:10px 12px;background:var(--card);color:var(--text);font:inherit}
     .field textarea{min-height:90px;resize:vertical}
     .grid-2-admin{display:grid;grid-template-columns:1fr 1fr;gap:12px}
     @media (max-width:700px){.grid-2-admin{grid-template-columns:1fr}}
-    .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
+    .btn{border:1px solid var(--ring);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:800;display:inline-flex;gap:8px;align-items:center;cursor:pointer}
     .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
-    .btn-ghost{background:#fff}
-    .btn-danger{background:#fff;color:var(--red);border-color:#f3c8c8}
+    .btn-ghost{background:var(--card)}
+    .btn-danger{background:var(--card);color:var(--red);border-color:#f3c8c8}
     .login-card{display:grid;gap:12px}
     .hint{font-size:12px;color:var(--muted)}
     .tabs{display:flex;gap:8px;flex-wrap:wrap}
-    .tab{border:1px solid var(--ring);background:#fff;border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
+    .tab{border:1px solid var(--ring);background:var(--card);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
     .tab.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
     .item-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ring)}
     .item-row:last-child{border-bottom:0}
     .item-actions{display:flex;gap:6px;flex-shrink:0}
-    .item-actions button{border:1px solid var(--ring);background:#fff;border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+    .item-actions button{border:1px solid var(--ring);background:var(--card);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
     .msg{font-size:13px;padding:8px 10px;border-radius:10px;margin-top:6px}
     .msg.ok{background:#ecfdf5;color:#059669}
     .msg.err{background:#fef2f2;color:#dc2626}

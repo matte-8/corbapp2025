@@ -12,12 +12,13 @@
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
     .season-select{display:flex;align-items:center;gap:8px;margin:12px 0}
-    .season-select select{border:1px solid var(--ring);border-radius:12px;padding:8px 12px;background:#fff;font:inherit;font-weight:700}
+    .season-select select{border:1px solid var(--ring);border-radius:12px;padding:8px 12px;background:var(--card);color:var(--text);font:inherit;font-weight:700}
     .std-table{width:100%;border-collapse:collapse;font-size:14px}
     .std-table th{font-size:11px;text-transform:uppercase;color:var(--muted);text-align:center;padding:6px 4px;font-weight:700}
     .std-table th.team-col, .std-table td.team-col{text-align:left;padding-left:6px}
     .std-table td{text-align:center;padding:10px 4px;border-top:1px solid var(--ring)}
     .std-table tr.me{background:#f5eef0}
+    :root[data-theme="dark"] .std-table tr.me{background:#3a2530}
     .std-table .pos{font-weight:800;color:var(--muted);width:22px}
     .std-table .team-name{font-weight:700}
     .std-table .pts{font-weight:900;color:var(--granata)}

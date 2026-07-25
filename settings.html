@@ -28,7 +28,7 @@
     .toggle-slider input:checked + .track::before{transform:translateX(22px)}
     .desc{font-size:13px;color:var(--muted);margin-top:6px}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .btn{border:1px solid var(--ring);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
     .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
     .stat{font-size:13px;color:var(--muted)}
   </style>
@@ -84,10 +84,7 @@
 
       <div class="switch">
         <label for="toggle">Promemoria giorno-partita</label>
-        <label class="toggle-slider">
-          <input id="toggle" type="checkbox" />
-          <span class="track"></span>
-        </label>
+        <input id="toggle" type="checkbox" />
       </div>
       <div class="desc">
         Ricevi un promemoria a mezzogiorno il giorno delle partite. Su Android/PWA funziona al meglio.
