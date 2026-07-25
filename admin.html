@@ -63,6 +63,7 @@
     <a href="./prossima.html">📅 Prossima partita</a>
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
+    <a href="./classifica.html">🏅 Classifica</a>
     <a href="./settings.html">🔔 Impostazioni</a>
     <a href="./admin.html">⚙️ Admin</a>
   </nav>
@@ -97,6 +98,7 @@
         <button class="tab" data-tab="news">📰 News</button>
         <button class="tab" data-tab="players">👥 Giocatori</button>
         <button class="tab" data-tab="videos">🎥 Video</button>
+        <button class="tab" data-tab="standings">🏅 Classifica</button>
       </div>
 
       <div id="formZone"></div>
@@ -118,8 +120,8 @@
     import { auth } from './firebase-init.js';
     import { signInWithEmailAndPassword, signOut, onAuthStateChanged }
       from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
-    import { Matches, News, Players, Videos,
-              subscribeMatches, subscribeNews, subscribePlayers, subscribeVideos } from './data-store.js';
+    import { Matches, News, Players, Videos, Standings, currentSeason,
+              subscribeMatches, subscribeNews, subscribePlayers, subscribeVideos, subscribeStandings } from './data-store.js';
 
     // ===== MENU =====
     const drawer   = document.querySelector('[data-role="drawer"]');
@@ -162,6 +164,7 @@
       matches: {
         label: 'Partite', api: Matches, subscribe: subscribeMatches,
         fields: [
+          {key:'stagione', label:'Stagione', type:'text', placeholder:'2025/26'},
           {key:'data', label:'Data', type:'date'},
           {key:'ora', label:'Ora', type:'time'},
           {key:'casa', label:'Squadra in casa', type:'text', placeholder:'Corbiolo'},
@@ -170,7 +173,7 @@
           {key:'logo_casa', label:'Logo casa (URL, opzionale)', type:'text'},
           {key:'logo_fuori', label:'Logo trasferta (URL, opzionale)', type:'text'},
         ],
-        itemLabel: (m)=> `${m.data||'?'} ${m.ora||''} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'} ${m.risultato ? '('+m.risultato+')' : ''}`,
+        itemLabel: (m)=> `${m.data||'?'} ${m.ora||''} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'} ${m.risultato ? '('+m.risultato+')' : ''} ${m.stagione ? '· '+m.stagione : ''}`,
         sort: (a,b) => (b.data||'').localeCompare(a.data||'')
       },
       news: {
@@ -191,8 +194,9 @@
           {key:'numero', label:'Numero maglia', type:'text'},
           {key:'ruolo', label:'Ruolo', type:'select', options:['allenatore','portiere','centrale','laterale','pivot']},
           {key:'foto', label:'Foto (URL o nome file in img/)', type:'text'},
+          {key:'gol', label:'Gol segnati (stagione in corso)', type:'text', placeholder:'0'},
         ],
-        itemLabel: (p)=> `#${p.numero||'-'} ${p.nome||'(senza nome)'}`,
+        itemLabel: (p)=> `#${p.numero||'-'} ${p.nome||'(senza nome)'} ${p.gol ? '⚽ '+p.gol : ''}`,
         sort: null
       },
       videos: {
@@ -204,6 +208,22 @@
         ],
         itemLabel: (v)=> v.nome || '(senza titolo)',
         sort: null
+      },
+      standings: {
+        label: 'Classifica', api: Standings, subscribe: subscribeStandings,
+        fields: [
+          {key:'stagione', label:'Stagione', type:'text', placeholder:'2025/26'},
+          {key:'squadra', label:'Squadra', type:'text'},
+          {key:'punti', label:'Punti', type:'text', placeholder:'0'},
+          {key:'giocate', label:'Giocate', type:'text', placeholder:'0'},
+          {key:'vinte', label:'Vinte', type:'text', placeholder:'0'},
+          {key:'pareggiate', label:'Pareggiate', type:'text', placeholder:'0'},
+          {key:'perse', label:'Perse', type:'text', placeholder:'0'},
+          {key:'gf', label:'Gol fatti', type:'text', placeholder:'0'},
+          {key:'gs', label:'Gol subiti', type:'text', placeholder:'0'},
+        ],
+        itemLabel: (r)=> `${r.squadra||'?'} — ${r.punti||0} pt (${r.stagione||''})`,
+        sort: (a,b) => (+b.punti||0) - (+a.punti||0)
       },
     };
 
@@ -232,10 +252,13 @@
           <h3 style="margin:0 0 10px 0">${editingId ? 'Modifica' : 'Aggiungi'} ${ent.label.toLowerCase()}</h3>
           <div class="grid-2-admin" id="fieldsWrap">
             ${ent.fields.map(f => {
-              // Se sto AGGIUNGENDO una partita (non modificando), precompilo davvero
-              // "Corbiolo" nel campo Squadra in casa: è il caso quasi sempre vero,
-              // ed evita di lasciarlo vuoto scambiandolo per il placeholder.
-              const defaultValue = (!prefill && currentTab==='matches' && f.key==='casa') ? 'Corbiolo' : '';
+              // Se sto AGGIUNGENDO (non modificando), precompilo dei valori sensati
+              // di default: "Corbiolo" come squadra in casa, e la stagione corrente.
+              let defaultValue = '';
+              if (!prefill && (currentTab==='matches' || currentTab==='standings')){
+                if (f.key==='casa') defaultValue = 'Corbiolo';
+                if (f.key==='stagione') defaultValue = currentSeason();
+              }
               return fieldHTML(f, prefill ? prefill[f.key] : defaultValue);
             }).join('')}
           </div>
