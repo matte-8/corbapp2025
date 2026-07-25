@@ -20,6 +20,14 @@
     .std-table .pos{font-weight:800;color:var(--muted);width:22px}
     .std-table .team-name{font-weight:700}
     .std-table .pts{font-weight:900;color:var(--granata)}
+    .zone-bar{width:5px;display:inline-block;height:22px;vertical-align:middle;border-radius:3px;margin-right:6px}
+    .zone-vincente{background:#2563eb}
+    .zone-promozione{background:#16a34a}
+    .zone-playoff{background:#eab308}
+    .zone-coppa{background:#9333ea}
+    .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px;color:var(--muted)}
+    .legend span{display:inline-flex;align-items:center;gap:6px}
+    .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
     @media(max-width:420px){ .std-table{font-size:12px} .std-table th{font-size:10px} }
   </style>
 </head>
@@ -49,6 +57,7 @@
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
     <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
     <a href="./settings.html">🔔 Impostazioni</a>
     <a href="./admin.html">⚙️ Admin</a>
   </nav>
@@ -82,6 +91,12 @@
         </table>
       </div>
       <div id="empty" class="small" style="margin-top:10px"></div>
+      <div class="legend">
+        <span><span class="dot zone-vincente" style="background:#2563eb"></span>Vincente</span>
+        <span><span class="dot zone-promozione" style="background:#16a34a"></span>Promozione</span>
+        <span><span class="dot zone-playoff" style="background:#eab308"></span>Playoff</span>
+        <span><span class="dot zone-coppa" style="background:#9333ea"></span>Coppa di Lega</span>
+      </div>
     </section>
 
     <section class="card" style="margin-top:14px">
@@ -125,6 +140,7 @@
           perse: +r.perse || 0,
           gf: +r.gf || 0,
           gs: +r.gs || 0,
+          zona: r.zona || 'Nessuna',
         }))
         .sort((a,b) => (b.punti - a.punti) || ((b.gf-b.gs) - (a.gf-a.gs)) || (b.gf - a.gf));
 
@@ -135,13 +151,16 @@
       }
       empty.textContent = '';
 
+      const ZONE_CLASS = { 'Vincente':'zone-vincente', 'Promozione':'zone-promozione', 'Playoff':'zone-playoff', 'Coppa di Lega':'zone-coppa' };
+
       tbody.innerHTML = rows.map((r, i) => {
         const isMe = (r.squadra||'').trim().toLowerCase() === CORB;
         const dr = r.gf - r.gs;
+        const zoneClass = ZONE_CLASS[r.zona] || '';
         return `
           <tr class="${isMe ? 'me' : ''}">
             <td class="pos">${i+1}</td>
-            <td class="team-col team-name">${r.squadra}</td>
+            <td class="team-col team-name">${zoneClass ? `<span class="zone-bar ${zoneClass}"></span>` : ''}${r.squadra}</td>
             <td class="pts">${r.punti}</td>
             <td>${r.giocate}</td>
             <td>${r.vinte}</td>

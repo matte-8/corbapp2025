@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Dove si gioca - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=35">
+  <style>
+    .info-row{display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid var(--ring)}
+    .info-row:last-child{border-bottom:0}
+    .info-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
+    .info-title{font-weight:800;margin-bottom:2px}
+    .info-body{color:var(--muted);font-size:14px;line-height:1.4}
+    .map-placeholder{
+      width:100%;aspect-ratio:16/9;border-radius:14px;background:#eee;
+      display:flex;align-items:center;justify-content:center;color:var(--muted);
+      font-size:13px;text-align:center;padding:20px;border:1px dashed var(--ring)
+    }
+    .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .cta-btn{
+      flex:1;min-width:140px;text-align:center;border-radius:12px;padding:12px;
+      font-weight:800;text-decoration:none;background:var(--granata);color:#fff
+    }
+    .cta-btn.secondary{background:#fff;color:var(--granata);border:1px solid var(--ring)}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Dove si gioca</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <main class="container">
+
+    <!-- MAPPA -->
+    <section class="card">
+      <h2 style="margin:0 0 10px 0">📍 Il nostro campo</h2>
+      <!--
+        Quando avremo l'indirizzo reale, questo placeholder verrà sostituito
+        con una mappa Google Maps incorporata (basta l'indirizzo per generarla).
+      -->
+      <div class="map-placeholder" id="mapBox">
+        🗺️ Mappa del campo<br>(in arrivo)
+      </div>
+      <div class="cta-row">
+        <a class="cta-btn" id="navBtn" href="#" target="_blank">🧭 Come arrivare</a>
+        <a class="cta-btn secondary" id="callBtn" href="#">📞 Chiama il campo</a>
+      </div>
+    </section>
+
+    <!-- INFO PRATICHE -->
+    <section class="card" style="margin-top:14px">
+      <h2 style="margin:0 0 8px 0">ℹ️ Informazioni</h2>
+
+      <div class="info-row">
+        <div class="info-icon">📍</div>
+        <div>
+          <div class="info-title">Indirizzo</div>
+          <div class="info-body" id="address">Da inserire</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">🕒</div>
+        <div>
+          <div class="info-title">Orari partite</div>
+          <div class="info-body" id="hours">Da inserire</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">🍺</div>
+        <div>
+          <div class="info-title">Bar / punto ristoro</div>
+          <div class="info-body" id="bar">Da inserire</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">🅿️</div>
+        <div>
+          <div class="info-title">Parcheggio</div>
+          <div class="info-body" id="parking">Da inserire</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">🎽</div>
+        <div>
+          <div class="info-title">Colori sociali</div>
+          <div class="info-body" id="colors">Bianco Granata</div>
+        </div>
+      </div>
+
+      <div class="info-row">
+        <div class="info-icon">📱</div>
+        <div>
+          <div class="info-title">Contatti / Social</div>
+          <div class="info-body" id="contacts">Da inserire</div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // Placeholder statico per ora: quando arrivano indirizzo/telefono reali,
+    // basta aggiornare questi valori (o li rendiamo dinamici da Admin, se preferisci).
+    const DATA = {
+      address: 'Via [da inserire], Bosco Chiesanuova (VR)',
+      hours: 'Da inserire',
+      bar: 'Da inserire',
+      parking: 'Da inserire',
+      colors: 'Bianco Granata',
+      contacts: 'Da inserire',
+      phone: '',
+      mapsQuery: '' // es. "Campo Sportivo Corbiolo, Bosco Chiesanuova"
+    };
+
+    document.getElementById('address').textContent = DATA.address;
+    document.getElementById('hours').textContent = DATA.hours;
+    document.getElementById('bar').textContent = DATA.bar;
+    document.getElementById('parking').textContent = DATA.parking;
+    document.getElementById('colors').textContent = DATA.colors;
+    document.getElementById('contacts').textContent = DATA.contacts;
+
+    const navBtn = document.getElementById('navBtn');
+    if (DATA.mapsQuery){
+      navBtn.href = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(DATA.mapsQuery)}`;
+    } else {
+      navBtn.style.opacity = '0.5';
+      navBtn.onclick = (e) => { e.preventDefault(); alert('Indirizzo non ancora inserito.'); };
+    }
+
+    const callBtn = document.getElementById('callBtn');
+    if (DATA.phone){
+      callBtn.href = `tel:${DATA.phone}`;
+    } else {
+      callBtn.style.opacity = '0.5';
+      callBtn.onclick = (e) => { e.preventDefault(); alert('Numero non ancora inserito.'); };
+    }
+
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+  <script src="./ui.js?v=35"></script>
+  <script defer src="./install-prompt.js?v=2"></script>
+</body>
+</html>
