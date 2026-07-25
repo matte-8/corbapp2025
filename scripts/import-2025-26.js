@@ -4,7 +4,6 @@
 // Si lancia una volta sola dal computer, non gira in automatico.
 
 const admin = require('firebase-admin');
-const fs = require('fs');
 
 const SEASON = '2025/26';
 
@@ -62,10 +61,19 @@ const SCORERS_2025_26 = [
 ].map(s => ({ ...s, stagione: SEASON }));
 
 async function main(){
-  const raw = fs.readFileSync('./serviceAccountKey.json', 'utf8');
+  const raw = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!raw) throw new Error('Manca il secret FIREBASE_SERVICE_ACCOUNT');
   const serviceAccount = JSON.parse(raw);
   admin.initializeApp({ credential: admin.credential.cert(serviceAccount) });
   const db = admin.firestore();
+
+  // Protezione anti-doppione: se questa stagione è già stata importata, mi fermo.
+  const already = await db.collection('standings').where('stagione', '==', SEASON).limit(1).get();
+  if (!already.empty){
+    console.log(`La stagione ${SEASON} risulta già importata in "standings". Non faccio nulla per evitare doppioni.`);
+    console.log('Se vuoi rifare l\'importazione da zero, cancella prima a mano le righe di quella stagione dal pannello Admin, poi rilancia questo script.');
+    return;
+  }
 
   console.log(`Importo ${MATCHES.length} partite...`);
   for (const m of MATCHES) await db.collection('matches').add(m);
