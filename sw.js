@@ -1,10 +1,11 @@
 // sw.js — cache offline (PWA) + notifiche push in background (Firebase Cloud Messaging)
-const CACHE = "corb-cache-v7"; // <- bumpato: forza tutti i telefoni a scaricare la versione nuova invece di restare bloccati su quella vecchia in cache
+const CACHE = "corb-cache-v9";
 
 const ASSETS = [
   "./",
   "./index.html","./news.html","./squadra.html","./video.html",
   "./prossima.html","./partite.html","./calendario.html","./admin.html",
+  "./classifica.html",
   "./settings.html",
   "./style.css?v=34",
   "./data-store.js",

@@ -16,7 +16,16 @@ const COLLECTIONS = {
   news:      'news',
   players:   'players',
   videos:    'videos',
+  standings: 'standings', // classifica
 };
+
+// Stagione corrente in formato "2025/26" (agosto→maggio).
+// Usata come valore di default nei form Admin e per i filtri stagione.
+export function currentSeason(){
+  const now = new Date();
+  const y = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  return `${y}/${String(y+1).slice(-2)}`;
+}
 
 // ---- Sottoscrizioni in tempo reale ----
 // cb(arrayDiOggetti) viene richiamata subito e ad ogni cambiamento.
@@ -37,6 +46,7 @@ export const subscribeMatches = (cb) => subscribe(COLLECTIONS.matches, cb, 'data
 export const subscribeNews    = (cb) => subscribe(COLLECTIONS.news, cb);
 export const subscribePlayers = (cb) => subscribe(COLLECTIONS.players, cb);
 export const subscribeVideos  = (cb) => subscribe(COLLECTIONS.videos, cb);
+export const subscribeStandings = (cb) => subscribe(COLLECTIONS.standings, cb);
 
 // ---- CRUD per il pannello Admin ----
 // (le regole di sicurezza di Firestore permettono la scrittura solo se loggati)
@@ -69,4 +79,9 @@ export const Videos = {
   add:    (data) => addItem(COLLECTIONS.videos, data),
   update: (id, data) => updateItem(COLLECTIONS.videos, id, data),
   remove: (id) => deleteItem(COLLECTIONS.videos, id),
+};
+export const Standings = {
+  add:    (data) => addItem(COLLECTIONS.standings, data),
+  update: (id, data) => updateItem(COLLECTIONS.standings, id, data),
+  remove: (id) => deleteItem(COLLECTIONS.standings, id),
 };

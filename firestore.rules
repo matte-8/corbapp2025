@@ -21,6 +21,10 @@ service cloud.firestore {
       allow read: if true;
       allow write: if request.auth != null;
     }
+    match /standings/{docId} {
+      allow read: if true;
+      allow write: if request.auth != null;
+    }
 
     // Token di notifica push: ogni telefono può registrare/rimuovere
     // il PROPRIO token, ma nessuno (a parte il backend con la chiave

@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Classifica - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=34">
+  <style>
+    .season-select{display:flex;align-items:center;gap:8px;margin:12px 0}
+    .season-select select{border:1px solid var(--ring);border-radius:12px;padding:8px 12px;background:#fff;font:inherit;font-weight:700}
+    .std-table{width:100%;border-collapse:collapse;font-size:14px}
+    .std-table th{font-size:11px;text-transform:uppercase;color:var(--muted);text-align:center;padding:6px 4px;font-weight:700}
+    .std-table th.team-col, .std-table td.team-col{text-align:left;padding-left:6px}
+    .std-table td{text-align:center;padding:10px 4px;border-top:1px solid var(--ring)}
+    .std-table tr.me{background:#f5eef0}
+    .std-table .pos{font-weight:800;color:var(--muted);width:22px}
+    .std-table .team-name{font-weight:700}
+    .std-table .pts{font-weight:900;color:var(--granata)}
+    @media(max-width:420px){ .std-table{font-size:12px} .std-table th{font-size:10px} }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Classifica</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+        <h2 style="margin:0">Classifica</h2>
+        <div class="season-select">
+          <label for="seasonPick" class="small">Stagione</label>
+          <select id="seasonPick"></select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="std-table">
+          <thead>
+            <tr>
+              <th></th>
+              <th class="team-col">Squadra</th>
+              <th>Pt</th>
+              <th>G</th>
+              <th>V</th>
+              <th>N</th>
+              <th>P</th>
+              <th>GF</th>
+              <th>GS</th>
+              <th>DR</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="small" style="margin-top:10px"></div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
+      <h2 style="margin:0 0 8px 0">⚽ Classifica marcatori — U.S. Corbiolo</h2>
+      <div id="scorersList"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { subscribeStandings, subscribePlayers, currentSeason } from './data-store.js';
+
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
+
+    const CORB = 'corbiolo';
+    const seasonPick = document.getElementById('seasonPick');
+    const tbody = document.getElementById('tbody');
+    const empty = document.getElementById('empty');
+
+    let all = [];       // tutte le righe di classifica, tutte le stagioni
+    let selected = currentSeason();
+
+    function populateSeasons(){
+      const seasons = [...new Set(all.map(r => r.stagione || currentSeason()))]
+        .sort((a,b)=> b.localeCompare(a)); // più recente prima
+      if (!seasons.includes(selected)) seasons.unshift(selected);
+      seasonPick.innerHTML = seasons.map(s => `<option value="${s}" ${s===selected?'selected':''}>${s}</option>`).join('');
+    }
+
+    function render(){
+      const rows = all
+        .filter(r => (r.stagione || currentSeason()) === selected)
+        .map(r => ({
+          squadra: r.squadra || '',
+          punti: +r.punti || 0,
+          giocate: +r.giocate || 0,
+          vinte: +r.vinte || 0,
+          pareggiate: +r.pareggiate || 0,
+          perse: +r.perse || 0,
+          gf: +r.gf || 0,
+          gs: +r.gs || 0,
+        }))
+        .sort((a,b) => (b.punti - a.punti) || ((b.gf-b.gs) - (a.gf-a.gs)) || (b.gf - a.gf));
+
+      if (!rows.length){
+        tbody.innerHTML = '';
+        empty.textContent = 'Classifica non ancora disponibile per questa stagione.';
+        return;
+      }
+      empty.textContent = '';
+
+      tbody.innerHTML = rows.map((r, i) => {
+        const isMe = (r.squadra||'').trim().toLowerCase() === CORB;
+        const dr = r.gf - r.gs;
+        return `
+          <tr class="${isMe ? 'me' : ''}">
+            <td class="pos">${i+1}</td>
+            <td class="team-col team-name">${r.squadra}</td>
+            <td class="pts">${r.punti}</td>
+            <td>${r.giocate}</td>
+            <td>${r.vinte}</td>
+            <td>${r.pareggiate}</td>
+            <td>${r.perse}</td>
+            <td>${r.gf}</td>
+            <td>${r.gs}</td>
+            <td>${dr>=0?'+':''}${dr}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    seasonPick.addEventListener('change', () => { selected = seasonPick.value; render(); });
+
+    // 👇 si aggiorna da solo appena l'admin modifica la classifica
+    subscribeStandings((rows) => {
+      all = rows || [];
+      populateSeasons();
+      render();
+    });
+
+    // Classifica marcatori interna: solo i giocatori della vostra rosa, ordinati per gol
+    const scorersList = document.getElementById('scorersList');
+    subscribePlayers((players) => {
+      const scorers = (players||[])
+        .map(p => ({ nome: (p.nome||'').trim(), numero: (p.numero||'').toString().trim(), gol: +p.gol || 0 }))
+        .filter(p => p.gol > 0)
+        .sort((a,b) => b.gol - a.gol);
+
+      scorersList.innerHTML = scorers.length ? scorers.map((p, i) => `
+        <div class="item-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--ring)">
+          <div><span class="small muted" style="margin-right:8px">${i+1}°</span><strong>${p.nome}</strong> ${p.numero ? '<span class="small muted">#'+p.numero+'</span>' : ''}</div>
+          <div style="font-weight:900;color:var(--granata)">${p.gol} ⚽</div>
+        </div>
+      `).join('') : '<div class="small">Nessun gol registrato ancora. Aggiorna i gol dei giocatori dal pannello Admin → Giocatori.</div>';
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+
+  <script src="./ui.js?v=34"></script>
+  <script defer src="./install-prompt.js?v=1"></script>
+</body>
+</html>
