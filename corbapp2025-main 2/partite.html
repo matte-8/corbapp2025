@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Risultati - CORB</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="stylesheet" href="./style.css?v=35">
+  <style>
+    .kpi-grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:12px}
+    .kpi{background:#ffffff12;border:1px solid #ffffff26;border-radius:16px;padding:10px 6px;text-align:center;min-height:84px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px}
+    .kpi .ico{font-size:18px}.kpi .val{font-weight:900;font-size:22px}.kpi .lbl{font-size:12px;opacity:.95}
+    .kpi-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:12px}
+    .kpi-big{background:#ffffff18;border:1px solid #ffffff2b;border-radius:16px;padding:12px 10px;text-align:center;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:6px}
+    .kpi-big .ico{font-size:18px}.kpi-big .val{font-weight:900;font-size:26px}.kpi-big .lbl{font-size:13px;opacity:.95}
+    .form-wrap{display:flex;align-items:center;gap:10px;margin-top:12px;flex-wrap:wrap}
+    .form-dot{width:26px;height:26px;border-radius:999px;display:inline-flex;align-items:center;justify-content:center;font-weight:800;color:#fff;font-size:12px}
+    .fW{background:#10b981}.fD{background:#f59e0b}.fL{background:#ef4444}
+    .match-row{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;padding:12px 0;border-bottom:1px solid var(--ring)}
+    .match-row:last-child{border-bottom:0}
+    .team{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+    .team .logo{width:44px;height:44px;border-radius:10px;object-fit:contain;display:block}
+    .team .name{font-weight:700;margin-top:6px}
+    .score-badge{display:flex;align-items:center;justify-content:center;width:64px;height:64px;border-radius:14px;background:#f5eef0;color:#7d2631;font-weight:900;font-size:22px}
+    @media(max-width:380px){.kpi .val{font-size:20px}.kpi-big .val{font-size:24px}.score-badge{width:58px;height:58px;font-size:20px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Risultati</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+  </nav>
+
+  <main class="container">
+    <section class="stat-card">
+      <div class="stat-head">
+        <div class="stat-title"><span>📊</span><span>Statistiche Stagione</span></div>
+        <select id="seasonPick" class="stat-range small" style="background:transparent;color:inherit;border:1px solid #ffffff40;border-radius:10px;padding:4px 8px"></select>
+      </div>
+
+      <div class="kpi-grid-4">
+        <div class="kpi"><div class="ico">🎯</div><div class="val" id="kPartite">0</div><div class="lbl">Partite</div></div>
+        <div class="kpi"><div class="ico">✅</div><div class="val" id="kVittorie">0</div><div class="lbl">Vittorie</div></div>
+        <div class="kpi"><div class="ico">➖</div><div class="val" id="kPareggi">0</div><div class="lbl">Pareggi</div></div>
+        <div class="kpi"><div class="ico">❌</div><div class="val" id="kSconfitte">0</div><div class="lbl">Sconfitte</div></div>
+      </div>
+
+      <div class="kpi-grid-3">
+        <div class="kpi-big"><div class="ico">⚽️</div><div class="val" id="kFatti">0</div><div class="lbl">Gol fatti</div></div>
+        <div class="kpi-big"><div class="ico">🛡️</div><div class="val" id="kSubiti">0</div><div class="lbl">Gol subiti</div></div>
+        <div class="kpi-big"><div class="ico">±</div><div class="val" id="kDiff">0</div><div class="lbl">Differenza reti</div></div>
+      </div>
+
+      <div class="form-wrap">
+        <span class="small">Forma attuale:</span>
+        <div id="formDots"></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 style="margin:0 0 8px 0">Tutte le partite giocate</h2>
+      <div id="played"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { subscribeMatches, currentSeason } from './data-store.js';
+
+    const drawer = document.getElementById('drawer');
+    const openBtn = document.getElementById('menuBtn');
+    const closeBtn = document.getElementById('drawer-close');
+    openBtn.addEventListener('click', (e)=>{ e.stopPropagation(); drawer.classList.add('open'); });
+    closeBtn.addEventListener('click', ()=> drawer.classList.remove('open'));
+    document.addEventListener('click', (e)=>{
+      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== openBtn){
+        drawer.classList.remove('open');
+      }
+    });
+
+    const CORB = 'corbiolo';
+    const LOGO_CORB = 'img/logo_c5.png';
+    const LOGO_AVV  = 'img/logo_avv.png';
+
+    const toDate = (m)=>{ const dt = new Date((m.data||'')+'T'+(m.ora||'00:00')); return isNaN(+dt) ? new Date(m.data||'') : dt; };
+    const parseScore = (s='')=>{ const m = String(s).trim().match(/(\d+)\s*[-–]\s*(\d+)/); return m ? {gh:+m[1], ga:+m[2]} : null; };
+    const fmtDay = (d)=> d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
+
+    const seasonPick = document.getElementById('seasonPick');
+    let allRows = [];
+    let selectedSeason = currentSeason();
+
+    function populateSeasons(){
+      const seasons = [...new Set(allRows.map(r => r.stagione || currentSeason()))]
+        .sort((a,b)=> b.localeCompare(a));
+      if (!seasons.includes(selectedSeason)) seasons.unshift(selectedSeason);
+      seasonPick.innerHTML = seasons.map(s => `<option value="${s}" ${s===selectedSeason?'selected':''}>Stagione ${s}</option>`).join('');
+    }
+    seasonPick.addEventListener('change', ()=>{ selectedSeason = seasonPick.value; render(); });
+
+    function render(){
+      const raw = allRows
+        .filter(x => (x.stagione || currentSeason()) === selectedSeason)
+        .map(x=>({...x, date: toDate(x)}));
+      const played = raw.filter(x=> parseScore(x.risultato));
+
+      let P=0,V=0,N=0,S=0,GF=0,GA=0;
+      const recent = [...played].sort((a,b)=> b.date - a.date).slice(0,5);
+
+      played.forEach(m=>{
+        const homeLC = (m.casa||'').trim().toLowerCase();
+        const sc = parseScore(m.risultato); if(!sc) return;
+        const corbHome = homeLC===CORB;
+        const gf = corbHome ? sc.gh : sc.ga;
+        const ga = corbHome ? sc.ga : sc.gh;
+        P++; GF+=gf; GA+=ga;
+        if (gf>ga) V++; else if (gf===ga) N++; else S++;
+      });
+      const diff = GF-GA;
+      kPartite.textContent=P; kVittorie.textContent=V; kPareggi.textContent=N; kSconfitte.textContent=S;
+      kFatti.textContent=GF;  kSubiti.textContent=GA;  kDiff.textContent=(diff>=0?'+':'')+diff;
+
+      formDots.innerHTML = recent.map(m=>{
+        const homeLC = (m.casa||'').trim().toLowerCase();
+        const sc = parseScore(m.risultato);
+        const gf = (homeLC===CORB)? sc.gh : sc.ga;
+        const ga = (homeLC===CORB)? sc.ga : sc.gh;
+        const cls = gf>ga ? 'fW' : (gf===ga ? 'fD' : 'fL');
+        const lab = gf>ga ? 'V'  : (gf===ga ? 'P'  : 'S');
+        return `<span class="form-dot ${cls}">${lab}</span>`;
+      }).join('');
+
+      const rowsHTML = [...played].sort((a,b)=> b.date - a.date).map(m=>{
+        const homeName = (m.casa || 'Corbiolo').trim();
+        const awayName = (m.fuori || 'Avversario').trim();
+        const sc = parseScore(m.risultato) || {gh:'-',ga:'-'};
+        const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_casa || LOGO_AVV);
+        const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_fuori || LOGO_AVV);
+        const scoreTxt = `${sc.gh} - ${sc.ga}`;
+        const day = fmtDay(m.date);
+
+        return `
+          <div class="match-row">
+            <div class="team">
+              <img class="logo" src="${homeLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+              <div class="name">${homeName}</div>
+            </div>
+            <div class="score-badge">${scoreTxt}</div>
+            <div class="team">
+              <img class="logo" src="${awayLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+              <div class="name">${awayName}</div>
+            </div>
+            <div class="small muted" style="grid-column:1/-1;text-align:center;margin-top:6px">${day}</div>
+          </div>`;
+      }).join('');
+
+      document.getElementById('played').innerHTML = rowsHTML || '<div class="small">Nessuna partita giocata in questa stagione.</div>';
+    }
+
+    // 👇 si aggiorna da solo appena cambia qualcosa nel database
+    subscribeMatches((rows) => {
+      allRows = rows || [];
+      populateSeasons();
+      render();
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+  <script src="./ui.js?v=35"></script>
+  <script defer src="./install-prompt.js?v=2"></script>
+</body>
+</html>
