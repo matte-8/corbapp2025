@@ -14,6 +14,17 @@
   --home:#6b0f1a;
   --away:#0ea5e9;
 }
+
+/* ===== Tema scuro ===== */
+:root[data-theme="dark"]{
+  --bg:#17131a;
+  --card:#241d24;
+  --text:#f0e9eb;
+  --muted:#a892a0;
+  --ring:rgba(255,255,255,.12);
+}
+:root[data-theme="dark"] .map-placeholder{ background:#2a222b; color:var(--muted) }
+:root[data-theme="dark"] img{ filter:brightness(0.95) }
 /* ===== Reset di base ===== */
 *{box-sizing:border-box}
 html,body{

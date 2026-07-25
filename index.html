@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
+  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Home - CORB</title>
   <link rel="manifest" href="manifest.json">
@@ -69,6 +70,7 @@
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
     <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
     <a href="./settings.html">🔔 Impostazioni</a>
     <a href="./admin.html">⚙️ Admin</a>
   </nav>
@@ -81,6 +83,16 @@
       <a class="home-box" href="./prossima.html"><span class="home-emoji">📅</span><div>Prossima Partita</div></a>
       <a class="home-box" href="./partite.html"><span class="home-emoji">🏆</span><div>Risultati</div></a>
       <a class="home-box" href="./calendario.html"><span class="home-emoji">📆</span><div>Calendario</div></a>
+    </section>
+
+    <section class="panel-granata" style="margin-top:14px">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0">Prossima partita</h2>
+        <a class="pill" href="./prossima.html">Dettagli</a>
+      </div>
+      <div id="countdownBox" style="margin-top:10px;text-align:center">
+        <div class="small">Caricamento...</div>
+      </div>
     </section>
 
     <section class="panel-granata" style="margin-top:14px">
@@ -126,6 +138,33 @@
       ? window.teamBadgeHTML(name, url, size)
       : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
     const lastBox = document.getElementById('lastMatch');
+    const countdownBox = document.getElementById('countdownBox');
+    let nextMatch = null;
+    let countdownTimer = null;
+
+    function renderCountdown(){
+      if (!nextMatch){
+        countdownBox.innerHTML = `<div class="small">Nessuna partita in programma</div>`;
+        return;
+      }
+      const diff = nextMatch.date - new Date();
+      if (diff <= 0){
+        countdownBox.innerHTML = `<div style="font-weight:800">Si gioca oggi! 🔥</div>`;
+        return;
+      }
+      const days = Math.floor(diff / 86400000);
+      const hours = Math.floor((diff % 86400000) / 3600000);
+      const mins = Math.floor((diff % 3600000) / 60000);
+      const homeName = (nextMatch.casa || 'Corbiolo').trim();
+      const awayName = (nextMatch.fuori || 'Avversario').trim();
+      countdownBox.innerHTML = `
+        <div style="font-size:13px;opacity:.9;margin-bottom:6px">${homeName} vs ${awayName}</div>
+        <div style="display:flex;justify-content:center;gap:14px">
+          <div><div style="font-size:28px;font-weight:900">${days}</div><div class="small">giorni</div></div>
+          <div><div style="font-size:28px;font-weight:900">${hours}</div><div class="small">ore</div></div>
+          <div><div style="font-size:28px;font-weight:900">${mins}</div><div class="small">min</div></div>
+        </div>`;
+    }
 
     // 👇 Si aggiorna DA SOLO ogni volta che qualcosa cambia nel database,
     // anche mentre la pagina è aperta (niente più "ricarica per vedere il risultato").
@@ -137,6 +176,11 @@
       const now = new Date();
       const lastPlayed = matches.filter(m => m.date <= now).sort((a,b)=> b.date - a.date)[0]
                        || matches.sort((a,b)=> b.date - a.date)[0];
+
+      nextMatch = matches.filter(m => m.date > now).sort((a,b)=> a.date - b.date)[0] || null;
+      renderCountdown();
+      if (countdownTimer) clearInterval(countdownTimer);
+      countdownTimer = setInterval(renderCountdown, 60000); // aggiorna ogni minuto
 
       if (lastPlayed){
         const homeName  = (lastPlayed.casa  || 'Corbiolo').trim();

@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8"/>
+  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Impostazioni - CORB</title>
 
@@ -48,12 +49,22 @@
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
     <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
     <a href="./admin.html">⚙️ Admin</a>
     <a href="./settings.html">🔔 Impostazioni</a>
   </nav>
 
   <main class="container">
     <section class="card">
+      <h2 style="margin:0 0 8px 0">Aspetto</h2>
+      <div class="switch">
+        <label for="themeToggle">Tema scuro</label>
+        <input id="themeToggle" type="checkbox" />
+      </div>
+      <div class="desc">Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.</div>
+    </section>
+
+    <section class="card" style="margin-top:14px">
       <h2 style="margin:0 0 8px 0">Notifiche partite</h2>
 
       <div class="switch">
@@ -79,7 +90,18 @@
   </main>
 
   <script type="module">
+    // Tema scuro/chiaro
+    const themeToggle = document.getElementById('themeToggle');
     import { permissionState, enableNotifications, disableNotifications } from './notify.js';
+
+    // Tema scuro/chiaro
+    const themeToggle = document.getElementById('themeToggle');
+    themeToggle.checked = (localStorage.getItem('corb-theme') === 'dark');
+    themeToggle.addEventListener('change', () => {
+      const mode = themeToggle.checked ? 'dark' : 'light';
+      localStorage.setItem('corb-theme', mode);
+      document.documentElement.dataset.theme = mode;
+    });
 
     // Drawer
     const drawer = document.getElementById('drawer');
