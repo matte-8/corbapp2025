@@ -17,6 +17,7 @@ const COLLECTIONS = {
   players:   'players',
   videos:    'videos',
   standings: 'standings', // classifica
+  scorersHistory: 'scorers_history', // marcatori delle stagioni passate (archivio)
 };
 
 // Stagione corrente in formato "2025/26" (agosto→maggio).
@@ -47,6 +48,7 @@ export const subscribeNews    = (cb) => subscribe(COLLECTIONS.news, cb);
 export const subscribePlayers = (cb) => subscribe(COLLECTIONS.players, cb);
 export const subscribeVideos  = (cb) => subscribe(COLLECTIONS.videos, cb);
 export const subscribeStandings = (cb) => subscribe(COLLECTIONS.standings, cb);
+export const subscribeScorersHistory = (cb) => subscribe(COLLECTIONS.scorersHistory, cb);
 
 // ---- CRUD per il pannello Admin ----
 // (le regole di sicurezza di Firestore permettono la scrittura solo se loggati)

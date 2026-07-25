@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <link rel="stylesheet" href="./style.css?v=34">
+  <link rel="stylesheet" href="./style.css?v=35">
   <style>
     .season-select{display:flex;align-items:center;gap:8px;margin:12px 0}
     .season-select select{border:1px solid var(--ring);border-radius:12px;padding:8px 12px;background:#fff;font:inherit;font-weight:700}
@@ -91,7 +91,7 @@
   </main>
 
   <script type="module">
-    import { subscribeStandings, subscribePlayers, currentSeason } from './data-store.js';
+    import { subscribeStandings, subscribePlayers, subscribeScorersHistory, currentSeason } from './data-store.js';
 
     const drawer = document.getElementById('drawer');
     document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
@@ -154,7 +154,7 @@
       }).join('');
     }
 
-    seasonPick.addEventListener('change', () => { selected = seasonPick.value; render(); });
+    seasonPick.addEventListener('change', () => { selected = seasonPick.value; render(); renderScorers(); });
 
     // 👇 si aggiorna da solo appena l'admin modifica la classifica
     subscribeStandings((rows) => {
@@ -163,26 +163,35 @@
       render();
     });
 
-    // Classifica marcatori interna: solo i giocatori della vostra rosa, ordinati per gol
+    // Classifica marcatori: per la stagione IN CORSO uso i gol live dei giocatori
+    // (che aggiorni di partita in partita dall'Admin); per le stagioni PASSATE
+    // uso invece l'archivio storico (scorers_history), popolato una volta sola.
     const scorersList = document.getElementById('scorersList');
-    subscribePlayers((players) => {
-      const scorers = (players||[])
-        .map(p => ({ nome: (p.nome||'').trim(), numero: (p.numero||'').toString().trim(), gol: +p.gol || 0 }))
-        .filter(p => p.gol > 0)
-        .sort((a,b) => b.gol - a.gol);
+    let livePlayers = [];
+    let historyScorers = [];
+
+    function renderScorers(){
+      const useLive = selected === currentSeason();
+      const scorers = (useLive
+        ? livePlayers.map(p => ({ nome:(p.nome||'').trim(), numero:(p.numero||'').toString().trim(), gol:+p.gol||0 }))
+        : historyScorers.filter(s => (s.stagione||'') === selected).map(s => ({ nome:s.nome||'', numero:'', gol:+s.gol||0 }))
+      ).filter(p => p.gol > 0).sort((a,b) => b.gol - a.gol);
 
       scorersList.innerHTML = scorers.length ? scorers.map((p, i) => `
         <div class="item-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--ring)">
           <div><span class="small muted" style="margin-right:8px">${i+1}°</span><strong>${p.nome}</strong> ${p.numero ? '<span class="small muted">#'+p.numero+'</span>' : ''}</div>
           <div style="font-weight:900;color:var(--granata)">${p.gol} ⚽</div>
         </div>
-      `).join('') : '<div class="small">Nessun gol registrato ancora. Aggiorna i gol dei giocatori dal pannello Admin → Giocatori.</div>';
-    });
+      `).join('') : `<div class="small">Nessun gol registrato per la stagione ${selected}.</div>`;
+    }
+
+    subscribePlayers((players) => { livePlayers = players || []; renderScorers(); });
+    subscribeScorersHistory((rows) => { historyScorers = rows || []; renderScorers(); });
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 
-  <script src="./ui.js?v=34"></script>
-  <script defer src="./install-prompt.js?v=1"></script>
+  <script src="./ui.js?v=35"></script>
+  <script defer src="./install-prompt.js?v=2"></script>
 </body>
 </html>

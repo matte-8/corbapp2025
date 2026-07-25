@@ -1,5 +1,5 @@
 // sw.js — cache offline (PWA) + notifiche push in background (Firebase Cloud Messaging)
-const CACHE = "corb-cache-v9";
+const CACHE = "corb-cache-v10";
 
 const ASSETS = [
   "./",
@@ -7,7 +7,7 @@ const ASSETS = [
   "./prossima.html","./partite.html","./calendario.html","./admin.html",
   "./classifica.html",
   "./settings.html",
-  "./style.css?v=34",
+  "./style.css?v=35",
   "./data-store.js",
   "./firebase-init.js",
   "./ui.js",
