@@ -77,7 +77,7 @@
     <section class="grid-home">
       <a class="home-box" href="./news.html"><span class="home-emoji">📰</span><div>News</div></a>
       <a class="home-box" href="./squadra.html"><span class="home-emoji">👥</span><div>Squadra</div></a>
-      <a class="home-box" href="./video.html"><span class="home-emoji">🎥</span><div>Video</div></a>
+      <a class="home-box" href="./classifica.html"><span class="home-emoji">🏅</span><div>Classifica</div></a>
       <a class="home-box" href="./prossima.html"><span class="home-emoji">📅</span><div>Prossima Partita</div></a>
       <a class="home-box" href="./partite.html"><span class="home-emoji">🏆</span><div>Risultati</div></a>
       <a class="home-box" href="./calendario.html"><span class="home-emoji">📆</span><div>Calendario</div></a>
@@ -121,12 +121,7 @@
     closeBtn.onclick = ()=> drawer.classList.remove('open');
     document.addEventListener('click',(e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open'); });
 
-    const logoFor = (name, explicit) => {
-      if (explicit && explicit.trim()) return explicit;
-      if ((name||'').toLowerCase().includes('corbiolo')) return 'img/logo_c5.png';
-      return 'img/logo_avv.png';
-    };
-
+    const CORB = 'corbiolo';
     const lastBox = document.getElementById('lastMatch');
 
     // 👇 Si aggiorna DA SOLO ogni volta che qualcosa cambia nel database,
@@ -141,19 +136,19 @@
                        || matches.sort((a,b)=> b.date - a.date)[0];
 
       if (lastPlayed){
-        const homeName  = lastPlayed.casa  || 'Corbiolo';
-        const awayName  = lastPlayed.fuori || 'Avversario';
-        const homeLogo  = logoFor(homeName, lastPlayed.logo_casa);
-        const awayLogo  = logoFor(awayName, lastPlayed.logo_fuori);
+        const homeName  = (lastPlayed.casa  || 'Corbiolo').trim();
+        const awayName  = (lastPlayed.fuori || 'Avversario').trim();
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : window.teamBadgeHTML(homeName, lastPlayed.logo_casa, 56);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : window.teamBadgeHTML(awayName, lastPlayed.logo_fuori, 56);
         const scoreText = (lastPlayed.risultato || '–').replace('-', ' - ');
         lastBox.innerHTML = `
           <div class="team">
-            <img src="${homeLogo}" alt="" onerror="this.src='img/logo_c5.png'">
+            ${homeBadge}
             <div class="name">${homeName}</div>
           </div>
           <div class="score-big">${scoreText}</div>
           <div class="team">
-            <img src="${awayLogo}" alt="" onerror="this.src='img/logo_avv.png'">
+            ${awayBadge}
             <div class="name">${awayName}</div>
           </div>`;
       } else {
