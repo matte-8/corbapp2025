@@ -83,6 +83,9 @@
     document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
 
     const CORB = 'corbiolo';
+    const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
+      ? window.teamBadgeHTML(name, url, size)
+      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
     const LOGO_CORB = 'img/logo_c5.png';
     const LOGO_AVV  = 'img/logo_avv.png';
 
@@ -106,8 +109,8 @@
       if(next){
         const homeName = (next.casa||'Corbiolo').trim();
         const awayName = (next.fuori||'Avversario').trim();
-        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(homeName, next.logo_casa, 64);
-        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(awayName, next.logo_fuori, 64);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : badge(homeName, next.logo_casa, 64);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : badge(awayName, next.logo_fuori, 64);
 
         nextBlock.innerHTML = `
           <div class="teamBox">
@@ -133,8 +136,8 @@
       fWrap.innerHTML = future.length ? future.map(m=>{
         const homeName = (m.casa||'Corbiolo').trim();
         const awayName = (m.fuori||'Avversario').trim();
-        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(homeName, m.logo_casa, 28);
-        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(awayName, m.logo_fuori, 28);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : badge(homeName, m.logo_casa, 28);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : badge(awayName, m.logo_fuori, 28);
 
         return `
           <div class="future-row">

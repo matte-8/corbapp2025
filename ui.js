@@ -91,6 +91,36 @@
     }
   }
 
+  // Stemma generato con le iniziali della squadra, usato quando non abbiamo
+  // un logo reale (es. avversari amatoriali senza logo ufficiale online).
+  // Colore deterministico in base al nome, così la stessa squadra ha sempre
+  // lo stesso colore ovunque compaia nell'app.
+  function teamBadgeHTML(name, explicitUrl, size=44){
+    const clean = (name||'').trim();
+    const words = clean.split(/\s+/).filter(Boolean);
+    const initials = (words.slice(0,2).map(w=>w[0]).join('') || '?').toUpperCase();
+    let hash = 0;
+    for (const c of clean) hash = (hash*31 + c.charCodeAt(0)) % 360;
+    const badgeDiv = `<div class="team-badge" data-name="${clean}" style="width:${size}px;height:${size}px;border-radius:50%;background:hsl(${hash},52%,42%);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:${Math.round(size*0.38)}px;flex-shrink:0">${initials}</div>`;
+    if (explicitUrl){
+      return `<img class="logo" src="${explicitUrl}" style="width:${size}px;height:${size}px;object-fit:contain" data-fallback-name="${clean}" data-fallback-size="${size}" alt="">`;
+    }
+    return badgeDiv;
+  }
+  window.teamBadgeHTML = teamBadgeHTML;
+
+  // Se un'immagine con data-fallback-name fallisce nel caricamento, la sostituisco
+  // con lo stemma generato (delegation globale, funziona anche su contenuto creato dopo).
+  document.addEventListener('error', (e) => {
+    const img = e.target;
+    if (img?.tagName === 'IMG' && img.dataset?.fallbackName){
+      const size = +img.dataset.fallbackSize || 44;
+      const span = document.createElement('span');
+      span.innerHTML = teamBadgeHTML(img.dataset.fallbackName, '', size);
+      img.replaceWith(span.firstElementChild);
+    }
+  }, true);
+
   ready(() => {
     attachDrawer();
     hydrateLastSync();

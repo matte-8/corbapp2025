@@ -20,11 +20,12 @@ const COLLECTIONS = {
   scorersHistory: 'scorers_history', // marcatori delle stagioni passate (archivio)
 };
 
-// Stagione corrente in formato "2025/26" (agosto→maggio).
+// Stagione corrente in formato "2025/26" (settembre→giugno; da luglio si considera
+// già iniziata la preparazione della stagione successiva).
 // Usata come valore di default nei form Admin e per i filtri stagione.
 export function currentSeason(){
   const now = new Date();
-  const y = now.getMonth() >= 7 ? now.getFullYear() : now.getFullYear() - 1;
+  const y = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear() - 1; // 6 = luglio
   return `${y}/${String(y+1).slice(-2)}`;
 }
 

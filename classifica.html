@@ -171,10 +171,14 @@
     let historyScorers = [];
 
     function renderScorers(){
-      const useLive = selected === currentSeason();
+      const historyForSeason = historyScorers.filter(s => (s.stagione||'') === selected);
+      // Se esiste un archivio storico per questa stagione, ha sempre la priorità
+      // (evita il caso limite in cui, in piena estate, la stagione passata coincide
+      // ancora col calcolo automatico di "stagione in corso").
+      const useLive = historyForSeason.length === 0;
       const scorers = (useLive
         ? livePlayers.map(p => ({ nome:(p.nome||'').trim(), numero:(p.numero||'').toString().trim(), gol:+p.gol||0 }))
-        : historyScorers.filter(s => (s.stagione||'') === selected).map(s => ({ nome:s.nome||'', numero:'', gol:+s.gol||0 }))
+        : historyForSeason.map(s => ({ nome:s.nome||'', numero:'', gol:+s.gol||0 }))
       ).filter(p => p.gol > 0).sort((a,b) => b.gol - a.gol);
 
       scorersList.innerHTML = scorers.length ? scorers.map((p, i) => `

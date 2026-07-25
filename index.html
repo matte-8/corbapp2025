@@ -122,6 +122,9 @@
     document.addEventListener('click',(e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open'); });
 
     const CORB = 'corbiolo';
+    const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
+      ? window.teamBadgeHTML(name, url, size)
+      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
     const lastBox = document.getElementById('lastMatch');
 
     // 👇 Si aggiorna DA SOLO ogni volta che qualcosa cambia nel database,
@@ -138,8 +141,8 @@
       if (lastPlayed){
         const homeName  = (lastPlayed.casa  || 'Corbiolo').trim();
         const awayName  = (lastPlayed.fuori || 'Avversario').trim();
-        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : window.teamBadgeHTML(homeName, lastPlayed.logo_casa, 56);
-        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : window.teamBadgeHTML(awayName, lastPlayed.logo_fuori, 56);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : badge(homeName, lastPlayed.logo_casa, 56);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : badge(awayName, lastPlayed.logo_fuori, 56);
         const scoreText = (lastPlayed.risultato || '–').replace('-', ' - ');
         lastBox.innerHTML = `
           <div class="team">

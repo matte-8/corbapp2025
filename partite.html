@@ -111,6 +111,11 @@
     const toDate = (m)=>{ const dt = new Date((m.data||'')+'T'+(m.ora||'00:00')); return isNaN(+dt) ? new Date(m.data||'') : dt; };
     const parseScore = (s='')=>{ const m = String(s).trim().match(/(\d+)\s*[-–]\s*(\d+)/); return m ? {gh:+m[1], ga:+m[2]} : null; };
     const fmtDay = (d)=> d.toLocaleDateString(undefined,{day:'2-digit',month:'short',year:'numeric'});
+    // Fallback di sicurezza: se ui.js non fosse ancora aggiornato online,
+    // non blocco tutta la lista partite — mostro un pallino semplice.
+    const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
+      ? window.teamBadgeHTML(name, url, size)
+      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
 
     const seasonPick = document.getElementById('seasonPick');
     let allRows = [];
@@ -162,10 +167,10 @@
         const sc = parseScore(m.risultato) || {gh:'-',ga:'-'};
         const homeBadge = homeName.toLowerCase()===CORB
           ? `<img class="logo" src="${LOGO_CORB}" alt="">`
-          : window.teamBadgeHTML(homeName, m.logo_casa, 44);
+          : badge(homeName, m.logo_casa, 44);
         const awayBadge = awayName.toLowerCase()===CORB
           ? `<img class="logo" src="${LOGO_CORB}" alt="">`
-          : window.teamBadgeHTML(awayName, m.logo_fuori, 44);
+          : badge(awayName, m.logo_fuori, 44);
         const scoreTxt = `${sc.gh} - ${sc.ga}`;
         const day = fmtDay(m.date);
 
