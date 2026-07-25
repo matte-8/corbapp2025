@@ -160,20 +160,24 @@
         const homeName = (m.casa || 'Corbiolo').trim();
         const awayName = (m.fuori || 'Avversario').trim();
         const sc = parseScore(m.risultato) || {gh:'-',ga:'-'};
-        const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_casa || LOGO_AVV);
-        const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_fuori || LOGO_AVV);
+        const homeBadge = homeName.toLowerCase()===CORB
+          ? `<img class="logo" src="${LOGO_CORB}" alt="">`
+          : window.teamBadgeHTML(homeName, m.logo_casa, 44);
+        const awayBadge = awayName.toLowerCase()===CORB
+          ? `<img class="logo" src="${LOGO_CORB}" alt="">`
+          : window.teamBadgeHTML(awayName, m.logo_fuori, 44);
         const scoreTxt = `${sc.gh} - ${sc.ga}`;
         const day = fmtDay(m.date);
 
         return `
           <div class="match-row">
             <div class="team">
-              <img class="logo" src="${homeLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+              ${homeBadge}
               <div class="name">${homeName}</div>
             </div>
             <div class="score-badge">${scoreTxt}</div>
             <div class="team">
-              <img class="logo" src="${awayLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+              ${awayBadge}
               <div class="name">${awayName}</div>
             </div>
             <div class="small muted" style="grid-column:1/-1;text-align:center;margin-top:6px">${day}</div>

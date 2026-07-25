@@ -106,17 +106,17 @@
       if(next){
         const homeName = (next.casa||'Corbiolo').trim();
         const awayName = (next.fuori||'Avversario').trim();
-        const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (next.logo_casa || LOGO_AVV);
-        const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (next.logo_fuori || LOGO_AVV);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(homeName, next.logo_casa, 64);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="teamLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(awayName, next.logo_fuori, 64);
 
         nextBlock.innerHTML = `
           <div class="teamBox">
-            <img class="teamLogo" src="${homeLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            ${homeBadge}
             <div style="font-weight:800;margin-top:8px">${homeName}</div>
           </div>
           <div class="vsBadge">VS</div>
           <div class="teamBox">
-            <img class="teamLogo" src="${awayLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            ${awayBadge}
             <div style="font-weight:800;margin-top:8px">${awayName}</div>
           </div>`;
 
@@ -133,14 +133,14 @@
       fWrap.innerHTML = future.length ? future.map(m=>{
         const homeName = (m.casa||'Corbiolo').trim();
         const awayName = (m.fuori||'Avversario').trim();
-        const homeLogo = homeName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_casa || LOGO_AVV);
-        const awayLogo = awayName.toLowerCase()===CORB ? LOGO_CORB : (m.logo_fuori || LOGO_AVV);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(homeName, m.logo_casa, 28);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img class="tinyLogo" src="${LOGO_CORB}" alt="">` : window.teamBadgeHTML(awayName, m.logo_fuori, 28);
 
         return `
           <div class="future-row">
-            <img class="tinyLogo" src="${homeLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            ${homeBadge}
             <div class="teamName">${homeName}</div>
-            <img class="tinyLogo" src="${awayLogo}" onerror="this.src='${LOGO_AVV}'" alt="">
+            ${awayBadge}
             <div class="teamName">${awayName}</div>
             <div class="when">${fmtLong(m.date)}</div>
           </div>`;
