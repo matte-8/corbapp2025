@@ -12,8 +12,20 @@
   <link rel="apple-touch-icon" href="img/logo_c5.png">
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
-    .switch{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--ring);border-radius:12px;background:#fff}
+    .switch{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--ring);border-radius:12px;background:var(--card)}
     .switch label{font-weight:700}
+    /* Slider on/off al posto della checkbox di default */
+    .toggle-slider{position:relative;display:inline-block;width:50px;height:28px;flex-shrink:0}
+    .toggle-slider input{opacity:0;width:0;height:0}
+    .toggle-slider .track{
+      position:absolute;inset:0;background:#c9c2c5;border-radius:999px;cursor:pointer;transition:background .2s;
+    }
+    .toggle-slider .track::before{
+      content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;
+      background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
+    }
+    .toggle-slider input:checked + .track{background:var(--granata)}
+    .toggle-slider input:checked + .track::before{transform:translateX(22px)}
     .desc{font-size:13px;color:var(--muted);margin-top:6px}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
     .btn{border:1px solid var(--ring);background:#fff;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
@@ -59,7 +71,10 @@
       <h2 style="margin:0 0 8px 0">Aspetto</h2>
       <div class="switch">
         <label for="themeToggle">Tema scuro</label>
-        <input id="themeToggle" type="checkbox" />
+        <label class="toggle-slider">
+          <input id="themeToggle" type="checkbox" />
+          <span class="track"></span>
+        </label>
       </div>
       <div class="desc">Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.</div>
     </section>
@@ -69,7 +84,10 @@
 
       <div class="switch">
         <label for="toggle">Promemoria giorno-partita</label>
-        <input id="toggle" type="checkbox" />
+        <label class="toggle-slider">
+          <input id="toggle" type="checkbox" />
+          <span class="track"></span>
+        </label>
       </div>
       <div class="desc">
         Ricevi un promemoria a mezzogiorno il giorno delle partite. Su Android/PWA funziona al meglio.
@@ -90,8 +108,6 @@
   </main>
 
   <script type="module">
-    // Tema scuro/chiaro
-    const themeToggle = document.getElementById('themeToggle');
     import { permissionState, enableNotifications, disableNotifications } from './notify.js';
 
     // Tema scuro/chiaro
