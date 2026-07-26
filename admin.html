@@ -35,6 +35,43 @@
     .msg{font-size:13px;padding:8px 10px;border-radius:10px;margin-top:6px}
     .msg.ok{background:#ecfdf5;color:#059669}
     .msg.err{background:#fef2f2;color:#dc2626}
+
+    /* ---- Console Diretta: tutto compatto, pensato per stare in un solo schermo ---- */
+    .live-wrap{display:grid;gap:8px;max-width:480px;margin:0 auto}
+    .live-select{border:1px solid var(--ring);border-radius:10px;padding:8px 10px;background:var(--card);color:var(--text);font:inherit;width:100%}
+    .live-toggle{
+      width:100%;padding:14px;border-radius:14px;border:2px solid var(--ring);background:var(--card);color:var(--text);
+      font-weight:800;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;
+      transition:all .15s;
+    }
+    .live-toggle.on{
+      background:#e0261f;color:#fff;border-color:#e0261f;
+      box-shadow:0 0 0 4px rgba(224,38,31,.25), 0 0 20px rgba(224,38,31,.5);
+      animation:live-pulse 1.6s infinite;
+    }
+    @keyframes live-pulse{
+      0%,100%{box-shadow:0 0 0 4px rgba(224,38,31,.25),0 0 20px rgba(224,38,31,.5)}
+      50%{box-shadow:0 0 0 4px rgba(224,38,31,.35),0 0 30px rgba(224,38,31,.7)}
+    }
+    .live-body{display:grid;gap:8px;transition:opacity .15s}
+    .live-body.disabled{opacity:.4;pointer-events:none}
+    .live-row{display:flex;gap:6px}
+    .live-row > *{flex:1}
+    .seg-compact{display:flex;gap:6px}
+    .seg-btn-sm{flex:1;padding:7px 0;border-radius:9px;border:1px solid var(--ring);background:var(--card);color:var(--text);font-size:12px;cursor:pointer;text-align:center}
+    .seg-btn-sm.active{background:var(--granata);color:#fff;border-color:transparent}
+    .minute-stepper{display:flex;align-items:center;gap:8px;justify-content:center;border:1px solid var(--ring);border-radius:9px;padding:4px 8px;background:var(--card)}
+    .minute-stepper button{width:26px;height:26px;border-radius:50%;border:1px solid var(--ring);background:var(--card);color:var(--text);cursor:pointer;font-weight:800}
+    .minute-stepper span{font-weight:800;min-width:28px;text-align:center;font-size:14px}
+    .num-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}
+    .num-btn{aspect-ratio:1;border-radius:7px;border:1px solid var(--ring);background:var(--card);color:var(--text);font-size:11px;font-weight:700;cursor:pointer;padding:0;line-height:1.1}
+    .num-btn.active{border:2px solid var(--granata);background:#f5e7ea;color:#6b0f1a}
+    .quick-actions{display:flex;gap:6px}
+    .quick-actions button{flex:1;padding:8px;border-radius:9px;border:1px solid var(--ring);background:var(--card);color:var(--text);font-size:12px;cursor:pointer}
+    .cronaca-box{max-height:110px;overflow-y:auto;border:1px solid var(--ring);border-radius:10px;padding:6px 10px;background:var(--card)}
+    .console-row{display:flex;align-items:center;gap:8px;font-size:12px;padding:4px 0;border-bottom:1px solid var(--ring)}
+    .console-row:last-child{border-bottom:0}
+    .console-row .x{margin-left:auto;cursor:pointer;color:var(--muted)}
   </style>
 </head>
 <body>
@@ -101,17 +138,20 @@
         <button class="tab" data-tab="players">👥 Giocatori</button>
         <button class="tab" data-tab="videos">🎥 Video</button>
         <button class="tab" data-tab="standings">🏅 Classifica</button>
+        <button class="tab" data-tab="live">🔴 Diretta</button>
       </div>
 
       <div id="formZone"></div>
       <div id="msgZone"></div>
 
-      <div class="card" style="padding:12px">
+      <div id="liveConsoleZone" style="display:none"></div>
+
+      <div class="card" id="listCard" style="padding:12px">
         <h3 style="margin:0 0 8px 0" id="listTitle">Elenco</h3>
         <div id="listZone"></div>
       </div>
 
-      <div class="hint">
+      <div class="hint" id="matchHint">
         💡 Una "partita" inserita qui compare da sola sia nel Calendario (se è nel futuro) sia nei
         Risultati (appena riempi il campo Risultato) — non serve inserirla due volte.
       </div>
@@ -174,6 +214,7 @@
           {key:'risultato', label:'Risultato (vuoto = non ancora giocata)', type:'text', placeholder:'3-2'},
           {key:'logo_casa', label:'Logo casa (URL, opzionale)', type:'text'},
           {key:'logo_fuori', label:'Logo trasferta (URL, opzionale)', type:'text'},
+          {key:'live', label:'In diretta ORA?', type:'select', options:['No','Sì']},
         ],
         itemLabel: (m)=> `${m.data||'?'} ${m.ora||''} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'} ${m.risultato ? '('+m.risultato+')' : ''} ${m.stagione ? '· '+m.stagione : ''}`,
         sort: (a,b) => (b.data||'').localeCompare(a.data||'')
@@ -261,6 +302,7 @@
               if (!prefill && (currentTab==='matches' || currentTab==='standings')){
                 if (f.key==='casa') defaultValue = 'Corbiolo';
                 if (f.key==='stagione') defaultValue = currentSeason();
+                if (f.key==='live') defaultValue = 'No';
               }
               return fieldHTML(f, prefill ? prefill[f.key] : defaultValue);
             }).join('')}
@@ -339,6 +381,7 @@
       unsub[tab] = ENTITIES[tab].subscribe((rows)=>{
         cache[tab] = rows;
         if (currentTab === tab) renderList();
+        if (currentTab === 'live' && (tab === 'matches' || tab === 'players')) renderLiveTab();
       });
     }
 
@@ -346,9 +389,245 @@
       currentTab = tab;
       editingId = null;
       document.querySelectorAll('#tabs .tab').forEach(t=> t.classList.toggle('active', t.dataset.tab===tab));
-      renderForm();
-      ensureSubscribed(tab);
-      renderList();
+
+      const isLive = tab === 'live';
+      $('formZone').style.display   = isLive ? 'none' : '';
+      $('listCard').style.display   = isLive ? 'none' : '';
+      $('matchHint').style.display  = isLive ? 'none' : '';
+      $('liveConsoleZone').style.display = isLive ? 'block' : 'none';
+
+      if (isLive){
+        ensureSubscribed('matches');
+        ensureSubscribed('players');
+        renderLiveTab();
+      } else {
+        renderForm();
+        ensureSubscribed(tab);
+        renderList();
+      }
+    }
+
+    // ===================== CONSOLE DIRETTA =====================
+    const liveState = {
+      matchId: null,
+      period: '1T',      // '1T' | '2T' | 'REC' — solo per l'etichetta mostrata
+      team: 'casa',       // 'casa' | 'fuori'
+      eventType: 'gol',   // 'gol' | 'giallo' | 'rosso'
+    };
+    let clockTickTimer = null;
+
+    function periodLabel(p){ return p==='1T' ? '1°T' : p==='2T' ? '2°T' : 'Rec.'; }
+    function eventEmoji(t){ return t==='gol' ? '⚽' : t==='giallo' ? '🟨' : '🟥'; }
+
+    // Il minuto non è salvato "fisso": si calcola da quando è partito il cronometro.
+    // Così resta preciso anche se chiudi e riapri la pagina, e i tifosi vedono lo stesso valore.
+    function computeMinute(match){
+      const base = match.clockBaseMinute || 0;
+      if (match.clockRunning && match.clockStartedAt){
+        const elapsed = Math.floor((Date.now() - match.clockStartedAt) / 60000);
+        return base + elapsed;
+      }
+      return base;
+    }
+
+    async function toggleLive(match){
+      try{ await Matches.update(match.id, { live: (match.live==='Sì' ? 'No' : 'Sì') }); }
+      catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    // Cambiare tempo (1°/2°) fa ripartire il cronometro da 0'; "Recupero" cambia solo
+    // l'etichetta e lascia il cronometro dov'era (il recupero prosegue il conteggio).
+    async function setPeriod(match, period){
+      liveState.period = period;
+      const update = { periodLabel: period };
+      if (period === '1T' || period === '2T'){
+        update.clockBaseMinute = 0;
+        update.clockStartedAt = Date.now();
+        update.clockRunning = true;
+      }
+      try{ await Matches.update(match.id, update); }catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function adjustMinute(match, delta){
+      const cur = Math.max(0, computeMinute(match) + delta);
+      try{
+        await Matches.update(match.id, { clockBaseMinute: cur, clockStartedAt: Date.now(), clockRunning: match.clockRunning !== false });
+      }catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function pauseClock(match){
+      const cur = computeMinute(match);
+      try{ await Matches.update(match.id, { clockRunning:false, clockBaseMinute: cur }); }
+      catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+    async function resumeClock(match){
+      try{ await Matches.update(match.id, { clockRunning:true, clockStartedAt: Date.now() }); }
+      catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function addLiveEvent(match, label){
+      const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
+      const min = computeMinute(match);
+      const per = periodLabel(match.periodLabel || liveState.period);
+      eventi.push(`${per} ${min}' ${label}`);
+      try{ await Matches.update(match.id, { eventi }); }
+      catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function removeLiveEvent(match, idx){
+      const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
+      eventi.splice(idx, 1);
+      try{ await Matches.update(match.id, { eventi }); }catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function timeOut(match){
+      await addLiveEvent(match, "⏱️ Time-out (60'' di pausa)");
+      await pauseClock(match);
+      // Riprende da solo dopo 1 minuto reale, come nelle partite vere.
+      // Se nel frattempo lo riprendi tu a mano, questo non fa nulla di male: rimette
+      // semplicemente "in corsa" un cronometro che lo è già.
+      const matchId = match.id;
+      setTimeout(()=>{ resumeClock({ id: matchId }); }, 60000);
+    }
+
+    async function endHalf(match){
+      const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
+      eventi.push('— Fine 1° tempo —');
+      try{
+        await Matches.update(match.id, { eventi, periodLabel:'2T', clockBaseMinute:0, clockStartedAt: Date.now(), clockRunning:true });
+        liveState.period = '2T';
+        renderLiveTab();
+      }catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    async function endMatch(match){
+      const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
+      eventi.push('— Fine partita —');
+      try{
+        await Matches.update(match.id, { eventi, live:'No', clockRunning:false });
+        renderLiveTab();
+      }catch(err){ showMsg('Errore: '+err.message, 'err'); }
+    }
+
+    function renderLiveTab(){
+      const zone = $('liveConsoleZone');
+      const matches = (cache.matches || []).slice().sort((a,b)=> (b.data||'').localeCompare(a.data||''));
+      const players = (cache.players || []);
+
+      if (!liveState.matchId && matches.length) liveState.matchId = matches[0].id;
+      const match = matches.find(m => m.id === liveState.matchId);
+
+      const options = matches.map(m => `<option value="${m.id}" ${m.id===liveState.matchId?'selected':''}>${m.data||'?'} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'}</option>`).join('');
+
+      if (clockTickTimer){ clearInterval(clockTickTimer); clockTickTimer = null; }
+
+      if (!match){
+        zone.innerHTML = `<div class="card small">Nessuna partita disponibile. Creane una nella tab Partite.</div>`;
+        return;
+      }
+
+      liveState.period = match.periodLabel || liveState.period;
+      const isLive = match.live === 'Sì';
+      const eventi = Array.isArray(match.eventi) ? match.eventi : [];
+      const isRunning = match.clockRunning !== false && !!match.clockStartedAt;
+
+      const numBtns = Array.from({length:20}, (_,i)=> i+1).map(n=>{
+        const p = liveState.team==='casa' ? players.find(pl => (pl.numero||'').toString()===String(n)) : null;
+        const label = p ? `${n}<br><span style="font-size:9px;font-weight:400">${(p.nome||'').split(' ')[0]}</span>` : n;
+        return `<button class="num-btn" data-num="${n}" data-name="${p ? (p.nome||'') : ''}">${label}</button>`;
+      }).join('');
+
+      zone.innerHTML = `
+        <div class="live-wrap">
+          <select class="live-select" id="liveMatchSelect">${options}</select>
+
+          <button id="liveToggleBtn" class="live-toggle ${isLive ? 'on' : ''}">
+            ${isLive ? '🔴 DIRETTA ATTIVA — tocca per fermare' : '⚪ Diretta ferma — tocca per iniziare'}
+          </button>
+
+          <div class="live-body ${isLive ? '' : 'disabled'}" id="liveBody">
+            <div class="live-row">
+              <div class="seg-compact" id="periodSeg">
+                <button class="seg-btn-sm ${liveState.period==='1T'?'active':''}" data-period="1T">1°T</button>
+                <button class="seg-btn-sm ${liveState.period==='2T'?'active':''}" data-period="2T">2°T</button>
+                <button class="seg-btn-sm ${liveState.period==='REC'?'active':''}" data-period="REC">Rec.</button>
+              </div>
+              <div class="minute-stepper">
+                <button id="minMinus">−</button>
+                <span id="minVal">${computeMinute(match)}'</span>
+                <button id="minPlus">+</button>
+              </div>
+            </div>
+            ${!isRunning ? `<button id="resumeClockBtn" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px;padding:6px">▶️ Riprendi ora (dopo un time-out riparte da solo entro 1 minuto)</button>` : ''}
+
+            <div class="live-row">
+              <div class="seg-compact" id="teamSeg">
+                <button class="seg-btn-sm ${liveState.team==='casa'?'active':''}" data-team="casa">${(match.casa||'Corbiolo')}</button>
+                <button class="seg-btn-sm ${liveState.team==='fuori'?'active':''}" data-team="fuori">${(match.fuori||'Avversario')}</button>
+              </div>
+              <div class="seg-compact" id="typeSeg">
+                <button class="seg-btn-sm ${liveState.eventType==='gol'?'active':''}" data-type="gol">⚽</button>
+                <button class="seg-btn-sm ${liveState.eventType==='giallo'?'active':''}" data-type="giallo">🟨</button>
+                <button class="seg-btn-sm ${liveState.eventType==='rosso'?'active':''}" data-type="rosso">🟥</button>
+              </div>
+            </div>
+
+            <div class="num-grid" id="numGrid">${numBtns}</div>
+
+            <div class="quick-actions">
+              <button id="timeOutBtn">⏱️ Time-out</button>
+              <button id="endHalfBtn">⏸ Fine 1°T</button>
+              <button id="endMatchBtn">🏁 Fine partita</button>
+            </div>
+
+            <div class="cronaca-box" id="cronacaBox">
+              ${eventi.length ? eventi.map((e,i)=>`
+                <div class="console-row">
+                  <span>${e}</span>
+                  <span class="x" data-idx="${i}">✕</span>
+                </div>`).reverse().join('') : '<div class="small" style="padding:4px 0">Nessun evento ancora.</div>'}
+            </div>
+          </div>
+        </div>`;
+
+      $('liveMatchSelect').onchange = (e)=>{ liveState.matchId = e.target.value; renderLiveTab(); };
+      $('liveToggleBtn').onclick = ()=> toggleLive(match);
+
+      zone.querySelectorAll('[data-period]').forEach(b=> b.onclick = ()=> setPeriod(match, b.dataset.period));
+      zone.querySelectorAll('[data-team]').forEach(b=> b.onclick = ()=>{ liveState.team = b.dataset.team; renderLiveTab(); });
+      zone.querySelectorAll('[data-type]').forEach(b=> b.onclick = ()=>{ liveState.eventType = b.dataset.type; renderLiveTab(); });
+
+      $('minMinus').onclick = ()=> adjustMinute(match, -1);
+      $('minPlus').onclick  = ()=> adjustMinute(match, 1);
+      const resumeBtn = $('resumeClockBtn');
+      if (resumeBtn) resumeBtn.onclick = ()=> resumeClock(match);
+
+      zone.querySelectorAll('.num-btn').forEach(b=>{
+        b.onclick = ()=>{
+          const n = b.dataset.num;
+          const name = b.dataset.name;
+          const teamName = liveState.team==='casa' ? (match.casa||'Corbiolo') : (match.fuori||'Avversario');
+          const who = name ? `${name} (#${n})` : `Numero ${n}`;
+          addLiveEvent(match, `${eventEmoji(liveState.eventType)} ${who} — ${teamName}`);
+        };
+      });
+
+      $('timeOutBtn').onclick  = ()=> timeOut(match);
+      $('endHalfBtn').onclick  = ()=> endHalf(match);
+      $('endMatchBtn').onclick = ()=> endMatch(match);
+
+      zone.querySelectorAll('.x').forEach(x=>{
+        x.onclick = ()=> removeLiveEvent(match, +x.dataset.idx);
+      });
+
+      // Aggiorna il minuto a schermo ogni 15s senza ricostruire tutta la console
+      // (per non interrompere un tap in corso), solo se il cronometro è avviato.
+      if (isRunning){
+        clockTickTimer = setInterval(()=>{
+          const mv = document.getElementById('minVal');
+          if (mv) mv.textContent = computeMinute(match) + "'";
+        }, 15000);
+      }
     }
 
     function initPanel(){

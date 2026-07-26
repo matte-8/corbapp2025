@@ -73,6 +73,17 @@
   </nav>
 
   <main class="container" style="position:relative;z-index:1">
+    <section class="panel-granata" id="liveBox" style="display:none">
+      <div class="row" style="justify-content:space-between;align-items:center">
+        <span style="display:inline-flex;align-items:center;gap:6px;background:#ffffff22;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px">
+          <span style="width:7px;height:7px;border-radius:50%;background:#fff"></span>DIRETTA
+        </span>
+        <span id="liveMinute" style="font-size:13px;opacity:.9"></span>
+      </div>
+      <div id="liveScoreRow" style="display:flex;align-items:center;justify-content:space-between;margin-top:10px"></div>
+      <div id="liveEvents" style="margin-top:12px;border-top:1px solid #ffffff33;padding-top:10px;font-size:13px"></div>
+    </section>
+
     <section class="grid-home">
       <a class="home-box" href="./news.html"><span class="home-emoji">📰</span><div>News</div></a>
       <a class="home-box" href="./squadra.html"><span class="home-emoji">👥</span><div>Squadra</div></a>
@@ -138,6 +149,7 @@
     const countdownBox = document.getElementById('countdownBox');
     let nextMatch = null;
     let countdownTimer = null;
+    let liveTickTimer = null;
 
     function renderCountdown(){
       if (!nextMatch){
@@ -178,6 +190,50 @@
       renderCountdown();
       if (countdownTimer) clearInterval(countdownTimer);
       countdownTimer = setInterval(renderCountdown, 60000); // aggiorna ogni minuto
+
+      // Tabellone live: se una partita è marcata "In diretta ORA?" = Sì
+      const liveMatch = (rows||[]).find(m => (m.live||'').toLowerCase()==='sì' || (m.live||'').toLowerCase()==='si');
+      const liveBox = document.getElementById('liveBox');
+      if (liveMatch){
+        liveBox.style.display = 'block';
+        const homeName = (liveMatch.casa || 'Corbiolo').trim();
+        const awayName = (liveMatch.fuori || 'Avversario').trim();
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:50%;background:#fff" alt="">` : badge(homeName, liveMatch.logo_casa, 44);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:50%;background:#fff" alt="">` : badge(awayName, liveMatch.logo_fuori, 44);
+        const score = (liveMatch.risultato || '0-0').replace('-', ' - ');
+
+        const periodTxt = liveMatch.periodLabel==='1T' ? '1°T' : liveMatch.periodLabel==='2T' ? '2°T' : liveMatch.periodLabel==='REC' ? 'Rec.' : '';
+        function currentMin(){
+          const base = liveMatch.clockBaseMinute || 0;
+          if (liveMatch.clockRunning && liveMatch.clockStartedAt){
+            return base + Math.floor((Date.now() - liveMatch.clockStartedAt) / 60000);
+          }
+          return base;
+        }
+        document.getElementById('liveMinute').textContent = `${periodTxt} ${currentMin()}'`.trim();
+        if (liveTickTimer) clearInterval(liveTickTimer);
+        if (liveMatch.clockRunning){
+          liveTickTimer = setInterval(()=>{
+            document.getElementById('liveMinute').textContent = `${periodTxt} ${currentMin()}'`.trim();
+          }, 15000);
+        }
+        document.getElementById('liveScoreRow').innerHTML = `
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:90px">
+            ${homeBadge}<span style="font-size:12px;text-align:center">${homeName}</span>
+          </div>
+          <div style="font-size:26px;font-weight:900;letter-spacing:1px">${score}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:90px">
+            ${awayBadge}<span style="font-size:12px;text-align:center">${awayName}</span>
+          </div>`;
+
+        const eventiLines = Array.isArray(liveMatch.eventi) ? liveMatch.eventi : [];
+        document.getElementById('liveEvents').innerHTML = eventiLines.length
+          ? eventiLines.slice().reverse().map(l => `<div style="padding:3px 0">${l}</div>`).join('')
+          : '';
+      } else {
+        liveBox.style.display = 'none';
+        if (liveTickTimer){ clearInterval(liveTickTimer); liveTickTimer = null; }
+      }
 
       if (lastPlayed){
         const homeName  = (lastPlayed.casa  || 'Corbiolo').trim();
