@@ -20,13 +20,15 @@
     .std-table tr.me{background:#f5eef0}
     :root[data-theme="dark"] .std-table tr.me{background:#3a2530}
     .std-table .pos{font-weight:800;color:var(--muted);width:22px}
+    .std-table .pos.zone-vincente,.std-table .pos.zone-promozione,.std-table .pos.zone-playoff,.std-table .pos.zone-coppa{
+      border-radius:8px;text-align:center;
+    }
     .std-table .team-name{font-weight:700}
     .std-table .pts{font-weight:900;color:var(--granata)}
-    .zone-bar{width:5px;display:inline-block;height:22px;vertical-align:middle;border-radius:3px;margin-right:6px}
-    .zone-vincente{background:#2563eb}
-    .zone-promozione{background:#16a34a}
-    .zone-playoff{background:#eab308}
-    .zone-coppa{background:#9333ea}
+    .zone-vincente{background:#2563eb;color:#fff}
+    .zone-promozione{background:#16a34a;color:#fff}
+    .zone-playoff{background:#eab308;color:#3a2f00}
+    .zone-coppa{background:#9333ea;color:#fff}
     .legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:10px;font-size:12px;color:var(--muted)}
     .legend span{display:inline-flex;align-items:center;gap:6px}
     .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
@@ -161,8 +163,8 @@
         const zoneClass = ZONE_CLASS[r.zona] || '';
         return `
           <tr class="${isMe ? 'me' : ''}">
-            <td class="pos">${i+1}</td>
-            <td class="team-col team-name">${zoneClass ? `<span class="zone-bar ${zoneClass}"></span>` : ''}${r.squadra}</td>
+            <td class="pos ${zoneClass}">${i+1}</td>
+            <td class="team-col team-name">${r.squadra}</td>
             <td class="pts">${r.punti}</td>
             <td>${r.giocate}</td>
             <td>${r.vinte}</td>
