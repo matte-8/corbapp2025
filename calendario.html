@@ -32,7 +32,7 @@
       </a>
     </div>
     <div class="right">
-      <button id="menuBtn" class="iconbtn" aria-label="Apri menu" title="Menu">
+      <button type="button" id="menuBtn" class="iconbtn" aria-label="Apri menu" title="Menu">
         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
           <path d="M3 6h18M3 12h18M3 18h18"/>
         </svg>
@@ -41,7 +41,7 @@
   </header>
 
   <nav id="drawer" class="drawer" aria-label="Menu laterale">
-    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <button type="button" id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
     <h3>Menu</h3>
     <a href="./index.html">🏠 Home</a>
     <a href="./news.html">📰 News</a>
@@ -61,8 +61,8 @@
       <div class="month-head">
         <div class="month-name" id="m1"></div>
         <div class="head-right">
-          <button class="arrowbtn" id="prevM" title="Mese precedente">←</button>
-          <button class="arrowbtn" id="nextM" title="Mese successivo">→</button>
+          <button type="button" class="arrowbtn" id="prevM" title="Mese precedente">←</button>
+          <button type="button" class="arrowbtn" id="nextM" title="Mese successivo">→</button>
         </div>
       </div>
       <div class="legend small">
@@ -94,17 +94,26 @@
 
   </main>
 
+  <script src="./ui.js?v=35"></script>
+  <script defer src="./install-prompt.js?v=2"></script>
+
   <script type="module">
     import { subscribeMatches } from './data-store.js';
 
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = () => drawer.classList.add('open');
-    document.getElementById('drawer-close').onclick = () => drawer.classList.remove('open');
-    document.addEventListener('click', (e)=>{
-      if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target.id!=='menuBtn'){
-        drawer.classList.remove('open');
-      }
-    });
+    function wireDrawer(){
+      const drawer = document.getElementById('drawer');
+      const menuBtn = document.getElementById('menuBtn');
+      const closeBtn = document.getElementById('drawer-close');
+      if (!drawer || !menuBtn || !closeBtn) return;
+      menuBtn.addEventListener('click', (e) => { e.stopPropagation(); drawer.classList.add('open'); });
+      closeBtn.addEventListener('click', () => drawer.classList.remove('open'));
+      document.addEventListener('click', (e) => {
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== menuBtn){
+          drawer.classList.remove('open');
+        }
+      });
+    }
+    wireDrawer();
 
     const toDate = (d) => {
       if (!d) return new Date('Invalid');
@@ -119,7 +128,7 @@
     const startDowMon = (y,m) => (new Date(y,m,1).getDay()+6)%7;
     const CORB = 'corbiolo';
 
-    let calData = [];   // derivato da matches: per il calendario a griglia
+    let calData = [];
     let offset = 0;
 
     function buildTwoMonths(){
@@ -152,8 +161,7 @@
         );
         if (match){
           cell.classList.add('has');
-          if (match.casa_fuori === 'casa') cell.classList.add('home');
-          else cell.classList.add('away');
+          cell.classList.add(match.casa_fuori === 'casa' ? 'home' : 'away');
           cell.title = (match.casa_fuori==='casa' ? 'Corbiolo - ' : '') +
                        match.avversario +
                        (match.casa_fuori==='fuori' ? ' - Corbiolo' : '');
@@ -174,9 +182,6 @@
     const fmtListDate = (d) => d.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short'});
     const list = document.getElementById('futureList');
 
-    // 👇 calendario + "prossime partite" derivano entrambi dalla stessa
-    // collezione "matches": basta inserire una partita in admin e compare
-    // automaticamente sia qui che nei Risultati una volta giocata.
     subscribeMatches((rows) => {
       const matches = (rows||[]).map(m=>({
         ...m,
@@ -213,7 +218,5 @@
 
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
-  <script src="./ui.js?v=35"></script>
-  <script defer src="./install-prompt.js?v=2"></script>
 </body>
 </html>
