@@ -108,7 +108,6 @@
 
     const CORB = 'corbiolo';
     const LOGO_CORB = 'img/logo_c5.png';
-    const LOGO_AVV  = 'img/logo_avv.png';
 
     const toDate = (m)=>{ const dt = new Date((m.data||'')+'T'+(m.ora||'00:00')); return isNaN(+dt) ? new Date(m.data||'') : dt; };
     const parseScore = (s='')=>{ const m = String(s).trim().match(/(\d+)\s*[-–]\s*(\d+)/); return m ? {gh:+m[1], ga:+m[2]} : null; };
