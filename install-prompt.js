@@ -87,7 +87,7 @@
 
   function showIOSInstructions(){
     buildBanner({
-      html: `<b>Installa l'app CORBIOLO C5</b>
+      html: `<b>Installa l'app CORB</b>
              Tocca l'icona <b>Condividi</b> (il quadrato con la freccia ↑ in basso su Safari)
              poi scegli <b>"Aggiungi a Home"</b>. Ti servirà per ricevere le notifiche partita.`
     });
@@ -95,7 +95,7 @@
 
   function showAndroidPrompt(deferredEvent){
     buildBanner({
-      html: `<b>Installa l'app CORBIOLO C5</b> Un tocco e l'hai sempre a portata di mano, con le notifiche partita.`,
+      html: `<b>Installa l'app CORB</b> Un tocco e l'hai sempre a portata di mano, con le notifiche partita.`,
       primaryLabel: 'Installa',
       onPrimary: async () => {
         deferredEvent.prompt();

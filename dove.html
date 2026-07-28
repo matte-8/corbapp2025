@@ -4,7 +4,7 @@
   <meta charset="utf-8"/>
   <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>Dove si gioca - CORB</title>
+  <title>Dove si gioca - CORBIOLOC5</title>
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
@@ -16,11 +16,7 @@
     .info-icon{font-size:22px;flex-shrink:0;width:30px;text-align:center}
     .info-title{font-weight:800;margin-bottom:2px}
     .info-body{color:var(--muted);font-size:14px;line-height:1.4}
-    .map-placeholder{
-      width:100%;aspect-ratio:16/9;border-radius:14px;background:#eee;
-      display:flex;align-items:center;justify-content:center;color:var(--muted);
-      font-size:13px;text-align:center;padding:20px;border:1px dashed var(--ring)
-    }
+    .venue-photo{width:100%;aspect-ratio:16/9;object-fit:cover;border-radius:14px;display:block}
     .cta-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
     .cta-btn{
       flex:1;min-width:140px;text-align:center;border-radius:12px;padding:12px;
@@ -69,12 +65,10 @@
         Quando avremo l'indirizzo reale, questo placeholder verrà sostituito
         con una mappa Google Maps incorporata (basta l'indirizzo per generarla).
       -->
-      <div class="map-placeholder" id="mapBox">
-        🗺️ Mappa del campo<br>(in arrivo)
-      </div>
+      <img class="venue-photo" src="img/campo.jpg" alt="Il nostro campo">
       <div class="cta-row">
         <a class="cta-btn" id="navBtn" href="#" target="_blank">🧭 Come arrivare</a>
-        <a class="cta-btn secondary" id="callBtn" href="#">📞 Chiama il campo</a>
+        <a class="cta-btn secondary" id="contactBtn" href="https://www.instagram.com/corbioloc5?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener">📸 Contattaci</a>
       </div>
     </section>
 
@@ -98,13 +92,13 @@
         </div>
       </div>
 
-      <div class="info-row">
+      <a class="info-row" id="barRow" href="#" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
         <div class="info-icon">🍺</div>
         <div>
           <div class="info-title">Bar / punto ristoro</div>
           <div class="info-body" id="bar">Da inserire</div>
         </div>
-      </div>
+      </a>
 
       <div class="info-row">
         <div class="info-icon">🅿️</div>
@@ -122,13 +116,13 @@
         </div>
       </div>
 
-      <div class="info-row">
+      <a class="info-row" href="https://www.instagram.com/corbioloc5?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener" style="text-decoration:none;color:inherit">
         <div class="info-icon">📱</div>
         <div>
           <div class="info-title">Contatti / Social</div>
           <div class="info-body" id="contacts">Da inserire</div>
         </div>
-      </div>
+      </a>
     </section>
   </main>
 
@@ -138,10 +132,11 @@
     const DATA = {
       address: 'C.S. Monti Lessini, Località Contrada Carcaro, 37021 Bosco Chiesanuova (VR)',
       hours: 'Venerdì, ore 21:30',
-      bar: 'Da inserire',
-      parking: 'Davanti alla struttura',
+      bar: 'Tocca per vedere sulla mappa',
+      barMapsLink: 'https://maps.app.goo.gl/X5uj42HjyLo2SE1N9',
+      parking: 'Davanti la struttura',
       colors: 'Bianco Granata',
-      contacts: 'contattaci su Instagram',
+      contacts: 'Contattaci su Instagram',
       phone: '',
       mapsQuery: 'C.S. Monti Lessini, Contrada Carcaro, Bosco Chiesanuova VR'
     };
@@ -161,12 +156,12 @@
       navBtn.onclick = (e) => { e.preventDefault(); alert('Indirizzo non ancora inserito.'); };
     }
 
-    const callBtn = document.getElementById('callBtn');
-    if (DATA.phone){
-      callBtn.href = `tel:${DATA.phone}`;
+    const barRow = document.getElementById('barRow');
+    if (DATA.barMapsLink){
+      barRow.href = DATA.barMapsLink;
     } else {
-      callBtn.style.opacity = '0.5';
-      callBtn.onclick = (e) => { e.preventDefault(); alert('Numero non ancora inserito.'); };
+      barRow.style.opacity = '0.5';
+      barRow.onclick = (e) => e.preventDefault();
     }
 
     // Drawer

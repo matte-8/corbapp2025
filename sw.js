@@ -1,5 +1,5 @@
 // sw.js — cache offline (PWA) + notifiche push in background (Firebase Cloud Messaging)
-const CACHE = "corb-cache-v21";
+const CACHE = "corb-cache-v22";
 
 const ASSETS = [
   "./",
@@ -14,7 +14,7 @@ const ASSETS = [
   "./ui.js",
   "./install-prompt.js",
   "./manifest.json",
-  "./img/logo_c5.png","./img/logo_avv.png","./img/player1.png",
+  "./img/logo_c5.png","./img/logo_avv.png","./img/player1.png","./img/campo.jpg",
   "./img/icons/icon-192.png","./img/icons/icon-512.png",
 ];
 
