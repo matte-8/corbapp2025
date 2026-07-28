@@ -1,9 +1,7 @@
 name: Notifica inizio diretta
 
 on:
-  schedule:
-    - cron: '*/3 * * * *'   # ogni 3 minuti: controlla se è appena partita una diretta
-  workflow_dispatch: {}     # per testarlo a mano
+  workflow_dispatch: {}     # ora si lancia SOLO a mano da GitHub, niente più controlli automatici ogni 3 minuti
 
 jobs:
   notify:
