@@ -19,9 +19,17 @@
     .chip{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:999px;padding:8px 12px;font-weight:600;cursor:pointer}
     .chip.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
     .role-title{font-size:18px;font-weight:800;margin:14px 0 8px 0}
-    .player{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border:1px solid var(--ring);border-radius:16px;padding:12px;box-shadow:0 6px 18px rgba(0,0,0,.06)}
-    .player img{width:56px;height:56px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;flex:0 0 56px}
-    .number-pill{background:#f3e8eb;border:1px solid #e4cbd3;color:#6b0f1a;border-radius:999px;font-weight:800;padding:6px 10px}
+    .players-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(72px,1fr));gap:10px 6px}
+    .player-card{display:flex;flex-direction:column;align-items:center;text-align:center}
+    .avatar-wrap{position:relative;width:64px;height:64px}
+    .avatar-wrap img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:3px solid #e8d3d9;display:block}
+    .num-badge{
+      position:absolute;bottom:-4px;right:-4px;background:#6b0f1a;color:#fff;
+      border-radius:999px;font-size:10px;font-weight:800;min-width:18px;height:18px;
+      display:flex;align-items:center;justify-content:center;padding:0 4px;border:2px solid var(--card)
+    }
+    .pname{font-size:11px;font-weight:700;margin-top:6px;line-height:1.2;
+      display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
   </style>
 </head>
 <body>
@@ -117,16 +125,15 @@
         .map(k=>{
           const title = stdRole(k)==='Altro' ? 'Altro' : stdRole(k);
           const items = groups[k].map(p=>`
-            <div class="player">
-              <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
-              <div style="flex:1;min-width:0">
-                <div style="font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.nome}</div>
-                <div class="small">${stdRole(p.ruolo)}</div>
+            <div class="player-card">
+              <div class="avatar-wrap">
+                <img src="${p.foto||'img/player.png'}" alt="" onerror="this.src='img/player.png'">
+                ${p.numero ? `<span class="num-badge">${p.numero}</span>` : ``}
               </div>
-              ${p.numero ? `<span class="number-pill">#${p.numero}</span>` : ``}
+              <div class="pname">${p.nome}</div>
             </div>
           `).join('');
-          return `<div class="role-title">${title}</div>${items}`;
+          return `<div class="role-title">${title}</div><div class="players-grid">${items}</div>`;
         }).join('');
 
       listEl.innerHTML = html || '<div class="small">Nessun giocatore trovato</div>';
