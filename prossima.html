@@ -147,7 +147,7 @@
             <div class="teamName">${homeName}</div>
             ${awayBadge}
             <div class="teamName">${awayName}</div>
-            <div class="when">${fmtLong(m.date)}</div>
+            <div class="when">${fmtLong(m.date)}${m.tipo && m.tipo!=='Campionato' ? ' · '+m.tipo : ''}</div>
           </div>`;
       }).join('') : '<div class="small">Nessuna partita futura</div>';
     });
