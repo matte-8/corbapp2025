@@ -11,16 +11,20 @@
   <link rel="apple-touch-icon" href="img/logo_c5.png">
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
-    .month-wrap{margin-bottom:18px}
+    .container{gap:8px}
+    .month-wrap{margin-bottom:10px;padding:12px}
     .month-head{display:flex;align-items:center;justify-content:space-between}
-    .month-name{font-weight:900;line-height:1.05;font-size:clamp(20px,6vw,28px)}
-    .head-right{display:flex;gap:8px}
-    .arrowbtn{border-radius:12px;border:1px solid var(--ring);background:var(--card);padding:6px 10px}
-    .legend{display:flex;gap:16px;align-items:center;margin-top:8px}
-    .dot{width:10px;height:10px;border-radius:999px}
+    .month-name{font-weight:900;line-height:1.05;font-size:clamp(15px,4.5vw,20px)}
+    .head-right{display:flex;gap:6px}
+    .arrowbtn{border-radius:9px;border:1px solid var(--ring);background:var(--card);padding:3px 8px;font-size:13px}
+    .legend{display:flex;gap:16px;align-items:center;margin-top:4px}
+    .dot{width:9px;height:9px;border-radius:999px}
     .dot-home{background:var(--home)} .dot-away{background:var(--away)}
-    .cal-dow{margin:12px 0 6px}
-    .month-block{margin-bottom:8px}
+    .cal-dow{margin:6px 0 4px;gap:4px;font-size:11px}
+    .cal-grid{gap:4px}
+    .cal-cell{border-radius:8px;font-size:clamp(10px,2.8vw,13px)}
+    .month-block{margin-bottom:4px}
+    #futureList .future-row{padding:6px 0}
   </style>
 </head>
 <body>
@@ -75,7 +79,7 @@
         <div id="grid1" class="cal-grid"></div>
       </div>
 
-      <div style="height:16px"></div>
+      <div style="height:6px"></div>
 
       <div class="month-head">
         <div class="month-name" id="m2"></div>
