@@ -25,6 +25,7 @@
     .cal-cell{border-radius:8px;font-size:clamp(10px,2.8vw,13px)}
     .month-block{margin-bottom:4px}
     #futureList .future-row{padding:6px 0}
+    :root[data-theme="dark"] .arrowbtn{color:#fff}
   </style>
 </head>
 <body>
@@ -90,6 +91,8 @@
         <div id="grid2" class="cal-grid"></div>
       </div>
     </section>
+
+    <div id="dayInfo" class="card" style="display:none;margin-bottom:8px"></div>
 
     <section class="card">
       <h2 style="margin:0 0 8px 0">Prossime partite</h2>
@@ -166,13 +169,32 @@
         if (match){
           cell.classList.add('has');
           cell.classList.add(match.casa_fuori === 'casa' ? 'home' : 'away');
-          cell.title = (match.casa_fuori==='casa' ? 'Corbiolo - ' : '') +
-                       match.avversario +
-                       (match.casa_fuori==='fuori' ? ' - Corbiolo' : '');
+          cell.style.cursor = 'pointer';
+          cell.addEventListener('click', ()=> showDayInfo(match));
         }
 
         grid.appendChild(cell);
       }
+    }
+
+    const dayInfo = document.getElementById('dayInfo');
+    function showDayInfo(match){
+      const icon = match.casa_fuori==='casa' ? '🏠 Casa' : '✈️ Trasferta';
+      const s1 = match.casa_fuori==='casa' ? 'Corbiolo' : match.avversario;
+      const s2 = match.casa_fuori==='casa' ? match.avversario : 'Corbiolo';
+      const ds = match.date.toLocaleDateString(undefined,{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+      const tipoTag = match.tipo && match.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${match.tipo}</span>` : '';
+      dayInfo.innerHTML = `
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div>
+            <div style="font-weight:800">${s1} - ${s2} ${tipoTag}</div>
+            <div class="small" style="margin-top:4px">${icon} · ${ds}${match.ora ? ' · '+match.ora : ''}</div>
+            ${match.risultato ? `<div style="font-weight:800;margin-top:6px">Risultato: ${match.risultato}</div>` : ''}
+          </div>
+          <span style="cursor:pointer;font-size:18px;color:var(--muted)" id="closeDayInfo">✕</span>
+        </div>`;
+      dayInfo.style.display = 'block';
+      document.getElementById('closeDayInfo').onclick = ()=> dayInfo.style.display='none';
     }
 
     document.getElementById('prevM').addEventListener('click', ()=>{
@@ -195,7 +217,10 @@
       calData = matches.map(m => ({
         date: m.date,
         avversario: isHome(m) ? (m.fuori||'Avversario') : (m.casa||'Avversario'),
-        casa_fuori: isHome(m) ? 'casa' : 'fuori'
+        casa_fuori: isHome(m) ? 'casa' : 'fuori',
+        tipo: m.tipo || '',
+        ora: m.ora || '',
+        risultato: m.risultato || ''
       }));
       buildTwoMonths();
 

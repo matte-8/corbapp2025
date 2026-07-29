@@ -207,6 +207,7 @@
         label: 'Partite', api: Matches, subscribe: subscribeMatches,
         fields: [
           {key:'stagione', label:'Stagione', type:'text', placeholder:'2025/26'},
+          {key:'tipo', label:'Tipo partita', type:'select', options:['Campionato','Amichevole','Coppa']},
           {key:'data', label:'Data', type:'date'},
           {key:'ora', label:'Ora', type:'time'},
           {key:'casa', label:'Squadra in casa', type:'text', placeholder:'Corbiolo'},
@@ -303,6 +304,7 @@
                 if (f.key==='casa') defaultValue = 'Corbiolo';
                 if (f.key==='stagione') defaultValue = currentSeason();
                 if (f.key==='live') defaultValue = 'No';
+                if (f.key==='tipo') defaultValue = 'Campionato';
               }
               return fieldHTML(f, prefill ? prefill[f.key] : defaultValue);
             }).join('')}

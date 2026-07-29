@@ -128,6 +128,7 @@
         nextMeta.innerHTML = `
           <span class="pill-soft">${isHomeCorb?'🏠 Casa':'✈️ Trasferta'}</span>
           <span class="pill-soft">${fmtLong(next.date)}</span>
+          ${next.tipo && next.tipo!=='Campionato' ? `<span class="pill-soft">${next.tipo}</span>` : ''}
         `;
       } else {
         nextBlock.innerHTML = `<div class="small" style="grid-column:1/-1">Nessuna partita in programma</div>`;

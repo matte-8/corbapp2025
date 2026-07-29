@@ -186,7 +186,7 @@
               ${awayBadge}
               <div class="name">${awayName}</div>
             </div>
-            <div class="small muted" style="grid-column:1/-1;text-align:center;margin-top:6px">${day}</div>
+            <div class="small muted" style="grid-column:1/-1;text-align:center;margin-top:6px">${day}${m.tipo && m.tipo!=='Campionato' ? ' · '+m.tipo : ''}</div>
           </div>`;
       }).join('');
 
