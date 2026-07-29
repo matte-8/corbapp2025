@@ -36,6 +36,16 @@
     .news-mini .title{font-weight:800;color:#fff;margin-bottom:6px}
     .news-mini .excerpt{color:#f3f3f3;opacity:.95}
     .ellipsis{-webkit-line-clamp:2;display:-webkit-box;-webkit-box-orient:vertical;overflow:hidden}
+    .day-overlay{
+      position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.45);
+      display:flex;align-items:center;justify-content:center;padding:20px;
+    }
+    .day-popup{
+      background:var(--card);color:var(--text);border-radius:16px;padding:18px;
+      max-width:340px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35);
+      animation:day-pop .15s ease-out;
+    }
+    @keyframes day-pop{ from{ transform:scale(.92); opacity:0 } to{ transform:scale(1); opacity:1 } }
   </style>
 </head>
 <body>
@@ -110,8 +120,12 @@
         <h2 style="margin:0">Ultima partita</h2>
         <a class="pill" href="./partite.html">Vedi risultati</a>
       </div>
-      <div id="lastMatch" class="match-wrap" style="margin-top:8px"></div>
+      <div id="lastMatch" class="match-wrap" style="margin-top:8px;cursor:pointer"></div>
     </section>
+
+    <div id="matchDetailOverlay" class="day-overlay" style="display:none">
+      <div id="matchDetailCard" class="day-popup"></div>
+    </div>
 
     <section class="panel-granata">
       <div class="row" style="justify-content:space-between">
@@ -146,7 +160,47 @@
     const CORB = 'corbiolo';
     const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
       ? window.teamBadgeHTML(name, url, size)
-      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
+      : `<div style="width:${size}px;height:${size}px;border-radius:22%;background:#ccc;flex-shrink:0"></div>`;
+
+    const matchDetailOverlay = document.getElementById('matchDetailOverlay');
+    const matchDetailCard = document.getElementById('matchDetailCard');
+    matchDetailOverlay.addEventListener('click', (e)=>{ if (e.target === matchDetailOverlay) matchDetailOverlay.style.display='none'; });
+
+    function showMatchDetail(m){
+      const homeName = (m.casa || 'Corbiolo').trim();
+      const awayName = (m.fuori || 'Avversario').trim();
+      const scoreTxt = (m.risultato || '–').replace('-', ' - ');
+      const dateTxt = m.date ? m.date.toLocaleDateString(undefined,{weekday:'long', day:'2-digit', month:'long', year:'numeric'}) : '';
+      const tipoTag = m.tipo && m.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${m.tipo}</span>` : '';
+      const eventi = Array.isArray(m.eventi) ? m.eventi : [];
+      const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:10px;object-fit:contain" alt="">` : badge(homeName, m.logo_casa, 44);
+      const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:10px;object-fit:contain" alt="">` : badge(awayName, m.logo_fuori, 44);
+
+      matchDetailCard.innerHTML = `
+        <div class="row" style="justify-content:space-between;align-items:flex-start">
+          <div class="small">${dateTxt}${tipoTag}</div>
+          <span style="cursor:pointer;font-size:20px;color:var(--muted)" id="closeMatchDetail">✕</span>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:84px">
+            ${homeBadge}<span style="font-size:12px;text-align:center;font-weight:700">${homeName}</span>
+          </div>
+          <div style="font-size:26px;font-weight:900">${scoreTxt}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:84px">
+            ${awayBadge}<span style="font-size:12px;text-align:center;font-weight:700">${awayName}</span>
+          </div>
+        </div>
+        <div style="margin-top:14px;border-top:1px solid var(--ring);padding-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">CRONACA</div>
+          <div style="max-height:220px;overflow-y:auto">
+            ${eventi.length
+              ? eventi.map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--ring);font-size:13px">${e}</div>`).join('')
+              : '<div class="small" style="padding:6px 0">Nessuna cronaca registrata per questa partita.</div>'}
+          </div>
+        </div>`;
+      matchDetailOverlay.style.display = 'flex';
+      document.getElementById('closeMatchDetail').onclick = ()=> matchDetailOverlay.style.display='none';
+    }
     const lastBox = document.getElementById('lastMatch');
     const countdownBox = document.getElementById('countdownBox');
     let nextMatch = null;
@@ -169,8 +223,8 @@
       const pad = n => String(n).padStart(2,'0');
       const homeName = (nextMatch.casa || 'Corbiolo').trim();
       const awayName = (nextMatch.fuori || 'Avversario').trim();
-      const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:40px;height:40px;border-radius:50%;background:#fff" alt="">` : badge(homeName, nextMatch.logo_casa, 40);
-      const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:40px;height:40px;border-radius:50%;background:#fff" alt="">` : badge(awayName, nextMatch.logo_fuori, 40);
+      const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:40px;height:40px;border-radius:9px;background:#fff" alt="">` : badge(homeName, nextMatch.logo_casa, 40);
+      const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:40px;height:40px;border-radius:9px;background:#fff" alt="">` : badge(awayName, nextMatch.logo_fuori, 40);
 
       countdownBox.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:center;gap:18px">
@@ -225,8 +279,8 @@
         liveBox.style.display = 'block';
         const homeName = (liveMatch.casa || 'Corbiolo').trim();
         const awayName = (liveMatch.fuori || 'Avversario').trim();
-        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:50%;background:#fff" alt="">` : badge(homeName, liveMatch.logo_casa, 44);
-        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:50%;background:#fff" alt="">` : badge(awayName, liveMatch.logo_fuori, 44);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:10px;background:#fff" alt="">` : badge(homeName, liveMatch.logo_casa, 44);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:44px;height:44px;border-radius:10px;background:#fff" alt="">` : badge(awayName, liveMatch.logo_fuori, 44);
         const score = (liveMatch.risultato || '0-0').replace('-', ' - ');
 
         const periodTxt = liveMatch.periodLabel==='1T' ? '1°T' : liveMatch.periodLabel==='2T' ? '2°T' : liveMatch.periodLabel==='REC' ? 'Rec.' : '';
@@ -278,8 +332,10 @@
             ${awayBadge}
             <div class="name">${awayName}</div>
           </div>`;
+        lastBox.onclick = ()=> showMatchDetail(lastPlayed);
       } else {
         lastBox.innerHTML = `<div class="small">Nessuna partita disponibile</div>`;
+        lastBox.onclick = null;
       }
     });
 

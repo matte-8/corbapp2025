@@ -98,7 +98,7 @@
   function teamBadgeHTML(name, explicitUrl, size=44){
     const clean = (name||'').trim();
     const url = explicitUrl && explicitUrl.trim() ? explicitUrl : 'img/logo_avv.png';
-    return `<img class="logo" src="${url}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:50%" alt="${clean}">`;
+    return `<img class="logo" src="${url}" style="width:${size}px;height:${size}px;object-fit:contain;border-radius:${Math.round(size*0.22)}px;background:#fff" alt="${clean}">`;
   }
   window.teamBadgeHTML = teamBadgeHTML;
 

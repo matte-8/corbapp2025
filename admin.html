@@ -53,8 +53,7 @@
       0%,100%{box-shadow:0 0 0 4px rgba(224,38,31,.25),0 0 20px rgba(224,38,31,.5)}
       50%{box-shadow:0 0 0 4px rgba(224,38,31,.35),0 0 30px rgba(224,38,31,.7)}
     }
-    .live-body{display:grid;gap:8px;transition:opacity .15s}
-    .live-body.disabled{opacity:.4;pointer-events:none}
+    .live-body{display:grid;gap:8px}
     .live-row{display:flex;gap:6px}
     .live-row > *{flex:1}
     .seg-compact{display:flex;gap:6px}
@@ -546,14 +545,10 @@
       eventi.push('— Fine partita —');
       try{
         await Matches.update(match.id, { eventi, live:'No', clockRunning:false });
-        // Aggiorna la classifica squadre SOLO per le partite di Campionato
-        // (amichevoli e coppe non contano per la classifica del girone).
-        if ((match.tipo || 'Campionato') === 'Campionato'){
-          await applyResultToStandings(match);
-          showMsg('Partita conclusa: classifica aggiornata.', 'ok');
-        } else {
-          showMsg('Partita conclusa.', 'ok');
-        }
+        // Nota: la classifica generale NON si aggiorna da qui — richiede anche i
+        // risultati delle altre squadre del girone, che non abbiamo dalle sole
+        // partite del Corbiolo. La aggiorniamo a parte (vedi scripts/update-classifica.js).
+        showMsg('Partita conclusa.', 'ok');
         renderLiveTab();
       }catch(err){ showMsg('Errore: '+err.message, 'err'); }
     }
@@ -563,7 +558,10 @@
       const matches = (cache.matches || []).slice().sort((a,b)=> (b.data||'').localeCompare(a.data||''));
       const players = (cache.players || []);
 
-      if (!liveState.matchId && matches.length) liveState.matchId = matches[0].id;
+      if (!liveState.matchId && matches.length){
+        liveState.matchId = matches[0].id;
+        liveState.team = (matches[0].casa||'').trim().toLowerCase()==='corbiolo' ? 'casa' : 'fuori';
+      }
       const match = matches.find(m => m.id === liveState.matchId);
 
       const options = matches.map(m => `<option value="${m.id}" ${m.id===liveState.matchId?'selected':''}>${m.data||'?'} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'}</option>`).join('');
@@ -580,8 +578,12 @@
       const eventi = Array.isArray(match.eventi) ? match.eventi : [];
       const isRunning = match.clockRunning !== false && !!match.clockStartedAt;
 
+      // Il Corbiolo può giocare sia in casa che in trasferta: lo capiamo da soli
+      // guardando i nomi della partita, invece di dare per scontato che sia sempre "casa".
+      const corbSide = (match.casa||'').trim().toLowerCase()==='corbiolo' ? 'casa' : 'fuori';
+
       const numBtns = Array.from({length:20}, (_,i)=> i+1).map(n=>{
-        const p = liveState.team==='casa' ? players.find(pl => (pl.numero||'').toString()===String(n)) : null;
+        const p = liveState.team===corbSide ? players.find(pl => (pl.numero||'').toString()===String(n)) : null;
         const label = p ? `${n}<br><span style="font-size:9px;font-weight:400">${(p.nome||'').split(' ')[0]}</span>` : n;
         return `<button class="num-btn" data-num="${n}" data-name="${p ? (p.nome||'') : ''}">${label}</button>`;
       }).join('');
@@ -594,7 +596,7 @@
             ${isLive ? '🔴 DIRETTA ATTIVA — tocca per fermare' : '⚪ Diretta ferma — tocca per iniziare'}
           </button>
 
-          <div class="live-body ${isLive ? '' : 'disabled'}" id="liveBody">
+          <div class="live-body" id="liveBody">
             <div class="live-row">
               <div class="seg-compact" id="periodSeg">
                 <button class="seg-btn-sm ${liveState.period==='1T'?'active':''}" data-period="1T">1°T</button>
@@ -608,11 +610,12 @@
               </div>
             </div>
             ${!isRunning ? `<button id="resumeClockBtn" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:12px;padding:6px">▶️ Riprendi ora (dopo un time-out riparte da solo entro 1 minuto)</button>` : ''}
+            ${!isLive ? `<div class="small" style="text-align:center;opacity:.7">La diretta è ferma: puoi comunque modificare la cronaca qui sotto (utile per correggere anche giorni dopo).</div>` : ''}
 
             <div class="live-row">
               <div class="seg-compact" id="teamSeg">
-                <button class="seg-btn-sm ${liveState.team==='casa'?'active':''}" data-team="casa">${(match.casa||'Corbiolo')}</button>
-                <button class="seg-btn-sm ${liveState.team==='fuori'?'active':''}" data-team="fuori">${(match.fuori||'Avversario')}</button>
+                <button class="seg-btn-sm ${liveState.team==='casa'?'active':''}" data-team="casa">${(match.casa||'Corbiolo')}${corbSide==='casa' ? ' 🏠' : ''}</button>
+                <button class="seg-btn-sm ${liveState.team==='fuori'?'active':''}" data-team="fuori">${(match.fuori||'Avversario')}${corbSide==='fuori' ? ' 🏠' : ''}</button>
               </div>
               <div class="seg-compact" id="typeSeg">
                 <button class="seg-btn-sm ${liveState.eventType==='gol'?'active':''}" data-type="gol">⚽</button>
@@ -639,7 +642,7 @@
           </div>
         </div>`;
 
-      $('liveMatchSelect').onchange = (e)=>{ liveState.matchId = e.target.value; renderLiveTab(); };
+      $('liveMatchSelect').onchange = (e)=>{ liveState.matchId = e.target.value; liveState.team = corbSide; renderLiveTab(); };
       $('liveToggleBtn').onclick = ()=> toggleLive(match);
 
       zone.querySelectorAll('[data-period]').forEach(b=> b.onclick = ()=> setPeriod(match, b.dataset.period));
@@ -675,7 +678,7 @@
 
           // Gol di un giocatore riconosciuto della vostra rosa: aggiorna subito
           // il suo contatore marcatori, senza aspettare la fine della partita.
-          if (liveState.eventType === 'gol' && liveState.team === 'casa' && name){
+          if (liveState.eventType === 'gol' && liveState.team === corbSide && name){
             const p = players.find(pl => (pl.nome||'') === name);
             if (p){
               const nuoviGol = (+p.gol || 0) + 1;

@@ -130,7 +130,7 @@
     // non blocco tutta la lista partite — mostro un pallino semplice.
     const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
       ? window.teamBadgeHTML(name, url, size)
-      : `<div style="width:${size}px;height:${size}px;border-radius:50%;background:#ccc;flex-shrink:0"></div>`;
+      : `<div style="width:${size}px;height:${size}px;border-radius:22%;background:#ccc;flex-shrink:0"></div>`;
 
     const matchDetailOverlay = document.getElementById('matchDetailOverlay');
     const matchDetailCard = document.getElementById('matchDetailCard');
@@ -223,18 +223,32 @@
       const day = fmtDay(m.date);
       const tipoTag = m.tipo && m.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${m.tipo}</span>` : '';
       const eventi = Array.isArray(m.eventi) ? m.eventi : [];
+      const homeBadge = homeName.toLowerCase()===CORB ? `<img src="${LOGO_CORB}" style="width:44px;height:44px;border-radius:10px;object-fit:contain" alt="">` : badge(homeName, m.logo_casa, 44);
+      const awayBadge = awayName.toLowerCase()===CORB ? `<img src="${LOGO_CORB}" style="width:44px;height:44px;border-radius:10px;object-fit:contain" alt="">` : badge(awayName, m.logo_fuori, 44);
 
       matchDetailCard.innerHTML = `
         <div class="row" style="justify-content:space-between;align-items:flex-start">
-          <div style="font-weight:800;font-size:16px">${homeName} - ${awayName} ${tipoTag}</div>
+          <div class="small">${day}${tipoTag}</div>
           <span style="cursor:pointer;font-size:20px;color:var(--muted)" id="closeMatchDetail">✕</span>
         </div>
-        <div class="small" style="margin-top:4px">${day}</div>
-        <div style="font-size:26px;font-weight:900;text-align:center;margin:14px 0">${sc.gh} - ${sc.ga}</div>
-        <div style="max-height:220px;overflow-y:auto;border-top:1px solid var(--ring);padding-top:10px">
-          ${eventi.length
-            ? eventi.map(e=>`<div style="padding:4px 0;font-size:13px">${e}</div>`).join('')
-            : '<div class="small">Nessuna cronaca registrata per questa partita.</div>'}
+
+        <div style="display:flex;align-items:center;justify-content:center;gap:16px;margin-top:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:84px">
+            ${homeBadge}<span style="font-size:12px;text-align:center;font-weight:700">${homeName}</span>
+          </div>
+          <div style="font-size:26px;font-weight:900">${sc.gh} - ${sc.ga}</div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;width:84px">
+            ${awayBadge}<span style="font-size:12px;text-align:center;font-weight:700">${awayName}</span>
+          </div>
+        </div>
+
+        <div style="margin-top:14px;border-top:1px solid var(--ring);padding-top:8px">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px">CRONACA</div>
+          <div style="max-height:220px;overflow-y:auto">
+            ${eventi.length
+              ? eventi.map(e=>`<div style="padding:6px 0;border-bottom:1px solid var(--ring);font-size:13px">${e}</div>`).join('')
+              : '<div class="small" style="padding:6px 0">Nessuna cronaca registrata per questa partita.</div>'}
+          </div>
         </div>`;
       matchDetailOverlay.style.display = 'flex';
       document.getElementById('closeMatchDetail').onclick = ()=> matchDetailOverlay.style.display='none';
