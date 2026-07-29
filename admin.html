@@ -467,13 +467,14 @@
       catch(err){ showMsg('Errore: '+err.message, 'err'); }
     }
 
-    async function addLiveEvent(match, label){
+    async function addLiveEvent(match, label, extra={}){
       const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
       const min = computeMinute(match);
       const per = periodLabel(match.periodLabel || liveState.period);
       eventi.push(`${per} ${min}' ${label}`);
-      try{ await Matches.update(match.id, { eventi }); }
+      try{ await Matches.update(match.id, { eventi, ...extra }); }
       catch(err){ showMsg('Errore: '+err.message, 'err'); }
+      return eventi;
     }
 
     async function removeLiveEvent(match, idx){
@@ -502,11 +503,57 @@
       }catch(err){ showMsg('Errore: '+err.message, 'err'); }
     }
 
+    // Trova (o crea al volo) la riga di classifica di una squadra per una data stagione
+    async function findOrCreateStandingRow(squadra, stagione){
+      const rows = cache.standings || [];
+      let row = rows.find(r => (r.squadra||'').trim().toLowerCase() === squadra.trim().toLowerCase() && (r.stagione||'') === stagione);
+      if (row) return row;
+      const nuovo = { squadra, stagione, punti:0, giocate:0, vinte:0, pareggiate:0, perse:0, gf:0, gs:0, zona:'Nessuna' };
+      const ref = await Standings.add(nuovo);
+      return { id: ref.id, ...nuovo };
+    }
+
+    async function applyResultToStandings(match){
+      const sc = String(match.risultato||'').trim().match(/(\d+)\s*[-–]\s*(\d+)/);
+      if (!sc) return; // niente risultato scritto, non aggiorno nulla
+      const golCasa = +sc[1], golFuori = +sc[2];
+      const stagione = match.stagione || currentSeason();
+      const casaNome = match.casa || 'Corbiolo';
+      const fuoriNome = match.fuori || 'Avversario';
+
+      const casaRow  = await findOrCreateStandingRow(casaNome, stagione);
+      const fuoriRow = await findOrCreateStandingRow(fuoriNome, stagione);
+
+      function calc(row, gf, ga){
+        const vinte = (+row.vinte||0) + (gf>ga?1:0);
+        const pareggiate = (+row.pareggiate||0) + (gf===ga?1:0);
+        const perse = (+row.perse||0) + (gf<ga?1:0);
+        const punti = vinte*3 + pareggiate*1;
+        return {
+          giocate: (+row.giocate||0)+1,
+          vinte, pareggiate, perse,
+          gf: (+row.gf||0)+gf, gs: (+row.gs||0)+ga,
+          punti
+        };
+      }
+
+      await Standings.update(casaRow.id,  calc(casaRow,  golCasa, golFuori));
+      await Standings.update(fuoriRow.id, calc(fuoriRow, golFuori, golCasa));
+    }
+
     async function endMatch(match){
       const eventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
       eventi.push('— Fine partita —');
       try{
         await Matches.update(match.id, { eventi, live:'No', clockRunning:false });
+        // Aggiorna la classifica squadre SOLO per le partite di Campionato
+        // (amichevoli e coppe non contano per la classifica del girone).
+        if ((match.tipo || 'Campionato') === 'Campionato'){
+          await applyResultToStandings(match);
+          showMsg('Partita conclusa: classifica aggiornata.', 'ok');
+        } else {
+          showMsg('Partita conclusa.', 'ok');
+        }
         renderLiveTab();
       }catch(err){ showMsg('Errore: '+err.message, 'err'); }
     }
@@ -605,12 +652,36 @@
       if (resumeBtn) resumeBtn.onclick = ()=> resumeClock(match);
 
       zone.querySelectorAll('.num-btn').forEach(b=>{
-        b.onclick = ()=>{
+        b.onclick = async ()=>{
           const n = b.dataset.num;
           const name = b.dataset.name;
-          const teamName = liveState.team==='casa' ? (match.casa||'Corbiolo') : (match.fuori||'Avversario');
+          const casaNome = match.casa || 'Corbiolo';
+          const fuoriNome = match.fuori || 'Avversario';
+          const teamName = liveState.team==='casa' ? casaNome : fuoriNome;
           const who = name ? `${name} (#${n})` : `Numero ${n}`;
-          addLiveEvent(match, `${eventEmoji(liveState.eventType)} ${who} — ${teamName}`);
+          const label = `${eventEmoji(liveState.eventType)} ${who} — ${teamName}`;
+
+          let extra = {};
+          if (liveState.eventType === 'gol'){
+            // Ricalcolo il risultato contando i gol già segnati + questo nuovo,
+            // così il punteggio resta sempre allineato senza scriverlo a mano.
+            const prevEventi = Array.isArray(match.eventi) ? match.eventi : [];
+            const golCasa  = prevEventi.filter(e => e.includes('⚽') && e.includes('— '+casaNome)).length + (liveState.team==='casa'?1:0);
+            const golFuori = prevEventi.filter(e => e.includes('⚽') && e.includes('— '+fuoriNome)).length + (liveState.team==='fuori'?1:0);
+            extra.risultato = `${golCasa}-${golFuori}`;
+          }
+
+          await addLiveEvent(match, label, extra);
+
+          // Gol di un giocatore riconosciuto della vostra rosa: aggiorna subito
+          // il suo contatore marcatori, senza aspettare la fine della partita.
+          if (liveState.eventType === 'gol' && liveState.team === 'casa' && name){
+            const p = players.find(pl => (pl.nome||'') === name);
+            if (p){
+              const nuoviGol = (+p.gol || 0) + 1;
+              Players.update(p.id, { gol: nuoviGol }).catch(err => showMsg('Errore: '+err.message, 'err'));
+            }
+          }
         };
       });
 
