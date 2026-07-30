@@ -216,7 +216,11 @@
       try{
         await signInWithEmailAndPassword(auth, $('email').value.trim(), $('pwd').value);
       }catch(err){
-        $('loginMsg').innerHTML = `<div class="msg err">Accesso fallito: ${err.message}</div>`;
+        const wrongCred = ['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-email'].includes(err.code);
+        const msg = wrongCred
+          ? 'Email o password non corrette. Controlla di averle scritte giuste.'
+          : `Accesso fallito: ${err.message}`;
+        $('loginMsg').innerHTML = `<div class="msg err">${msg}</div>`;
       }
     });
     $('logoutBtn').addEventListener('click', ()=> signOut(auth));
@@ -796,6 +800,8 @@
       draw();
       cronacaOverlay.style.display = 'flex';
     }
+
+    function initPanel(){
       document.querySelectorAll('#tabs .tab').forEach(t=>{
         t.onclick = ()=> switchTab(t.dataset.tab);
       });
