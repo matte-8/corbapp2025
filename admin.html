@@ -133,7 +133,11 @@
         </label>
         <label class="field">
           <span>Password</span>
-          <input id="pwd" type="password" placeholder="la tua password"/>
+          <div style="position:relative">
+            <input id="pwd" type="password" placeholder="la tua password" style="width:100%;padding-right:38px"/>
+            <button type="button" id="togglePwd" aria-label="Mostra/nascondi password"
+              style="position:absolute;right:6px;top:50%;transform:translateY(-50%);background:none;border:0;cursor:pointer;font-size:18px;padding:4px">👁️</button>
+          </div>
         </label>
         <button id="loginBtn" class="btn btn-primary">Entra</button>
         <div id="loginMsg"></div>
@@ -199,6 +203,14 @@
     const panel = $('panel');
 
     // ===== LOGIN (Firebase Auth vero, al posto della password fissa) =====
+    document.getElementById('togglePwd').addEventListener('click', ()=>{
+      const pwdInput = document.getElementById('pwd');
+      const btn = document.getElementById('togglePwd');
+      const showing = pwdInput.type === 'text';
+      pwdInput.type = showing ? 'password' : 'text';
+      btn.textContent = showing ? '👁️' : '🙈';
+    });
+
     $('loginBtn').addEventListener('click', async ()=>{
       $('loginMsg').innerHTML = '';
       try{
