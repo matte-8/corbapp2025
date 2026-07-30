@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Scarica l'app - CORBIOLOC5</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <link rel="stylesheet" href="./style.css?v=35">
+  <style>
+    .step-num{
+      width:26px;height:26px;border-radius:50%;background:var(--granata);color:#fff;
+      display:inline-flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;
+      flex-shrink:0;margin-right:10px
+    }
+    .step-row{display:flex;align-items:flex-start;gap:0;margin-bottom:14px}
+    .step-text{padding-top:2px}
+    .install-cta{
+      width:100%;border:0;border-radius:12px;padding:14px;font-weight:800;font-size:15px;
+      background:var(--granata);color:#fff;cursor:pointer;margin-top:10px
+    }
+    .install-cta:disabled{opacity:.5}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Scarica l'app</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+    <hr style="border:none;border-top:1px solid var(--ring);margin:10px 0">
+    <a href="./scarica.html">📲 Scarica l'app</a>
+  </nav>
+
+  <main class="container">
+    <section class="card" id="iphone">
+      <h2 style="margin:0 0 12px 0">📱 iPhone (Safari)</h2>
+      <div class="step-row"><span class="step-num">1</span><div class="step-text">Apri questo sito da <strong>Safari</strong> (non da Chrome o altre app)</div></div>
+      <div class="step-row"><span class="step-num">2</span><div class="step-text">Tocca l'icona <strong>Condividi</strong> in basso (il quadrato con la freccia verso l'alto ↑)</div></div>
+      <div class="step-row"><span class="step-num">3</span><div class="step-text">Scorri e scegli <strong>"Aggiungi a Home"</strong></div></div>
+      <div class="step-row"><span class="step-num">4</span><div class="step-text">Conferma in alto a destra — l'icona compare sulla schermata Home</div></div>
+      <div class="small" style="margin-top:10px;color:var(--muted)">
+        Apple non permette un download automatico: questi 4 tocchi sono l'unico modo, ma richiedono 10 secondi.
+      </div>
+    </section>
+
+    <section class="card" id="android" style="margin-top:14px">
+      <h2 style="margin:0 0 12px 0">🤖 Android (Chrome)</h2>
+      <div class="small" style="margin-bottom:10px">
+        Tocca il pulsante qui sotto: se il telefono lo permette, comparirà subito la richiesta di installazione.
+      </div>
+      <button id="installBtn" class="install-cta" disabled>📲 Scarica l'app</button>
+      <div class="small" id="androidFallback" style="margin-top:10px;color:var(--muted);display:none">
+        Se il pulsante non risponde, apri il menu <strong>⋮</strong> di Chrome in alto a destra e scegli
+        <strong>"Aggiungi a schermata Home"</strong> o <strong>"Installa app"</strong>.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    (function(){
+      var drawer = document.getElementById('drawer');
+      var menuBtn = document.getElementById('menuBtn');
+      var closeBtn = document.getElementById('drawer-close');
+      menuBtn.addEventListener('click', function(e){ e.stopPropagation(); drawer.classList.add('open'); });
+      closeBtn.addEventListener('click', function(){ drawer.classList.remove('open'); });
+      document.addEventListener('click', function(e){
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== menuBtn){
+          drawer.classList.remove('open');
+        }
+      });
+    })();
+
+    const installBtn = document.getElementById('installBtn');
+    const androidFallback = document.getElementById('androidFallback');
+    let deferredPrompt = null;
+
+    window.addEventListener('beforeinstallprompt', (e)=>{
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.disabled = false;
+    });
+
+    installBtn.addEventListener('click', async ()=>{
+      if (!deferredPrompt){ androidFallback.style.display = 'block'; return; }
+      deferredPrompt.prompt();
+      try { await deferredPrompt.userChoice; } catch{}
+      deferredPrompt = null;
+      installBtn.disabled = true;
+    });
+
+    // Se dopo 2 secondi il browser non ha mai offerto l'evento (es. già installata,
+    // o iPhone/Safari), mostro comunque le istruzioni manuali come rete di sicurezza.
+    setTimeout(()=>{ if (!deferredPrompt) androidFallback.style.display = 'block'; }, 2000);
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+  <script src="./ui.js?v=35"></script>
+</body>
+</html>
