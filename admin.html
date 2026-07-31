@@ -114,7 +114,7 @@
     <a href="./prossima.html">📅 Prossima partita</a>
     <a href="./partite.html">🏆 Risultati</a>
     <a href="./calendario.html">📆 Calendario</a>
-    <a href="./giornate.html">📋 Giornate (girone completo)</a>
+    <a href="./competizioni.html">📋 Competizioni</a>
     <a href="./classifica.html">🏅 Classifica</a>
     <a href="./dove.html">📍 Dove si gioca</a>
     <a href="./settings.html">🔔 Impostazioni</a>
@@ -243,7 +243,8 @@
         label: 'Partite', api: Matches, subscribe: subscribeMatches,
         fields: [
           {key:'stagione', label:'Stagione', type:'text', placeholder:'2025/26'},
-          {key:'giornata', label:'Giornata', type:'text', placeholder:'1'},
+          {key:'giornata', label:'Giornata (solo Campionato)', type:'text', placeholder:'1'},
+          {key:'fase', label:'Fase (solo Coppa)', type:'select', options:['','Ottavi','Quarti','Semifinale','Finale']},
           {key:'tipo', label:'Tipo partita', type:'select', options:['Campionato','Amichevole','Coppa']},
           {key:'data', label:'Data', type:'date'},
           {key:'ora', label:'Ora', type:'time'},
