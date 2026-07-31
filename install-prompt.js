@@ -89,7 +89,8 @@
     buildBanner({
       html: `<b>Installa l'app CORB</b>
              Tocca l'icona <b>Condividi</b> (il quadrato con la freccia ↑ in basso su Safari)
-             poi scegli <b>"Aggiungi a Home"</b>. Ti servirà per ricevere le notifiche partita.`
+             poi scegli <b>"Aggiungi a Home"</b>. Ti servirà per ricevere le notifiche partita.
+             <div style="margin-top:6px"><a href="./scarica.html#iphone" style="font-size:12px;color:var(--granata,#6b0f1a);font-weight:700">per iPhone, guida passo passo →</a></div>`
     });
   }
 
@@ -104,6 +105,43 @@
     });
   }
 
+  // --- Icona fissa in alto, sempre disponibile ---
+  // A differenza del banner (che dopo un "Non ora" sparisce per 14 giorni),
+  // questa icona resta sempre lì per chi cambia idea e vuole installare dopo.
+  let deferredPromptGlobal = null;
+  function injectHeaderIcon(){
+    if (alreadyInstalled()) return;
+    const right = document.querySelector('.topbar .right');
+    if (!right || document.getElementById('corb-header-install')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'corb-header-install';
+    btn.className = 'iconbtn';
+    btn.setAttribute('aria-label', 'Scarica app');
+    btn.title = 'Scarica app';
+    btn.style.fontSize = '20px';
+    btn.style.marginRight = '2px';
+    btn.textContent = '📲';
+    right.insertBefore(btn, right.firstChild);
+
+    btn.addEventListener('click', async () => {
+      if (deferredPromptGlobal){
+        deferredPromptGlobal.prompt();
+        try { await deferredPromptGlobal.userChoice; } catch {}
+      } else if (isIOS()){
+        window.location.href = './scarica.html#iphone';
+      } else {
+        window.location.href = './scarica.html';
+      }
+    });
+  }
+
+  if (document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', injectHeaderIcon);
+  } else {
+    injectHeaderIcon();
+  }
+
   if (alreadyInstalled() || recentlyDismissed()) return;
 
   // --- Android / Chrome / Edge: popup nativo reale ---
@@ -111,6 +149,7 @@
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    deferredPromptGlobal = e;
     setTimeout(() => showAndroidPrompt(deferredPrompt), 1200);
   });
 

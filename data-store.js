@@ -32,9 +32,9 @@ export function currentSeason(){
 // ---- Sottoscrizioni in tempo reale ----
 // cb(arrayDiOggetti) viene richiamata subito e ad ogni cambiamento.
 // Ritorna una funzione unsubscribe da chiamare quando si lascia la pagina.
-function subscribe(collName, cb, orderField=null){
+function subscribe(collName, cb, orderField=null, direction='asc'){
   const col = collection(db, collName);
-  const q = orderField ? query(col, orderBy(orderField)) : col;
+  const q = orderField ? query(col, orderBy(orderField, direction)) : col;
   return onSnapshot(q, (snap) => {
     const rows = snap.docs.map(d => ({ id: d.id, ...d.data() }));
     cb(rows);
@@ -45,7 +45,7 @@ function subscribe(collName, cb, orderField=null){
 }
 
 export const subscribeMatches = (cb) => subscribe(COLLECTIONS.matches, cb, 'data');
-export const subscribeNews    = (cb) => subscribe(COLLECTIONS.news, cb);
+export const subscribeNews    = (cb) => subscribe(COLLECTIONS.news, cb, 'createdAt', 'desc');
 export const subscribePlayers = (cb) => subscribe(COLLECTIONS.players, cb);
 export const subscribeVideos  = (cb) => subscribe(COLLECTIONS.videos, cb);
 export const subscribeStandings = (cb) => subscribe(COLLECTIONS.standings, cb);

@@ -345,7 +345,7 @@
     subscribeNews((rows) => {
       const news = rows
         .map(n=>({titolo:n.titolo||'', contenuto:n.contenuto||''}))
-        .slice(-2).reverse();
+        .slice(0, 2);
       wrap.innerHTML = news.length
         ? news.map(n=>`
             <a class="item" href="./news.html">

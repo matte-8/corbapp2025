@@ -28,10 +28,10 @@
     .tabs{display:flex;gap:8px;flex-wrap:wrap}
     .tab{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:999px;padding:8px 14px;font-weight:700;cursor:pointer}
     .tab.active{background:#f5e7ea;border-color:#e4cbd3;color:#6b0f1a}
-    .item-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--ring)}
+    .item-row{display:flex;flex-direction:column;gap:8px;padding:10px 0;border-bottom:1px solid var(--ring)}
     .item-row:last-child{border-bottom:0}
-    .item-actions{display:flex;gap:6px;flex-shrink:0}
-    .item-actions button{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:8px;padding:6px 10px;font-size:12px;cursor:pointer}
+    .item-actions{display:flex;gap:6px;flex-wrap:wrap}
+    .item-actions button{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:8px;padding:5px 9px;font-size:11px;cursor:pointer}
     .msg{font-size:13px;padding:8px 10px;border-radius:10px;margin-top:6px}
     .msg.ok{background:#ecfdf5;color:#059669}
     .msg.err{background:#fef2f2;color:#dc2626}
@@ -388,8 +388,8 @@
           <div>${ent.itemLabel(r)}</div>
           <div class="item-actions">
             <button data-act="edit" data-id="${r.id}">✏️ Modifica</button>
-            ${currentTab==='matches' ? `<button data-act="cronaca" data-id="${r.id}">📓 Cronaca</button>` : ''}
             <button data-act="del" data-id="${r.id}">🗑️ Elimina</button>
+            ${currentTab==='matches' ? `<button data-act="cronaca" data-id="${r.id}">📓 Cronaca</button>` : ''}
           </div>
         </div>`).join('') : '<div class="small">Nessun elemento ancora.</div>';
 
@@ -757,14 +757,45 @@
     cronacaOverlay.addEventListener('click', (e)=>{ if (e.target === cronacaOverlay) cronacaOverlay.style.display='none'; });
 
     function openCronacaEditor(match){
+      ensureSubscribed('players');
       let tempEventi = Array.isArray(match.eventi) ? [...match.eventi] : [];
+      const corbSide = (match.casa||'').trim().toLowerCase()==='corbiolo' ? 'casa' : 'fuori';
+      let quickOpen = false;
+      let quickTeam = corbSide;
+      let quickType = 'gol';
 
       function draw(){
+        const players = cache.players || [];
+        const numBtnsHtml = Array.from({length:20}, (_,i)=> i+1).map(n=>{
+          const p = quickTeam===corbSide ? players.find(pl => (pl.numero||'').toString()===String(n)) : null;
+          const label = p ? `${n}<br><span style="font-size:8px;font-weight:400">${(p.nome||'').split(' ')[0]}</span>` : n;
+          return `<button class="num-btn" data-num="${n}" data-name="${p ? (p.nome||'') : ''}" style="font-size:10px">${label}</button>`;
+        }).join('');
+
         cronacaCard.innerHTML = `
           <div class="row" style="justify-content:space-between;align-items:flex-start">
             <div style="font-weight:800">📓 Cronaca — ${match.casa||'Corbiolo'} vs ${match.fuori||'Avversario'}</div>
             <span style="cursor:pointer;font-size:20px;color:var(--muted)" id="closeCronaca">✕</span>
           </div>
+
+          <button id="quickToggleBtn" class="btn btn-ghost" style="width:100%;justify-content:space-between;font-size:13px;margin-top:10px">
+            <span>⚡ Inserimento rapido evento</span><span>${quickOpen ? '▲' : '▼'}</span>
+          </button>
+          ${quickOpen ? `
+            <div style="border:1px solid var(--ring);border-radius:12px;padding:10px;margin-top:8px">
+              <div class="seg-compact">
+                <button class="seg-btn-sm ${quickTeam==='casa'?'active':''}" data-qteam="casa">${match.casa||'Corbiolo'}</button>
+                <button class="seg-btn-sm ${quickTeam==='fuori'?'active':''}" data-qteam="fuori">${match.fuori||'Avversario'}</button>
+              </div>
+              <div class="seg-compact" style="margin-top:6px">
+                <button class="seg-btn-sm ${quickType==='gol'?'active':''}" data-qtype="gol">⚽ Gol</button>
+                <button class="seg-btn-sm ${quickType==='giallo'?'active':''}" data-qtype="giallo">🟨 Giallo</button>
+                <button class="seg-btn-sm ${quickType==='rosso'?'active':''}" data-qtype="rosso">🟥 Rosso</button>
+              </div>
+              <div class="num-grid" style="margin-top:8px">${numBtnsHtml}</div>
+            </div>
+          ` : ''}
+
           <div style="margin-top:12px" id="cronacaLines">
             ${tempEventi.map((e,i)=>`
               <div class="cronaca-line">
@@ -772,11 +803,25 @@
                 <span class="x" data-idx="${i}">✕</span>
               </div>`).join('') || '<div class="small" style="margin-bottom:8px">Nessun evento ancora.</div>'}
           </div>
-          <button id="addLineBtn" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px;margin-top:4px">➕ Aggiungi riga</button>
+          <button id="addLineBtn" class="btn btn-ghost" style="width:100%;justify-content:center;font-size:13px;margin-top:4px">➕ Aggiungi riga vuota</button>
           <div class="row" style="margin-top:14px;gap:8px">
             <button id="saveCronacaBtn" class="btn btn-primary" style="flex:1;justify-content:center">💾 Salva</button>
             <button id="cancelCronacaBtn" class="btn btn-ghost" style="flex:1;justify-content:center">Annulla</button>
           </div>`;
+
+        document.getElementById('quickToggleBtn').onclick = ()=>{ quickOpen = !quickOpen; draw(); };
+        cronacaCard.querySelectorAll('[data-qteam]').forEach(b=> b.onclick = ()=>{ quickTeam = b.dataset.qteam; draw(); });
+        cronacaCard.querySelectorAll('[data-qtype]').forEach(b=> b.onclick = ()=>{ quickType = b.dataset.qtype; draw(); });
+        cronacaCard.querySelectorAll('.num-btn').forEach(b=>{
+          b.onclick = ()=>{
+            const n = b.dataset.num, name = b.dataset.name;
+            const teamName = quickTeam==='casa' ? (match.casa||'Corbiolo') : (match.fuori||'Avversario');
+            const emoji = quickType==='gol' ? '⚽' : quickType==='giallo' ? '🟨' : '🟥';
+            const who = name ? `${name} (#${n})` : `Numero ${n}`;
+            tempEventi.push(`${emoji} ${who} — ${teamName}`);
+            draw();
+          };
+        });
 
         cronacaCard.querySelectorAll('#cronacaLines input').forEach(inp=>{
           inp.oninput = ()=>{ tempEventi[+inp.dataset.idx] = inp.value; };
