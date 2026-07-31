@@ -16,7 +16,8 @@ const LOGOS = {
   'scaligeri 2023':        'img/loghi/scaligeri-2023.jpg',
   'la taverna c. a 5':     'img/loghi/la-taverna.jpg',
   'zanna futsal club':     'img/loghi/zanna-futsal-club.jpg',
-  // juventud, hb futsal: ancora senza logo -> stemma automatico
+  'juventud':              'img/loghi/juventud.jpg',
+  // hb futsal: ancora senza logo -> stemma automatico
 };
 
 function logoFor(name){
