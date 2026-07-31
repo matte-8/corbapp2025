@@ -323,8 +323,8 @@
       if (lastPlayed){
         const homeName  = (lastPlayed.casa  || 'Corbiolo').trim();
         const awayName  = (lastPlayed.fuori || 'Avversario').trim();
-        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : badge(homeName, lastPlayed.logo_casa, 56);
-        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" alt="">` : badge(awayName, lastPlayed.logo_fuori, 56);
+        const homeBadge = homeName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:48px;height:48px;border-radius:12px;object-fit:contain;background:#fff;border:1px solid var(--ring)" alt="">` : badge(homeName, lastPlayed.logo_casa, 48);
+        const awayBadge = awayName.toLowerCase()===CORB ? `<img src="img/logo_c5.png" style="width:48px;height:48px;border-radius:12px;object-fit:contain;background:#fff;border:1px solid var(--ring)" alt="">` : badge(awayName, lastPlayed.logo_fuori, 48);
         const scoreText = (lastPlayed.risultato || '–').replace('-', ' - ');
         lastBox.innerHTML = `
           <div class="team">
