@@ -200,6 +200,31 @@
       const s2 = match.casa_fuori==='casa' ? match.avversario : 'Corbiolo';
       const ds = match.date.toLocaleDateString(undefined,{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
       const tipoTag = match.tipo && match.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${match.tipo}</span>` : '';
+
+      // Se conosciamo la giornata, mostro TUTTE le partite di quella giornata
+      // (tutte le squadre), non solo quella del Corbiolo.
+      let altreHtml = '';
+      if (match.giornata){
+        const altre = allMatchesRaw.filter(m =>
+          (m.giornata||'') === match.giornata &&
+          (m.stagione||'') === match.stagione &&
+          (m.tipo||'Campionato') === 'Campionato'
+        );
+        if (altre.length){
+          altreHtml = `
+            <div style="margin-top:14px;border-top:1px solid var(--ring);padding-top:8px">
+              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">GIORNATA ${match.giornata} — TUTTE LE PARTITE</div>
+              ${altre.map(m=>{
+                const isMe = (m.casa||'').trim().toLowerCase()===CORB || (m.fuori||'').trim().toLowerCase()===CORB;
+                const score = m.risultato ? m.risultato.replace('-',' - ') : (m.data||'');
+                return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;${isMe?'font-weight:800':''}">
+                          <span>${m.casa||'?'} - ${m.fuori||'?'}</span><span>${score}</span>
+                        </div>`;
+              }).join('')}
+            </div>`;
+        }
+      }
+
       dayCard.innerHTML = `
         <div class="row" style="justify-content:space-between;align-items:flex-start">
           <div>
@@ -208,7 +233,8 @@
             ${match.risultato ? `<div style="font-weight:800;margin-top:10px">Risultato: ${match.risultato}</div>` : ''}
           </div>
           <span style="cursor:pointer;font-size:20px;color:var(--muted)" id="closeDayInfo">✕</span>
-        </div>`;
+        </div>
+        ${altreHtml}`;
       dayOverlay.style.display = 'flex';
       document.getElementById('closeDayInfo').onclick = ()=> dayOverlay.style.display='none';
     }
@@ -224,8 +250,10 @@
     const isHome = m => (m.casa||'').trim().toLowerCase() === CORB;
     const fmtListDate = (d) => d.toLocaleDateString(undefined,{weekday:'short', day:'2-digit', month:'short'});
     const list = document.getElementById('futureList');
+    let allMatchesRaw = []; // tutte le partite di tutte le squadre, per il popup "tutta la giornata"
 
     subscribeMatches((allRowsRaw) => {
+      allMatchesRaw = allRowsRaw || [];
       const rows = (allRowsRaw||[]).filter(m => (m.casa||'').trim().toLowerCase()==='corbiolo' || (m.fuori||'').trim().toLowerCase()==='corbiolo');
       const matches = (rows||[]).map(m=>({
         ...m,
@@ -238,7 +266,9 @@
         casa_fuori: isHome(m) ? 'casa' : 'fuori',
         tipo: m.tipo || '',
         ora: m.ora || '',
-        risultato: m.risultato || ''
+        risultato: m.risultato || '',
+        giornata: m.giornata || '',
+        stagione: m.stagione || ''
       }));
       buildTwoMonths();
 

@@ -92,6 +92,9 @@
     document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
 
     const CORB = 'corbiolo';
+    const badge = (name, url, size) => (typeof window.teamBadgeHTML === 'function')
+      ? window.teamBadgeHTML(name, url, size)
+      : `<div style="width:${size}px;height:${size}px;border-radius:22%;background:#ccc;flex-shrink:0"></div>`;
     const seasonPick = document.getElementById('seasonPick');
     const content = document.getElementById('content');
     const empty = document.getElementById('empty');
@@ -122,9 +125,13 @@
       const casa = m.casa || '?';
       const fuori = m.fuori || '?';
       const score = m.risultato ? m.risultato.replace('-', ' - ') : '';
+      const casaBadge = badge(casa, m.logo_casa, 20);
+      const fuoriBadge = badge(fuori, m.logo_fuori, 20);
       return `
         <div class="g-match ${isMe?'me':''}">
-          <div class="g-teams">${casa} - ${fuori}</div>
+          <div class="g-teams" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+            ${casaBadge}<span>${casa}</span> - <span>${fuori}</span>${fuoriBadge}
+          </div>
           ${score ? `<div class="g-score">${score}</div>` : `<div class="small" style="flex-shrink:0">${m.data||''}</div>`}
         </div>`;
     }
