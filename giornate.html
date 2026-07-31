@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8"/>
+  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Giornate - CORBIOLOC5</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#6b0f1a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <link rel="apple-touch-icon" href="img/logo_c5.png">
+  <link rel="stylesheet" href="./style.css?v=35">
+  <style>
+    .season-select{display:flex;align-items:center;gap:8px;margin:12px 0}
+    .season-select select{border:1px solid var(--ring);border-radius:12px;padding:8px 12px;background:var(--card);color:var(--text);font:inherit;font-weight:700}
+    .giornata-block{margin-bottom:18px}
+    .giornata-title{font-weight:900;font-size:15px;margin-bottom:8px;color:var(--granata)}
+    .g-match{display:flex;align-items:center;justify-content:space-between;padding:8px 10px;border-radius:10px;font-size:13px;margin-bottom:6px;background:var(--card);border:1px solid var(--ring)}
+    .g-match.me{background:#f5e7ea;border-color:#e4cbd3;font-weight:700}
+    :root[data-theme="dark"] .g-match.me{background:#3a2530}
+    .g-teams{flex:1}
+    .g-score{font-weight:800;margin-left:8px;flex-shrink:0}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="nav">
+      <a href="./index.html" class="brand">
+        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <span class="title">Giornate</span>
+      </a>
+    </div>
+    <div class="right">
+      <button id="menuBtn" class="iconbtn" aria-label="Menu" title="Menu">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <nav id="drawer" class="drawer">
+    <button id="drawer-close" class="drawer-close" aria-label="Chiudi">✕</button>
+    <h3>Menu</h3>
+    <a href="./index.html">🏠 Home</a>
+    <a href="./news.html">📰 News</a>
+    <a href="./squadra.html">👥 Squadra</a>
+    <a href="./video.html">🎥 Video</a>
+    <a href="./prossima.html">📅 Prossima partita</a>
+    <a href="./partite.html">🏆 Risultati</a>
+    <a href="./calendario.html">📆 Calendario</a>
+    <a href="./giornate.html">📋 Giornate (girone completo)</a>
+    <a href="./classifica.html">🏅 Classifica</a>
+    <a href="./dove.html">📍 Dove si gioca</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
+    <a href="./admin.html">⚙️ Admin</a>
+    <hr style="border:none;border-top:1px solid var(--ring);margin:10px 0">
+    <a href="./scarica.html">📲 Scarica l'app</a>
+  </nav>
+
+  <main class="container">
+    <section class="card">
+      <div class="row" style="justify-content:space-between;flex-wrap:wrap">
+        <h2 style="margin:0">Tutte le giornate del girone</h2>
+        <div class="season-select">
+          <label for="seasonPick" class="small">Stagione</label>
+          <select id="seasonPick"></select>
+        </div>
+      </div>
+      <div id="giornateWrap"></div>
+      <div id="empty" class="small" style="margin-top:10px"></div>
+    </section>
+  </main>
+
+  <script type="module">
+    import { subscribeMatches, currentSeason } from './data-store.js';
+
+    const drawer = document.getElementById('drawer');
+    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
+    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
+    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
+
+    const CORB = 'corbiolo';
+    const seasonPick = document.getElementById('seasonPick');
+    const wrap = document.getElementById('giornateWrap');
+    const empty = document.getElementById('empty');
+
+    let all = [];
+    let selected = currentSeason();
+
+    function populateSeasons(){
+      const seasons = [...new Set(all.map(r => r.stagione || currentSeason()))].sort((a,b)=> b.localeCompare(a));
+      if (!seasons.includes(selected)) seasons.unshift(selected);
+      seasonPick.innerHTML = seasons.map(s => `<option value="${s}" ${s===selected?'selected':''}>${s}</option>`).join('');
+    }
+    seasonPick.addEventListener('change', ()=>{ selected = seasonPick.value; render(); });
+
+    function render(){
+      const rows = all.filter(m => (m.stagione||currentSeason())===selected);
+      if (!rows.length){
+        wrap.innerHTML = '';
+        empty.textContent = 'Nessuna partita caricata per questa stagione.';
+        return;
+      }
+      empty.textContent = '';
+
+      const byGiornata = {};
+      rows.forEach(m=>{
+        const g = m.giornata || '?';
+        (byGiornata[g] = byGiornata[g] || []).push(m);
+      });
+
+      const giornateOrdinate = Object.keys(byGiornata).sort((a,b)=> (+a||0) - (+b||0));
+
+      wrap.innerHTML = giornateOrdinate.map(g=>{
+        const matches = byGiornata[g].slice().sort((a,b)=> (a.data||'').localeCompare(b.data||''));
+        const rowsHtml = matches.map(m=>{
+          const isMe = (m.casa||'').trim().toLowerCase()===CORB || (m.fuori||'').trim().toLowerCase()===CORB;
+          const casa = m.casa || '?';
+          const fuori = m.fuori || '?';
+          const score = m.risultato ? m.risultato.replace('-', ' - ') : '';
+          return `
+            <div class="g-match ${isMe?'me':''}">
+              <div class="g-teams">${casa} - ${fuori}</div>
+              ${score ? `<div class="g-score">${score}</div>` : `<div class="small" style="flex-shrink:0">${m.data||''}</div>`}
+            </div>`;
+        }).join('');
+        return `
+          <div class="giornata-block">
+            <div class="giornata-title">Giornata ${g}</div>
+            ${rowsHtml}
+          </div>`;
+      }).join('');
+    }
+
+    subscribeMatches((rows) => {
+      all = rows || [];
+      populateSeasons();
+      render();
+    });
+
+    if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
+  </script>
+  <script src="./ui.js?v=35"></script>
+  <script defer src="./install-prompt.js?v=2"></script>
+</body>
+</html>
