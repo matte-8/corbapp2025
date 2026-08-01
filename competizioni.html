@@ -105,14 +105,14 @@
     let all = [];
     let selectedSeason = currentSeason();
     let selectedTipo = 'Campionato';
-    let selectedGiornata = 1;
+    let selectedGiornata = null; // null = da calcolare in automatico (la più vicina ad oggi)
 
     function populateSeasons(){
       const seasons = [...new Set(all.map(r => r.stagione || currentSeason()))].sort((a,b)=> b.localeCompare(a));
       if (!seasons.includes(selectedSeason)) seasons.unshift(selectedSeason);
       seasonPick.innerHTML = seasons.map(s => `<option value="${s}" ${s===selectedSeason?'selected':''}>${s}</option>`).join('');
     }
-    seasonPick.addEventListener('change', ()=>{ selectedSeason = seasonPick.value; render(); });
+    seasonPick.addEventListener('change', ()=>{ selectedSeason = seasonPick.value; selectedGiornata = null; render(); });
 
     document.querySelectorAll('.tipo-tab').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -164,7 +164,22 @@
       if (selectedTipo === 'Campionato'){
         const giornateDisponibili = [...new Set(rows.map(m=>+m.giornata||0))].filter(g=>g>0).sort((a,b)=>a-b);
         if (!giornateDisponibili.length){ content.innerHTML = '<div class="small">Nessuna giornata numerata ancora.</div>'; return; }
-        if (!giornateDisponibili.includes(selectedGiornata)) selectedGiornata = giornateDisponibili[0];
+
+        if (selectedGiornata === null || !giornateDisponibili.includes(selectedGiornata)){
+          // Calcolo la giornata "più vicina ad oggi": per ognuna prendo la data
+          // media delle sue partite e scelgo quella con la distanza minore da oggi.
+          const oggi = new Date();
+          let miglior = giornateDisponibili[0];
+          let distanzaMinima = Infinity;
+          giornateDisponibili.forEach(g=>{
+            const dateG = rows.filter(m=>(+m.giornata||0)===g).map(m=> new Date(m.data)).filter(d=>!isNaN(+d));
+            if (!dateG.length) return;
+            const media = dateG.reduce((a,d)=>a+d.getTime(),0) / dateG.length;
+            const distanza = Math.abs(oggi.getTime() - media);
+            if (distanza < distanzaMinima){ distanzaMinima = distanza; miglior = g; }
+          });
+          selectedGiornata = miglior;
+        }
 
         const matches = rows.filter(m => (+m.giornata||0) === selectedGiornata).sort((a,b)=>(a.data||'').localeCompare(b.data||''));
 
