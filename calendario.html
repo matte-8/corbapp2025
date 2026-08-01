@@ -178,14 +178,14 @@
         cell.className = 'cal-cell';
         cell.textContent = d;
 
-        const match = calData.find(e =>
+        const dayMatches = calData.filter(e =>
           e.date.getFullYear()===y && e.date.getMonth()===m && e.date.getDate()===d
         );
-        if (match){
+        if (dayMatches.length){
           cell.classList.add('has');
-          cell.classList.add(match.casa_fuori === 'casa' ? 'home' : 'away');
+          cell.classList.add(dayMatches[0].casa_fuori === 'casa' ? 'home' : 'away');
           cell.style.cursor = 'pointer';
-          cell.addEventListener('click', ()=> showDayInfo(match));
+          cell.addEventListener('click', ()=> showDayInfo(dayMatches));
         }
 
         grid.appendChild(cell);
@@ -194,47 +194,27 @@
 
     const dayOverlay = document.getElementById('dayInfoOverlay');
     const dayCard = document.getElementById('dayInfoCard');
-    function showDayInfo(match){
-      const icon = match.casa_fuori==='casa' ? '🏠 Casa' : '✈️ Trasferta';
-      const s1 = match.casa_fuori==='casa' ? 'Corbiolo' : match.avversario;
-      const s2 = match.casa_fuori==='casa' ? match.avversario : 'Corbiolo';
-      const ds = match.date.toLocaleDateString(undefined,{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
-      const tipoTag = match.tipo && match.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${match.tipo}</span>` : '';
-
-      // Se conosciamo la giornata, mostro TUTTE le partite di quella giornata
-      // (tutte le squadre), non solo quella del Corbiolo.
-      let altreHtml = '';
-      if (match.giornata){
-        const altre = allMatchesRaw.filter(m =>
-          (m.giornata||'') === match.giornata &&
-          (m.stagione||'') === match.stagione &&
-          (m.tipo||'Campionato') === 'Campionato'
-        );
-        if (altre.length){
-          altreHtml = `
-            <div style="margin-top:14px;border-top:1px solid var(--ring);padding-top:8px">
-              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:6px">GIORNATA ${match.giornata} — TUTTE LE PARTITE</div>
-              ${altre.map(m=>{
-                const isMe = (m.casa||'').trim().toLowerCase()===CORB || (m.fuori||'').trim().toLowerCase()===CORB;
-                const score = m.risultato ? m.risultato.replace('-',' - ') : (m.data||'');
-                return `<div style="display:flex;justify-content:space-between;padding:5px 0;font-size:13px;${isMe?'font-weight:800':''}">
-                          <span>${m.casa||'?'} - ${m.fuori||'?'}</span><span>${score}</span>
-                        </div>`;
-              }).join('')}
-            </div>`;
-        }
-      }
-
+    function showDayInfo(matches){
       dayCard.innerHTML = `
         <div class="row" style="justify-content:space-between;align-items:flex-start">
-          <div>
-            <div style="font-weight:800;font-size:16px">${s1} - ${s2} ${tipoTag}</div>
-            <div class="small" style="margin-top:6px">${icon} · ${ds}${match.ora ? ' · '+match.ora : ''}</div>
-            ${match.risultato ? `<div style="font-weight:800;margin-top:10px">Risultato: ${match.risultato}</div>` : ''}
-          </div>
+          <div style="font-weight:800;font-size:15px">${matches.length>1 ? matches.length+' partite in questo giorno' : 'Partita'}</div>
           <span style="cursor:pointer;font-size:20px;color:var(--muted)" id="closeDayInfo">✕</span>
         </div>
-        ${altreHtml}`;
+        <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">
+          ${matches.map((match, i) => {
+            const icon = match.casa_fuori==='casa' ? '🏠 Casa' : '✈️ Trasferta';
+            const s1 = match.casa_fuori==='casa' ? 'Corbiolo' : match.avversario;
+            const s2 = match.casa_fuori==='casa' ? match.avversario : 'Corbiolo';
+            const ds = match.date.toLocaleDateString(undefined,{weekday:'long', day:'2-digit', month:'long', year:'numeric'});
+            const tipoTag = match.tipo && match.tipo!=='Campionato' ? `<span class="pill" style="margin-left:6px">${match.tipo}</span>` : '';
+            return `
+              <div style="${i>0 ? 'border-top:1px solid var(--ring);padding-top:12px' : ''}">
+                <div style="font-weight:800;font-size:16px">${s1} - ${s2} ${tipoTag}</div>
+                <div class="small" style="margin-top:6px">${icon} · ${ds}${match.ora ? ' · '+match.ora : ''}</div>
+                ${match.risultato ? `<div style="font-weight:800;margin-top:8px">Risultato: ${match.risultato}</div>` : ''}
+              </div>`;
+          }).join('')}
+        </div>`;
       dayOverlay.style.display = 'flex';
       document.getElementById('closeDayInfo').onclick = ()=> dayOverlay.style.display='none';
     }

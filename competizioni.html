@@ -125,8 +125,12 @@
       const casa = m.casa || '?';
       const fuori = m.fuori || '?';
       const score = m.risultato ? m.risultato.replace('-', ' - ') : '';
-      const casaBadge = badge(casa, m.logo_casa, 20);
-      const fuoriBadge = badge(fuori, m.logo_fuori, 20);
+      const casaBadge = casa.toLowerCase()===CORB
+        ? `<img src="img/logo_c5.png" style="width:20px;height:20px;border-radius:5px;object-fit:contain" alt="">`
+        : badge(casa, m.logo_casa, 20);
+      const fuoriBadge = fuori.toLowerCase()===CORB
+        ? `<img src="img/logo_c5.png" style="width:20px;height:20px;border-radius:5px;object-fit:contain" alt="">`
+        : badge(fuori, m.logo_fuori, 20);
       return `
         <div class="g-match ${isMe?'me':''}">
           <div class="g-teams" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
