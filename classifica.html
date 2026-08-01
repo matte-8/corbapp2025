@@ -33,6 +33,19 @@
     .legend span{display:inline-flex;align-items:center;gap:6px}
     .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
     @media(max-width:420px){ .std-table{font-size:12px} .std-table th{font-size:10px} }
+
+    /* Su tema scuro, queste due card restano bianche per leggere bene i colori
+       delle zone classifica e i numeri dei marcatori. */
+    :root[data-theme="dark"] #classificaCard,
+    :root[data-theme="dark"] #marcatoriCard{
+      background:#ffffff; color:#2b1d22;
+    }
+    :root[data-theme="dark"] #classificaCard .std-table .pos,
+    :root[data-theme="dark"] #classificaCard .std-table td,
+    :root[data-theme="dark"] #marcatoriCard .small,
+    :root[data-theme="dark"] #marcatoriCard div{ color:#2b1d22 }
+    :root[data-theme="dark"] #classificaCard .std-table tr.me{ background:#f5eef0 }
+    :root[data-theme="dark"] #classificaCard .season-select select{ background:#fff; color:#2b1d22 }
   </style>
 </head>
 <body>
@@ -70,7 +83,7 @@
   </nav>
 
   <main class="container">
-    <section class="card">
+    <section class="card" id="classificaCard">
       <div class="row" style="justify-content:space-between;flex-wrap:wrap">
         <h2 style="margin:0">Classifica</h2>
         <div class="season-select">
@@ -106,7 +119,7 @@
       </div>
     </section>
 
-    <section class="card" style="margin-top:14px">
+    <section class="card" id="marcatoriCard" style="margin-top:14px">
       <h2 style="margin:0 0 8px 0">⚽ Classifica marcatori — U.S. Corbiolo</h2>
       <div id="scorersList"></div>
     </section>
