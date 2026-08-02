@@ -1,0 +1,28 @@
+name: Notifica diretta (inizio + gol)
+
+on:
+  schedule:
+    - cron: '*/3 * * * *'   # ogni 3 minuti, ma manda solo se c'è davvero una diretta attiva
+  workflow_dispatch: {}     # per testarlo a mano
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Installa dipendenze
+        working-directory: ./scripts
+        run: npm install
+
+      - name: Controlla dirette e invia notifiche
+        working-directory: ./scripts
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: node notify-live-events.js
