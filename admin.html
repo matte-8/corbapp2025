@@ -129,8 +129,8 @@
       <h2 style="margin:0 0 8px 0">Accesso amministratore</h2>
       <div class="login-card">
         <label class="field">
-          <span>Email</span>
-          <input id="email" type="email" placeholder="la tua email Firebase"/>
+          <span>Email o nome utente</span>
+          <input id="email" type="text" placeholder="la tua email, o solo il nome utente"/>
         </label>
         <label class="field">
           <span>Password</span>
@@ -203,11 +203,12 @@
     const loginCard = $('loginCard');
     const panel = $('panel');
 
-    // Email con accesso LIMITATO alla sola Diretta (+ modifica cronaca).
-    // Per aggiungere un altro admin "solo diretta": crea il suo utente in
-    // Firebase Console → Authentication, poi aggiungi qui la sua email.
+    // Email (o solo nome utente, es. 'diretta') con accesso LIMITATO alla sola
+    // Diretta (+ modifica cronaca). Per aggiungere un altro admin "solo diretta":
+    // crea il suo utente in Firebase Console → Authentication (con email tipo
+    // nome@corbioloc5.app), poi aggiungi qui la sua email o solo il nome.
     const LIVE_ONLY_EMAILS = [
-      // 'compagno@esempio.it',
+      // 'diretta', oppure 'compagno@esempio.it',
     ];
     let isLiveOnly = false;
 
@@ -220,14 +221,20 @@
       btn.textContent = showing ? '👁️' : '🙈';
     });
 
+    // Dominio "finto" usato per trasformare un nome utente semplice in una email
+    // valida per Firebase Auth (non deve ricevere email vere, serve solo la @).
+    const USERNAME_DOMAIN = 'corbioloc5.app';
+
     $('loginBtn').addEventListener('click', async ()=>{
       $('loginMsg').innerHTML = '';
+      const raw = $('email').value.trim();
+      const emailToUse = raw.includes('@') ? raw : `${raw.toLowerCase()}@${USERNAME_DOMAIN}`;
       try{
-        await signInWithEmailAndPassword(auth, $('email').value.trim(), $('pwd').value);
+        await signInWithEmailAndPassword(auth, emailToUse, $('pwd').value);
       }catch(err){
         const wrongCred = ['auth/invalid-credential','auth/wrong-password','auth/user-not-found','auth/invalid-email'].includes(err.code);
         const msg = wrongCred
-          ? 'Email o password non corrette. Controlla di averle scritte giuste.'
+          ? 'Email/nome utente o password non corretti. Controlla di averli scritti giusti.'
           : `Accesso fallito: ${err.message}`;
         $('loginMsg').innerHTML = `<div class="msg err">${msg}</div>`;
       }
@@ -238,7 +245,10 @@
       if (user){
         loginCard.style.display='none';
         panel.style.display='grid';
-        isLiveOnly = LIVE_ONLY_EMAILS.map(e=>e.toLowerCase()).includes((user.email||'').toLowerCase());
+        isLiveOnly = LIVE_ONLY_EMAILS.some(e => {
+          const full = e.includes('@') ? e : `${e}@${USERNAME_DOMAIN}`;
+          return full.toLowerCase() === (user.email||'').toLowerCase();
+        });
         initPanel();
       } else {
         loginCard.style.display='block';
