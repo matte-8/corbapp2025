@@ -102,6 +102,20 @@
   }
   window.teamBadgeHTML = teamBadgeHTML;
 
+  // Se il tema è impostato su "automatico", ricontrolla ogni tot minuti e
+  // aggiorna da solo (utile se l'app resta aperta a lungo e si attraversano
+  // le 19:00 o le 7:00 senza mai ricaricare la pagina).
+  function reapplyAutoTheme(){
+    const auto = (localStorage.getItem('corb-theme-auto') ?? 'on') === 'on';
+    if (!auto) return;
+    const h = new Date().getHours();
+    const theme = (h >= 19 || h < 7) ? 'dark' : 'light';
+    if (document.documentElement.dataset.theme !== theme){
+      document.documentElement.dataset.theme = theme;
+    }
+  }
+  setInterval(reapplyAutoTheme, 5 * 60 * 1000);
+
   ready(() => {
     attachDrawer();
     hydrateLastSync();

@@ -39,6 +39,11 @@ export async function enableNotifications(){
   // Notifiche ricevute mentre l'app è aperta e in primo piano
   // (in background/chiusa ci pensa sw.js → onBackgroundMessage)
   onMessage(messaging, (payload) => {
+    // Se è la notifica di un gol e la persona sta già guardando l'app aperta,
+    // non serve un popup in più: il tabellone live si aggiorna già da solo
+    // sotto i loro occhi in tempo reale.
+    if (payload?.data?.kind === 'gol' && document.visibilityState === 'visible') return;
+
     const title = payload?.notification?.title || 'CORB';
     const body  = payload?.notification?.body  || '';
     new Notification(title, { body, icon: './img/logo_c5.png' });

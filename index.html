@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8" />
-  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
+  <script>(function(){var a=localStorage.getItem("corb-theme-auto");if(a===null)a="on";var t;if(a==="on"){var h=new Date().getHours();t=(h>=19||h<7)?"dark":"light";}else{t=localStorage.getItem("corb-theme")||"light";}document.documentElement.dataset.theme=t;})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Home - CORBIOLOC5</title>
   <link rel="manifest" href="manifest.json">

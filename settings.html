@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="utf-8"/>
-  <script>document.documentElement.dataset.theme = localStorage.getItem("corb-theme") || "light";</script>
+  <script>(function(){var a=localStorage.getItem("corb-theme-auto");if(a===null)a="on";var t;if(a==="on"){var h=new Date().getHours();t=(h>=19||h<7)?"dark":"light";}else{t=localStorage.getItem("corb-theme")||"light";}document.documentElement.dataset.theme=t;})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Impostazioni - CORBIOLOC5</title>
 
@@ -73,13 +73,22 @@
     <section class="card">
       <h2 style="margin:0 0 8px 0">Aspetto</h2>
       <div class="switch">
-        <label for="themeToggle">Tema scuro</label>
+        <label for="themeAutoToggle">Tema scuro automatico (dopo le 19)</label>
+        <label class="toggle-slider">
+          <input id="themeAutoToggle" type="checkbox" />
+          <span class="track"></span>
+        </label>
+      </div>
+      <div class="desc">Passa da solo al tema scuro la sera (dalle 19 alle 7) e chiaro di giorno.</div>
+
+      <div class="switch" style="margin-top:10px" id="manualThemeRow">
+        <label for="themeToggle">Tema scuro (manuale)</label>
         <label class="toggle-slider">
           <input id="themeToggle" type="checkbox" />
           <span class="track"></span>
         </label>
       </div>
-      <div class="desc">Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.</div>
+      <div class="desc" id="manualThemeDesc">Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.</div>
     </section>
 
     <section class="card" style="margin-top:14px">
@@ -110,13 +119,43 @@
   <script type="module">
     import { permissionState, enableNotifications, disableNotifications } from './notify.js';
 
-    // Tema scuro/chiaro
+    // Tema scuro/chiaro: automatico (dopo le 19) oppure manuale
+    const themeAutoToggle = document.getElementById('themeAutoToggle');
     const themeToggle = document.getElementById('themeToggle');
+    const manualThemeRow = document.getElementById('manualThemeRow');
+    const manualThemeDesc = document.getElementById('manualThemeDesc');
+
+    function computeAutoTheme(){
+      const h = new Date().getHours();
+      return (h >= 19 || h < 7) ? 'dark' : 'light';
+    }
+    function applyTheme(){
+      const auto = (localStorage.getItem('corb-theme-auto') ?? 'on') === 'on';
+      const mode = auto ? computeAutoTheme() : (localStorage.getItem('corb-theme') || 'light');
+      document.documentElement.dataset.theme = mode;
+    }
+    function refreshManualRowState(){
+      const auto = themeAutoToggle.checked;
+      manualThemeRow.style.opacity = auto ? '.4' : '1';
+      themeToggle.disabled = auto;
+      manualThemeDesc.textContent = auto
+        ? 'Disattiva l\'automatico qui sopra per scegliere tu il tema.'
+        : 'Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.';
+    }
+
+    themeAutoToggle.checked = (localStorage.getItem('corb-theme-auto') ?? 'on') === 'on';
     themeToggle.checked = (localStorage.getItem('corb-theme') === 'dark');
+    refreshManualRowState();
+
+    themeAutoToggle.addEventListener('change', () => {
+      localStorage.setItem('corb-theme-auto', themeAutoToggle.checked ? 'on' : 'off');
+      refreshManualRowState();
+      applyTheme();
+    });
     themeToggle.addEventListener('change', () => {
       const mode = themeToggle.checked ? 'dark' : 'light';
       localStorage.setItem('corb-theme', mode);
-      document.documentElement.dataset.theme = mode;
+      applyTheme();
     });
 
     // Drawer
