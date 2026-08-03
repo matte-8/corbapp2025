@@ -128,6 +128,7 @@
         : `<div class="small">Nessun video disponibile.</div>`;
     });
 
+    localStorage.setItem('corb-seen-video', String(Date.now()));
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
 </body>

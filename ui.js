@@ -116,6 +116,96 @@
   }
   setInterval(reapplyAutoTheme, 5 * 60 * 1000);
 
+  // ===================== Indicatori barra superiore + menu =====================
+  // Tutto slim: un puntino nell'header per "oggi si gioca" e per le notifiche
+  // da attivare, più un puntino sulle voci di menu News/Video se c'è qualcosa
+  // di nuovo che non hai ancora aperto. Nessun banner nella Home.
+  function injectTopIndicators(){
+    const brand = document.querySelector('.topbar .brand');
+    if (!brand) return;
+
+    import('./data-store.js').then(({ subscribeMatches, subscribeNews, subscribeVideos }) => {
+
+      // --- "Oggi si gioca" ---
+      subscribeMatches((rows) => {
+        const oggi = new Date();
+        const oggiStr = `${oggi.getFullYear()}-${String(oggi.getMonth()+1).padStart(2,'0')}-${String(oggi.getDate()).padStart(2,'0')}`;
+        const giocaOggi = (rows||[]).some(m => {
+          const isCorb = (m.casa||'').trim().toLowerCase()==='corbiolo' || (m.fuori||'').trim().toLowerCase()==='corbiolo';
+          return isCorb && m.data === oggiStr;
+        });
+        let dot = document.getElementById('corb-today-dot');
+        if (giocaOggi){
+          if (!dot){
+            dot = document.createElement('span');
+            dot.id = 'corb-today-dot';
+            dot.title = 'Oggi si gioca!';
+            dot.style.cssText = 'width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;margin-left:6px;box-shadow:0 0 0 2px rgba(34,197,94,.35);animation:corb-blink 1.6s infinite';
+            if (!document.getElementById('corb-blink-style')){
+              const st = document.createElement('style');
+              st.id = 'corb-blink-style';
+              st.textContent = '@keyframes corb-blink{0%,100%{opacity:1}50%{opacity:.35}}';
+              document.head.appendChild(st);
+            }
+            brand.appendChild(dot);
+          }
+        } else if (dot){ dot.remove(); }
+      });
+
+      // --- Pallini "nuovo" su News e Video nel menu ---
+      function wireUnread(collectionSubscribe, storageKey, selector){
+        collectionSubscribe((rows) => {
+          if (!rows || !rows.length) return;
+          const latest = rows.reduce((max, r) => {
+            const t = r.createdAt?.toMillis ? r.createdAt.toMillis() : 0;
+            return t > max ? t : max;
+          }, 0);
+          const seen = +(localStorage.getItem(storageKey) || 0);
+          const link = document.querySelector(selector);
+          if (!link) return;
+          let dot = link.querySelector('.corb-unread-dot');
+          if (latest > seen){
+            if (!dot){
+              dot = document.createElement('span');
+              dot.className = 'corb-unread-dot';
+              dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#e0261f;display:inline-block;margin-left:6px;vertical-align:middle';
+              link.appendChild(dot);
+            }
+          } else if (dot){ dot.remove(); }
+        });
+      }
+      wireUnread(subscribeNews,   'corb-seen-news',   '#drawer a[href="./news.html"]');
+      wireUnread(subscribeVideos, 'corb-seen-video',  '#drawer a[href="./video.html"]');
+    });
+  }
+
+  // --- Promemoria notifiche non attivate, nell'header ---
+  function injectNotifyReminder(){
+    const right = document.querySelector('.topbar .right');
+    if (!right || document.getElementById('corb-notify-reminder')) return;
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'granted') return;
+    if (location.pathname.endsWith('settings.html')) return;
+
+    const btn = document.createElement('a');
+    btn.id = 'corb-notify-reminder';
+    btn.href = './settings.html';
+    btn.title = 'Attiva le notifiche partita';
+    btn.className = 'iconbtn';
+    btn.style.fontSize = '18px';
+    btn.style.position = 'relative';
+    btn.textContent = '🔔';
+    const dot = document.createElement('span');
+    dot.style.cssText = 'position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#e0261f';
+    btn.appendChild(dot);
+    right.insertBefore(btn, right.firstChild);
+  }
+
+  ready(() => {
+    injectTopIndicators();
+    injectNotifyReminder();
+  });
+
   ready(() => {
     attachDrawer();
     hydrateLastSync();

@@ -71,6 +71,7 @@
       </div>
       <div id="nextBlock" class="versus" style="margin-top:10px"></div>
       <div id="nextMeta" class="metaRow"></div>
+      <button id="addCalBtn" class="pill-soft" style="display:none;border:1px solid #ffffff44;cursor:pointer;margin-top:8px;align-items:center;gap:6px">📅 Aggiungi al calendario</button>
     </section>
 
     <section class="card" style="margin-top:14px">
@@ -103,6 +104,42 @@
     const nextMeta  = document.getElementById('nextMeta');
     const fWrap = document.getElementById('futureList');
 
+    function pad2(n){ return String(n).padStart(2,'0'); }
+    function icsDate(d){
+      return `${d.getFullYear()}${pad2(d.getMonth()+1)}${pad2(d.getDate())}T${pad2(d.getHours())}${pad2(d.getMinutes())}00`;
+    }
+    function addToCalendar(match, homeName, awayName){
+      const start = match.date;
+      const end = new Date(start.getTime() + 90*60000); // partita ~90 minuti
+      const titolo = `${homeName} vs ${awayName}`;
+      const luogo = homeName.toLowerCase()===CORB ? 'C.S. Monti Lessini, Contrada Carcaro, Bosco Chiesanuova (VR)' : '';
+      const ics = [
+        'BEGIN:VCALENDAR',
+        'VERSION:2.0',
+        'PRODID:-//CorbioloC5//App//IT',
+        'BEGIN:VEVENT',
+        `UID:${match.id||Date.now()}@corbioloc5`,
+        `DTSTAMP:${icsDate(new Date())}`,
+        `DTSTART:${icsDate(start)}`,
+        `DTEND:${icsDate(end)}`,
+        `SUMMARY:${titolo}`,
+        luogo ? `LOCATION:${luogo}` : '',
+        'DESCRIPTION:Partita U.S. Corbiolo C5',
+        'END:VEVENT',
+        'END:VCALENDAR'
+      ].filter(Boolean).join('\r\n');
+
+      const blob = new Blob([ics], { type: 'text/calendar' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'partita-corbiolo.ics';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(()=> URL.revokeObjectURL(url), 2000);
+    }
+
     // 👇 si aggiorna da solo appena viene inserita/modificata una partita
     subscribeMatches((allRowsRaw) => {
       const rows = (allRowsRaw||[]).filter(m => (m.casa||'').trim().toLowerCase()==='corbiolo' || (m.fuori||'').trim().toLowerCase()==='corbiolo');
@@ -134,9 +171,13 @@
           <span class="pill-soft">${fmtLong(next.date)}</span>
           ${next.tipo && next.tipo!=='Campionato' ? `<span class="pill-soft">${next.tipo}</span>` : ''}
         `;
+
+        document.getElementById('addCalBtn').style.display = 'inline-flex';
+        document.getElementById('addCalBtn').onclick = () => addToCalendar(next, homeName, awayName);
       } else {
         nextBlock.innerHTML = `<div class="small" style="grid-column:1/-1">Nessuna partita in programma</div>`;
         nextMeta.innerHTML = '';
+        document.getElementById('addCalBtn').style.display = 'none';
       }
 
       fWrap.innerHTML = future.length ? future.map(m=>{

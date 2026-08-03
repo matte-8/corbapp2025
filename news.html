@@ -191,6 +191,7 @@
       }
     });
 
+    localStorage.setItem('corb-seen-news', String(Date.now()));
     if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js');
   </script>
   <script src="./ui.js?v=35"></script>
