@@ -266,7 +266,12 @@
     const right = document.querySelector('.topbar .right');
     if (!right || document.getElementById('corb-notify-reminder')) return;
     if (typeof Notification === 'undefined') return;
-    if (Notification.permission === 'granted') return;
+    const savedState = localStorage.getItem('corb-notif-enabled');
+    const isEnabled = savedState === null ? (Notification.permission === 'granted') : (savedState === 'yes');
+    if (isEnabled) return;
+    // Se hai "skippato" il promemoria di recente, non ricomparire subito
+    const dismissedAt = +(localStorage.getItem('corb-notify-reminder-dismissed') || 0);
+    if (Date.now() - dismissedAt < 3 * 24 * 60 * 60 * 1000) return; // 3 giorni
     if (location.pathname.endsWith('settings.html')) return;
 
     if (!document.getElementById('corb-shake-style')){
@@ -294,7 +299,14 @@
         <div style="font-weight:800;font-size:14px;margin-bottom:6px">🔔 Non perderti nulla!</div>
         <div style="font-size:12px;color:var(--muted,#7a5d66)">Attiva le notifiche per sapere subito quando si gioca e quando arriva un gol.</div>
         <a href="./settings.html" style="display:block;text-align:center;margin-top:12px;width:100%;padding:9px;border:0;border-radius:10px;background:#6b0f1a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;box-sizing:border-box;font-size:13px">Attiva le notifiche</a>
+        <button id="corb-notif-skip" style="display:block;text-align:center;margin-top:8px;width:100%;padding:8px;border:0;border-radius:10px;background:transparent;color:var(--muted,#7a5d66);font-weight:600;cursor:pointer;font-size:12px">Non ora</button>
       `);
+      document.getElementById('corb-notif-skip').onclick = () => {
+        localStorage.setItem('corb-notify-reminder-dismissed', String(Date.now()));
+        btn.remove();
+        document.getElementById('corb-anchor-catcher')?.remove();
+        document.getElementById('corb-anchor-card')?.remove();
+      };
     });
     right.insertBefore(btn, right.firstChild);
 

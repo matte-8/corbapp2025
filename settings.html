@@ -176,8 +176,12 @@
       document.getElementById('iosNotice').style.display = 'block';
     }
 
-    // stato iniziale: acceso se il permesso è già "granted"
-    toggle.checked = permissionState() === 'granted';
+    // Stato iniziale: uso quello che abbiamo salvato noi (non solo il permesso
+    // del browser, che una volta concesso resta sempre "granted" per sempre,
+    // anche se qui hai disattivato le notifiche — altrimenti il toggle sembra
+    // sempre acceso e impossibile da spegnere davvero).
+    const savedState = localStorage.getItem('corb-notif-enabled');
+    toggle.checked = savedState === null ? (permissionState() === 'granted') : (savedState === 'yes');
     permEl.textContent = 'Permesso: ' + permissionState();
     askPerm.style.display = 'none'; // il toggle stesso chiede il permesso
 
@@ -186,9 +190,11 @@
       try{
         if (toggle.checked){
           await enableNotifications();
+          localStorage.setItem('corb-notif-enabled', 'yes');
           alert('Notifiche attivate! Riceverai un avviso il giorno della partita.');
         } else {
           await disableNotifications();
+          localStorage.setItem('corb-notif-enabled', 'no');
           alert('Notifiche disattivate.');
         }
       } catch(err){
