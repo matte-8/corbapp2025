@@ -296,10 +296,12 @@
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       showAnchoredPopup(btn, `
+        <div style="display:flex;justify-content:flex-end;margin:-4px -4px 4px 0">
+          <button id="corb-notif-skip" style="border:0;background:transparent;color:var(--muted,#7a5d66);font-weight:600;cursor:pointer;font-size:11px;padding:4px 6px">Non ora ✕</button>
+        </div>
         <div style="font-weight:800;font-size:14px;margin-bottom:6px">🔔 Non perderti nulla!</div>
         <div style="font-size:12px;color:var(--muted,#7a5d66)">Attiva le notifiche per sapere subito quando si gioca e quando arriva un gol.</div>
         <a href="./settings.html" style="display:block;text-align:center;margin-top:12px;width:100%;padding:9px;border:0;border-radius:10px;background:#6b0f1a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;box-sizing:border-box;font-size:13px">Attiva le notifiche</a>
-        <button id="corb-notif-skip" style="display:block;text-align:center;margin-top:8px;width:100%;padding:8px;border:0;border-radius:10px;background:transparent;color:var(--muted,#7a5d66);font-weight:600;cursor:pointer;font-size:12px">Non ora</button>
       `);
       document.getElementById('corb-notif-skip').onclick = () => {
         localStorage.setItem('corb-notify-reminder-dismissed', String(Date.now()));

@@ -31,6 +31,8 @@
     .btn{border:1px solid var(--ring);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
     .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
     .stat{font-size:13px;color:var(--muted)}
+    .seg-btn-notif{flex:1;padding:12px 0;border-radius:12px;border:2px solid var(--ring);background:var(--card);color:var(--text);font-weight:700;font-size:14px;cursor:pointer}
+    .seg-btn-notif.active{background:var(--granata);color:#fff;border-color:var(--granata)}
   </style>
 </head>
 <body>
@@ -94,12 +96,12 @@
     <section class="card" style="margin-top:14px">
       <h2 style="margin:0 0 8px 0">Notifiche partite</h2>
 
-      <div class="switch">
-        <label for="toggle">Promemoria giorno-partita</label>
-        <input id="toggle" type="checkbox" />
+      <div class="row" style="gap:8px">
+        <button type="button" id="notifOnBtn" class="seg-btn-notif">🔔 Attive</button>
+        <button type="button" id="notifOffBtn" class="seg-btn-notif">🔕 Disattivate</button>
       </div>
       <div class="desc">
-        Ricevi un promemoria a mezzogiorno il giorno delle partite. Su Android/PWA funziona al meglio.
+        Ricevi un promemoria a mezzogiorno il giorno delle partite, l'avviso quando inizia una diretta e i gol. Su Android/PWA funziona al meglio.
       </div>
       <div class="desc" id="iosNotice" style="display:none; margin-top:8px; padding:10px; background:#f5eef0; border-radius:10px; color:var(--granata)">
         📱 <b>Sei su iPhone:</b> perché le notifiche funzionino devi prima aggiungere questa app alla schermata Home
@@ -107,9 +109,11 @@
         di ricevere notifiche.
       </div>
 
-      <div class="actions">
-        <button id="askPerm" class="btn">Richiedi permesso</button>
-        <button id="testNotif" class="btn btn-primary">Invia notifica di prova</button>
+      <button id="saveNotifBtn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">💾 Salva preferenze</button>
+      <div class="small" id="saveNotifMsg" style="margin-top:6px;min-height:16px"></div>
+
+      <div class="actions" style="margin-top:10px">
+        <button id="testNotif" class="btn">Invia notifica di prova</button>
       </div>
 
       <div class="stat" id="permState" style="margin-top:8px">Permesso: —</div>
@@ -164,8 +168,10 @@
     document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
     document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
 
-    const toggle   = document.getElementById('toggle');
-    const askPerm  = document.getElementById('askPerm');
+    const notifOnBtn  = document.getElementById('notifOnBtn');
+    const notifOffBtn = document.getElementById('notifOffBtn');
+    const saveNotifBtn = document.getElementById('saveNotifBtn');
+    const saveNotifMsg = document.getElementById('saveNotifMsg');
     const testBtn  = document.getElementById('testNotif');
     const permEl   = document.getElementById('permState');
 
@@ -178,31 +184,38 @@
 
     // Stato iniziale: uso quello che abbiamo salvato noi (non solo il permesso
     // del browser, che una volta concesso resta sempre "granted" per sempre,
-    // anche se qui hai disattivato le notifiche — altrimenti il toggle sembra
-    // sempre acceso e impossibile da spegnere davvero).
+    // anche se qui hai disattivato le notifiche).
     const savedState = localStorage.getItem('corb-notif-enabled');
-    toggle.checked = savedState === null ? (permissionState() === 'granted') : (savedState === 'yes');
-    permEl.textContent = 'Permesso: ' + permissionState();
-    askPerm.style.display = 'none'; // il toggle stesso chiede il permesso
+    let selected = savedState === null ? (permissionState() === 'granted') : (savedState === 'yes');
 
-    toggle.addEventListener('change', async ()=>{
-      toggle.disabled = true;
+    function paintSelection(){
+      notifOnBtn.classList.toggle('active', selected === true);
+      notifOffBtn.classList.toggle('active', selected === false);
+    }
+    paintSelection();
+    permEl.textContent = 'Permesso: ' + permissionState();
+
+    // Scegliere qui NON applica ancora nulla: serve toccare "Salva preferenze"
+    notifOnBtn.addEventListener('click', ()=>{ selected = true; paintSelection(); saveNotifMsg.textContent=''; });
+    notifOffBtn.addEventListener('click', ()=>{ selected = false; paintSelection(); saveNotifMsg.textContent=''; });
+
+    saveNotifBtn.addEventListener('click', async ()=>{
+      saveNotifBtn.disabled = true;
+      saveNotifMsg.textContent = 'Salvataggio...';
       try{
-        if (toggle.checked){
+        if (selected){
           await enableNotifications();
           localStorage.setItem('corb-notif-enabled', 'yes');
-          alert('Notifiche attivate! Riceverai un avviso il giorno della partita.');
         } else {
           await disableNotifications();
           localStorage.setItem('corb-notif-enabled', 'no');
-          alert('Notifiche disattivate.');
         }
+        saveNotifMsg.textContent = selected ? '✅ Notifiche attivate e salvate.' : '✅ Notifiche disattivate e salvate.';
       } catch(err){
-        toggle.checked = !toggle.checked; // rollback visivo
-        alert('Non è stato possibile aggiornare: ' + err.message);
+        saveNotifMsg.textContent = '❌ Errore: ' + err.message;
       } finally {
         permEl.textContent = 'Permesso: ' + permissionState();
-        toggle.disabled = false;
+        saveNotifBtn.disabled = false;
       }
     });
 

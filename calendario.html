@@ -80,6 +80,7 @@
         <div class="month-name" id="m1"></div>
         <div class="head-right">
           <button type="button" class="arrowbtn" id="prevM" title="Mese precedente">←</button>
+          <button type="button" class="arrowbtn" id="todayBtn" title="Torna a oggi" style="font-size:11px;font-weight:700">Oggi</button>
           <button type="button" class="arrowbtn" id="nextM" title="Mese successivo">→</button>
         </div>
       </div>
@@ -225,6 +226,9 @@
     });
     document.getElementById('nextM').addEventListener('click', ()=>{
       offset += 1; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'});
+    });
+    document.getElementById('todayBtn').addEventListener('click', ()=>{
+      offset = 0; buildTwoMonths(); window.scrollTo({top:0,behavior:'smooth'});
     });
 
     const isHome = m => (m.casa||'').trim().toLowerCase() === CORB;
