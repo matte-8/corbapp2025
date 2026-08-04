@@ -50,6 +50,7 @@ a{color:inherit;text-decoration:none}
 .title{font-weight:700}
 
 /* ===== Icona hamburger pulita ===== */
+.right{display:flex; align-items:center; gap:6px}
 .iconbtn,
 .iconbtn:focus,
 .iconbtn:active{

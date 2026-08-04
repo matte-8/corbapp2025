@@ -117,69 +117,151 @@
   setInterval(reapplyAutoTheme, 5 * 60 * 1000);
 
   // ===================== Indicatori barra superiore + menu =====================
-  // Tutto slim: un puntino nell'header per "oggi si gioca" e per le notifiche
-  // da attivare, più un puntino sulle voci di menu News/Video se c'è qualcosa
-  // di nuovo che non hai ancora aperto. Nessun banner nella Home.
+  // Tutto slim: un pallone che rimbalza per "oggi si gioca" (con popup al tocco),
+  // una campanella per le notifiche da attivare (con popup al tocco), più un
+  // puntino su News/Video sia nel menu che nelle card Home se c'è qualcosa di
+  // nuovo che non hai ancora aperto.
+
+  // Piccolo popup generico, riutilizzabile, senza dipendere dallo stile di ogni pagina.
+  function showSlimPopup(html){
+    let overlay = document.getElementById('corb-slim-overlay');
+    if (!overlay){
+      overlay = document.createElement('div');
+      overlay.id = 'corb-slim-overlay';
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:20px';
+      overlay.addEventListener('click', (e)=>{ if (e.target===overlay) overlay.remove(); });
+      const card = document.createElement('div');
+      card.id = 'corb-slim-card';
+      card.style.cssText = 'background:var(--card,#fff);color:var(--text,#2b1d22);border-radius:16px;padding:18px;max-width:320px;width:100%;box-shadow:0 20px 50px rgba(0,0,0,.35)';
+      overlay.appendChild(card);
+      document.body.appendChild(overlay);
+    }
+    document.getElementById('corb-slim-card').innerHTML = html;
+    overlay.style.display = 'flex';
+  }
+
+  // Popup piccolo "ancorato" a un elemento (tipo la campanella): esce da lì
+  // invece di comparire al centro dello schermo, come un menu a tendina.
+  function showAnchoredPopup(anchorEl, html){
+    document.getElementById('corb-anchor-catcher')?.remove();
+    document.getElementById('corb-anchor-card')?.remove();
+
+    const catcher = document.createElement('div');
+    catcher.id = 'corb-anchor-catcher';
+    catcher.style.cssText = 'position:fixed;inset:0;z-index:499;background:transparent';
+    catcher.addEventListener('click', () => { catcher.remove(); card.remove(); });
+    document.body.appendChild(catcher);
+
+    const rect = anchorEl.getBoundingClientRect();
+    const card = document.createElement('div');
+    card.id = 'corb-anchor-card';
+    const right = Math.max(8, window.innerWidth - rect.right);
+    card.style.cssText = `position:fixed;top:${rect.bottom+10}px;right:${right}px;z-index:500;
+      background:var(--card,#fff);color:var(--text,#2b1d22);border-radius:14px;padding:14px;
+      width:min(260px, calc(100vw - 24px));box-shadow:0 12px 30px rgba(0,0,0,.3);
+      animation:corb-pop .15s ease-out`;
+    card.innerHTML = html;
+    document.body.appendChild(card);
+
+    if (!document.getElementById('corb-pop-style')){
+      const st = document.createElement('style');
+      st.id = 'corb-pop-style';
+      st.textContent = '@keyframes corb-pop{from{transform:translateY(-6px);opacity:0}to{transform:translateY(0);opacity:1}}';
+      document.head.appendChild(st);
+    }
+  }
+
   function injectTopIndicators(){
     const brand = document.querySelector('.topbar .brand');
     if (!brand) return;
 
     import('./data-store.js').then(({ subscribeMatches, subscribeNews, subscribeVideos }) => {
 
-      // --- "Oggi si gioca" ---
+      // --- "Oggi si gioca": pallone che rimbalza + popup con la partita ---
       subscribeMatches((rows) => {
         const oggi = new Date();
         const oggiStr = `${oggi.getFullYear()}-${String(oggi.getMonth()+1).padStart(2,'0')}-${String(oggi.getDate()).padStart(2,'0')}`;
-        const giocaOggi = (rows||[]).some(m => {
+        const partitaOggi = (rows||[]).find(m => {
           const isCorb = (m.casa||'').trim().toLowerCase()==='corbiolo' || (m.fuori||'').trim().toLowerCase()==='corbiolo';
           return isCorb && m.data === oggiStr;
         });
-        let dot = document.getElementById('corb-today-dot');
-        if (giocaOggi){
-          if (!dot){
-            dot = document.createElement('span');
-            dot.id = 'corb-today-dot';
-            dot.title = 'Oggi si gioca!';
-            dot.style.cssText = 'width:9px;height:9px;border-radius:50%;background:#22c55e;display:inline-block;margin-left:6px;box-shadow:0 0 0 2px rgba(34,197,94,.35);animation:corb-blink 1.6s infinite';
-            if (!document.getElementById('corb-blink-style')){
+        let ball = document.getElementById('corb-today-ball');
+        if (partitaOggi){
+          if (!ball){
+            ball = document.createElement('button');
+            ball.id = 'corb-today-ball';
+            ball.type = 'button';
+            ball.title = 'Oggi si gioca! Tocca per i dettagli';
+            ball.style.cssText = 'background:none;border:0;cursor:pointer;font-size:16px;margin-left:6px;display:inline-block;animation:corb-bounce 1s infinite;line-height:1;padding:0';
+            ball.textContent = '⚽';
+            if (!document.getElementById('corb-bounce-style')){
               const st = document.createElement('style');
-              st.id = 'corb-blink-style';
-              st.textContent = '@keyframes corb-blink{0%,100%{opacity:1}50%{opacity:.35}}';
+              st.id = 'corb-bounce-style';
+              st.textContent = '@keyframes corb-bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}';
               document.head.appendChild(st);
             }
-            brand.appendChild(dot);
+            brand.appendChild(ball);
           }
-        } else if (dot){ dot.remove(); }
+          ball.onclick = (e) => {
+            e.preventDefault(); e.stopPropagation();
+            const casa = partitaOggi.casa || 'Corbiolo';
+            const fuori = partitaOggi.fuori || 'Avversario';
+            const ora = partitaOggi.ora ? ` alle ${partitaOggi.ora}` : '';
+            showSlimPopup(`
+              <div style="font-weight:800;font-size:16px;margin-bottom:8px">⚽ Il Corbiolo oggi gioca!</div>
+              <div style="font-size:14px">${casa} vs ${fuori}${ora}</div>
+              <button onclick="document.getElementById('corb-slim-overlay').remove()"
+                style="margin-top:14px;width:100%;padding:10px;border:0;border-radius:10px;background:#6b0f1a;color:#fff;font-weight:700;cursor:pointer">Ok</button>
+            `);
+          };
+        } else if (ball){ ball.remove(); }
       });
 
-      // --- Pallini "nuovo" su News e Video nel menu ---
-      function wireUnread(collectionSubscribe, storageKey, selector){
+      // --- Pallini "nuovo" su News e Video: sia nel menu che nelle card Home ---
+      function wireUnread(collectionSubscribe, storageKey, drawerSel, cardSel){
         collectionSubscribe((rows) => {
-          if (!rows || !rows.length) return;
-          const latest = rows.reduce((max, r) => {
-            const t = r.createdAt?.toMillis ? r.createdAt.toMillis() : 0;
-            return t > max ? t : max;
-          }, 0);
           const seen = +(localStorage.getItem(storageKey) || 0);
-          const link = document.querySelector(selector);
-          if (!link) return;
-          let dot = link.querySelector('.corb-unread-dot');
-          if (latest > seen){
-            if (!dot){
-              dot = document.createElement('span');
-              dot.className = 'corb-unread-dot';
-              dot.style.cssText = 'width:8px;height:8px;border-radius:50%;background:#e0261f;display:inline-block;margin-left:6px;vertical-align:middle';
-              link.appendChild(dot);
-            }
-          } else if (dot){ dot.remove(); }
+          const count = (rows||[]).filter(r => {
+            const t = r.createdAt?.toMillis ? r.createdAt.toMillis() : 0;
+            return t > seen;
+          }).length;
+
+          // Nel menu: pallino inline accanto al testo, col numero dentro
+          document.querySelectorAll(drawerSel).forEach(link => {
+            let dot = link.querySelector('.corb-unread-dot');
+            if (count > 0){
+              if (!dot){
+                dot = document.createElement('span');
+                dot.className = 'corb-unread-dot';
+                dot.style.cssText = 'min-width:16px;height:16px;padding:0 3px;border-radius:999px;background:#e0261f;color:#fff;font-size:10px;font-weight:800;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;vertical-align:middle';
+                link.appendChild(dot);
+              }
+              dot.textContent = count;
+            } else if (dot){ dot.remove(); }
+          });
+
+          // Nelle card Home: badge nell'angolo in alto a destra della card
+          document.querySelectorAll(cardSel).forEach(card => {
+            card.style.position = 'relative';
+            let dot = card.querySelector('.corb-unread-badge');
+            if (count > 0){
+              if (!dot){
+                dot = document.createElement('span');
+                dot.className = 'corb-unread-badge';
+                dot.style.cssText = 'position:absolute;top:-6px;right:-6px;min-width:18px;height:18px;padding:0 4px;border-radius:999px;background:#e0261f;color:#fff;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(0,0,0,.25)';
+                card.appendChild(dot);
+              }
+              dot.textContent = count;
+            } else if (dot){ dot.remove(); }
+          });
         });
       }
-      wireUnread(subscribeNews,   'corb-seen-news',   '#drawer a[href="./news.html"]');
-      wireUnread(subscribeVideos, 'corb-seen-video',  '#drawer a[href="./video.html"]');
+      wireUnread(subscribeNews,   'corb-seen-news',  '#drawer a[href="./news.html"]',  'a.home-box[href="./news.html"]');
+      wireUnread(subscribeVideos, 'corb-seen-video', '#drawer a[href="./video.html"]', 'a.home-box[href="./video.html"]');
     });
   }
 
-  // --- Promemoria notifiche non attivate, nell'header ---
+  // --- Campanella notifiche: vicino al menu, con popup + scossa periodica ---
   function injectNotifyReminder(){
     const right = document.querySelector('.topbar .right');
     if (!right || document.getElementById('corb-notify-reminder')) return;
@@ -187,18 +269,40 @@
     if (Notification.permission === 'granted') return;
     if (location.pathname.endsWith('settings.html')) return;
 
-    const btn = document.createElement('a');
+    if (!document.getElementById('corb-shake-style')){
+      const st = document.createElement('style');
+      st.id = 'corb-shake-style';
+      st.textContent = '@keyframes corb-shake{0%,100%{transform:rotate(0)}20%{transform:rotate(-15deg)}40%{transform:rotate(12deg)}60%{transform:rotate(-8deg)}80%{transform:rotate(5deg)}}';
+      document.head.appendChild(st);
+    }
+
+    const btn = document.createElement('button');
     btn.id = 'corb-notify-reminder';
-    btn.href = './settings.html';
+    btn.type = 'button';
     btn.title = 'Attiva le notifiche partita';
     btn.className = 'iconbtn';
     btn.style.fontSize = '18px';
     btn.style.position = 'relative';
     btn.textContent = '🔔';
     const dot = document.createElement('span');
-    dot.style.cssText = 'position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:#e0261f';
+    dot.style.cssText = 'position:absolute;top:-4px;right:-4px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:#e0261f;color:#fff;font-size:9px;font-weight:800;display:flex;align-items:center;justify-content:center;box-shadow:0 0 0 2px var(--granata,#6b0f1a)';
+    dot.textContent = '1';
     btn.appendChild(dot);
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      showAnchoredPopup(btn, `
+        <div style="font-weight:800;font-size:14px;margin-bottom:6px">🔔 Non perderti nulla!</div>
+        <div style="font-size:12px;color:var(--muted,#7a5d66)">Attiva le notifiche per sapere subito quando si gioca e quando arriva un gol.</div>
+        <a href="./settings.html" style="display:block;text-align:center;margin-top:12px;width:100%;padding:9px;border:0;border-radius:10px;background:#6b0f1a;color:#fff;font-weight:700;cursor:pointer;text-decoration:none;box-sizing:border-box;font-size:13px">Attiva le notifiche</a>
+      `);
+    });
     right.insertBefore(btn, right.firstChild);
+
+    // Ogni tanto la campanella "trema" per farsi notare, senza essere invadente
+    setInterval(() => {
+      btn.style.animation = 'corb-shake .5s';
+      setTimeout(() => { btn.style.animation = ''; }, 600);
+    }, 20000);
   }
 
   ready(() => {
