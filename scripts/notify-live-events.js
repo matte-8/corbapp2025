@@ -31,9 +31,27 @@ async function main(){
     await Promise.all(toReset.map(d => d.ref.update({ liveNotified:false, notifiedEventCount:0 })));
   }
 
-  // Solo le partite ATTUALMENTE in diretta contano per le notifiche
+  // Solo le partite ATTUALMENTE in diretta contano per gol/inizio-diretta
   const live = snap.docs.filter(d => d.data().live === 'Sì');
-  if (!live.length){ console.log('Nessuna diretta in corso.'); return; }
+
+  // Partite con un rinvio/annullamento da notificare (indipendente dalla diretta)
+  const daNotificareStato = snap.docs.filter(d => {
+    const m = d.data();
+    return (m.stato === 'Rinviata' || m.stato === 'Annullata') && !m.statoNotificato;
+  });
+  const daRiarmareStato = snap.docs.filter(d => {
+    const m = d.data();
+    return (!m.stato || m.stato === 'Regolare') && m.statoNotificato;
+  });
+
+  if (!live.length && !daNotificareStato.length && !daRiarmareStato.length){
+    console.log('Nessuna diretta in corso e nessun cambio di stato da notificare.');
+    return;
+  }
+
+  if (daRiarmareStato.length){
+    await Promise.all(daRiarmareStato.map(d => d.ref.update({ statoNotificato: false })));
+  }
 
   const tokensSnap = await db.collection('pushTokens').get();
   const tokens = tokensSnap.docs.map(d => d.id);
@@ -58,6 +76,16 @@ async function main(){
       }
     });
     if (toDelete.length) await Promise.all(toDelete.map(t => db.collection('pushTokens').doc(t).delete()));
+  }
+
+  // 0) Partita rinviata/annullata
+  for (const doc of daNotificareStato){
+    const m = doc.data();
+    const casa  = m.casa  || 'Corbiolo';
+    const fuori = m.fuori || 'Avversario';
+    const emoji = m.stato === 'Rinviata' ? '⚠️' : '❌';
+    await sendPush(`${emoji} Partita ${m.stato.toLowerCase()}`, `${casa} - ${fuori}`, 'stato');
+    await doc.ref.update({ statoNotificato: true });
   }
 
   for (const doc of live){
