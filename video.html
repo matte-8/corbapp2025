@@ -86,6 +86,7 @@
     const box = document.getElementById('videos');
 
     const isYouTube = (u)=> /youtube\.com\/watch\?v=|youtu\.be\//i.test(u||'');
+    const isInstagram = (u)=> /instagram\.com\/(p|reel|tv)\//i.test(u||'');
     const ytId = (u)=>{
       if (!u) return '';
       const m1 = u.match(/[?&]v=([^&]+)/); if (m1) return m1[1];
@@ -93,12 +94,32 @@
       return '';
     };
 
+    // Lo script ufficiale Instagram trasforma i <blockquote> in veri post/reel
+    // incorporati. Va caricato una volta sola, e richiamato di nuovo ogni volta
+    // che aggiungiamo nuovi blockquote alla pagina (non li processa da solo).
+    let igScriptLoaded = false;
+    function ensureInstagramScript(){
+      if (igScriptLoaded) { window.instgrm?.Embeds?.process(); return; }
+      igScriptLoaded = true;
+      const s = document.createElement('script');
+      s.src = 'https://www.instagram.com/embed.js';
+      s.async = true;
+      document.body.appendChild(s);
+    }
+
     function card(v){
       const titolo = v.nome || 'Video';
       const thumb = v.logo ? (v.logo.startsWith('http') ? v.logo : `img/${v.logo}`) : '';
       const link  = v.link || '';
 
-      if (isYouTube(link)){
+      if (isInstagram(link)){
+        return `
+          <article class="card video-card">
+            <div class="title" style="margin-bottom:8px">${titolo}</div>
+            <blockquote class="instagram-media" data-instgrm-permalink="${link}" data-instgrm-version="14"
+              style="margin:0 auto;max-width:100%"></blockquote>
+          </article>`;
+      } else if (isYouTube(link)){
         const id = ytId(link);
         const src = `https://www.youtube.com/embed/${id}`;
         return `
@@ -126,6 +147,8 @@
       box.innerHTML = (list||[]).length
         ? list.map(card).join('')
         : `<div class="small">Nessun video disponibile.</div>`;
+
+      if ((list||[]).some(v => isInstagram(v.link))) ensureInstagramScript();
     });
 
     localStorage.setItem('corb-seen-video', String(Date.now()));

@@ -65,10 +65,10 @@
     <a href="./competizioni.html">📋 Competizioni</a>
     <a href="./classifica.html">🏅 Classifica</a>
     <a href="./dove.html">📍 Dove si gioca</a>
+    <a href="./settings.html">🔔 Impostazioni</a>
     <a href="./admin.html">⚙️ Admin</a>
     <hr style="border:none;border-top:1px solid var(--ring);margin:10px 0">
     <a href="./scarica.html">📲 Scarica l'app</a>
-    <a href="./settings.html">🔔 Impostazioni</a>
   </nav>
 
   <main class="container">
@@ -186,15 +186,15 @@
     async function applyChoice(wantOn){
       notifOnBtn.disabled = true; notifOffBtn.disabled = true;
       saveNotifMsg.textContent = 'Un attimo...';
-      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Il telefono non ha risposto in tempo. Riprova, o controlla di aver dato il permesso alle notifiche nelle impostazioni di sistema.')), ms));
+      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Non ho ricevuto risposta. Riprova, o controlla di aver dato il permesso alle notifiche nelle impostazioni di sistema del telefono/browser.')), ms));
       try{
         if (wantOn){
-          await Promise.race([enableNotifications(), timeout(10000)]);
+          await Promise.race([enableNotifications(), timeout(60000)]);
           localStorage.setItem('corb-notif-enabled', 'yes');
           selected = true;
           saveNotifMsg.textContent = '✅ Notifiche attivate.';
         } else {
-          await Promise.race([disableNotifications(), timeout(10000)]);
+          await Promise.race([disableNotifications(), timeout(60000)]);
           localStorage.setItem('corb-notif-enabled', 'no');
           selected = false;
           saveNotifMsg.textContent = '✅ Notifiche disattivate.';

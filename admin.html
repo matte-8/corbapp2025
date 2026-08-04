@@ -304,8 +304,8 @@
         label: 'Video', api: Videos, subscribe: subscribeVideos,
         fields: [
           {key:'nome', label:'Titolo video', type:'text'},
-          {key:'link', label:'Link (YouTube o altro)', type:'text'},
-          {key:'logo', label:'Copertina (URL, opzionale se YouTube)', type:'text'},
+          {key:'link', label:"Link Instagram (es. https://www.instagram.com/reel/XXXXX/)", type:'text'},
+          {key:'logo', label:'Copertina (URL, non serve per Instagram/YouTube)', type:'text'},
         ],
         itemLabel: (v)=> v.nome || '(senza titolo)',
         sort: null
