@@ -1,5 +1,5 @@
 // sw.js — cache offline (PWA) + notifiche push in background (Firebase Cloud Messaging)
-const CACHE = "corb-cache-v59";
+const CACHE = "corb-cache-v60";
 
 const ASSETS = [
   "./",
@@ -21,7 +21,20 @@ const ASSETS = [
 ];
 
 self.addEventListener("install", e=>{
-  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
+  e.waitUntil(
+    caches.open(CACHE).then(async (c) => {
+      // IMPORTANTE: prima usavamo caches.addAll(), che è "tutto o niente" —
+      // se anche un solo file della lista non si riesce a scaricare, l'INTERA
+      // installazione del service worker falliva e restava bloccata per sempre
+      // (ed è probabilmente la causa del blocco "Mi collego al service worker...").
+      // Ora proviamo ogni file singolarmente: se uno fallisce, lo saltiamo e
+      // basta, invece di far fallire tutto.
+      const results = await Promise.allSettled(ASSETS.map(url => c.add(url)));
+      results.forEach((r, i) => {
+        if (r.status === 'rejected') console.warn('[SW] impossibile mettere in cache:', ASSETS[i], r.reason);
+      });
+    })
+  );
   self.skipWaiting();
 });
 self.addEventListener("activate", e=>{
