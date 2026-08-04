@@ -36,7 +36,7 @@ function requestPermissionSafe(){
 // e lo salva in Firestore così l'admin (o l'automatismo del giorno-partita)
 // può usarlo per mandare la notifica a tutti.
 export async function enableNotifications(onStep){
-  const step = (s) => { try{ onStep && onStep(s); }catch{} };
+  const step = (s) => { if (onStep) onStep(s); };
 
   if (!('Notification' in window)) throw new Error('Notifiche non supportate su questo dispositivo/browser.');
 
@@ -79,7 +79,7 @@ export async function enableNotifications(onStep){
 }
 
 export async function disableNotifications(onStep){
-  const step = (s) => { try{ onStep && onStep(s); }catch{} };
+  const step = (s) => { if (onStep) onStep(s); };
   step('Controllo il supporto del browser...');
   const messaging = await getMessagingIfSupported();
   if (!messaging) return;

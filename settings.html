@@ -137,6 +137,18 @@
   <script type="module">
     import { permissionState, enableNotifications, disableNotifications } from './notify.js';
 
+    // Acchiappa-errori globale: se QUALSIASI cosa va storta da qualche parte
+    // (anche fuori dal nostro codice), la scriviamo comunque a schermo invece
+    // di lasciarla sparire nel nulla in silenzio.
+    window.addEventListener('error', (e) => {
+      const el = document.getElementById('notifStatus');
+      if (el) { el.textContent = '❌ Errore JS: ' + (e.message || e.error); el.style.color = '#dc2626'; }
+    });
+    window.addEventListener('unhandledrejection', (e) => {
+      const el = document.getElementById('notifStatus');
+      if (el) { el.textContent = '❌ Errore non gestito: ' + (e.reason?.message || e.reason); el.style.color = '#dc2626'; }
+    });
+
     if ('serviceWorker' in navigator) await navigator.serviceWorker.register('./sw.js');
 
     // ===== Tema =====
@@ -201,6 +213,7 @@
     async function chooseNotif(wantOn){
       setBusy(true);
       notifStatus.style.color = 'var(--muted)';
+      notifStatus.textContent = 'Tocco registrato, comincio...';
       const onStep = (s) => { notifStatus.textContent = s; };
       const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Bloccato al passaggio: "' + notifStatus.textContent + '". Fammi uno screenshot di questa scritta.')), ms));
       try{

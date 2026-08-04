@@ -125,12 +125,11 @@
 
       if (isInstagram(link)){
         return `
-          <article class="card video-card">
-            <div class="title" style="margin-bottom:8px">${titolo}</div>
-            <div class="ig-wrap">
-              <blockquote class="instagram-media" data-instgrm-permalink="${link}" data-instgrm-version="14"></blockquote>
-            </div>
-          </article>`;
+          <a class="card video-card" href="${link}" target="_blank" rel="noopener"
+            style="display:flex;align-items:center;justify-content:space-between;text-decoration:none;color:inherit;gap:10px">
+            <div class="title" style="margin:0">🎥 ${titolo}</div>
+            <span style="font-size:20px;flex-shrink:0">➜</span>
+          </a>`;
       } else if (isYouTube(link)){
         const id = ytId(link);
         const src = `https://www.youtube.com/embed/${id}`;
@@ -159,8 +158,6 @@
       box.innerHTML = (list||[]).length
         ? list.map(card).join('')
         : `<div class="small">Nessun video disponibile.</div>`;
-
-      if ((list||[]).some(v => isInstagram(v.link))) ensureInstagramScript();
     });
 
     localStorage.setItem('corb-seen-video', String(Date.now()));
