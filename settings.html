@@ -5,41 +5,41 @@
   <script>(function(){var a=localStorage.getItem("corb-theme-auto");if(a===null)a="on";var t;if(a==="on"){var h=new Date().getHours();t=(h>=19||h<7)?"dark":"light";}else{t=localStorage.getItem("corb-theme")||"light";}document.documentElement.dataset.theme=t;})();</script>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <title>Impostazioni - CORBIOLOC5</title>
-
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#6b0f1a">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <link rel="apple-touch-icon" href="img/logo_c5.png">
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
-    .switch{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--ring);border-radius:12px;background:var(--card)}
-    .switch label{font-weight:700}
-    /* Slider on/off al posto della checkbox di default */
-    .toggle-slider{position:relative;display:inline-block;width:50px;height:28px;flex-shrink:0}
-    .toggle-slider input{opacity:0;width:0;height:0}
-    .toggle-slider .track{
-      position:absolute;inset:0;background:#c9c2c5;border-radius:999px;cursor:pointer;transition:background .2s;
-    }
-    .toggle-slider .track::before{
-      content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;
-      background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3);
-    }
-    .toggle-slider input:checked + .track{background:var(--granata)}
-    .toggle-slider input:checked + .track::before{transform:translateX(22px)}
-    .desc{font-size:13px;color:var(--muted);margin-top:6px}
-    .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
-    .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
-    .stat{font-size:13px;color:var(--muted)}
-    .seg-btn-notif{flex:1;padding:12px 0;border-radius:12px;border:2px solid var(--ring);background:var(--card);color:var(--text);font-weight:700;font-size:14px;cursor:pointer}
-    .seg-btn-notif.active{background:var(--granata);color:#fff;border-color:var(--granata)}
+    .opt-row{display:flex;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--ring);border-radius:12px;background:var(--card);gap:12px}
+    .opt-row + .opt-row{margin-top:10px}
+    .opt-label{font-weight:700}
+    .opt-desc{font-size:12px;color:var(--muted);margin-top:6px}
+
+    .switch{position:relative;display:inline-block;width:48px;height:26px;flex-shrink:0}
+    .switch input{opacity:0;width:0;height:0}
+    .switch .track{position:absolute;inset:0;background:#c9c2c5;border-radius:999px;cursor:pointer;transition:background .2s}
+    .switch .track::before{content:"";position:absolute;left:3px;top:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+    .switch input:checked + .track{background:var(--granata)}
+    .switch input:checked + .track::before{transform:translateX(22px)}
+    .switch input:disabled + .track{opacity:.4;cursor:not-allowed}
+
+    .seg2{display:flex;gap:8px;margin-top:10px}
+    .seg2 button{flex:1;padding:12px 0;border-radius:12px;border:2px solid var(--ring);background:var(--card);color:var(--text);font-weight:700;font-size:14px;cursor:pointer}
+    .seg2 button.active{background:var(--granata);color:#fff;border-color:var(--granata)}
+    .seg2 button:disabled{opacity:.6;cursor:default}
+
+    .statusline{font-size:13px;margin-top:8px;min-height:18px}
+    .btn-outline{width:100%;justify-content:center;margin-top:12px;border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer;display:flex}
+    .ios-box{margin-top:10px;padding:10px;background:#f5eef0;border-radius:10px;color:var(--granata);font-size:13px}
+    :root[data-theme="dark"] .ios-box{background:#3a2530;color:#f0b9c8}
   </style>
 </head>
 <body>
   <header class="topbar">
     <div class="nav">
       <a href="./index.html" class="brand">
-        <img src="img/logo_c5.png" class="brand-logo" alt="">
+        <img src="img/logo_c5.png" alt="Corbiolo" class="brand-logo">
         <span class="title">Impostazioni</span>
       </a>
     </div>
@@ -72,56 +72,77 @@
   </nav>
 
   <main class="container">
-    <section class="card">
-      <h2 style="margin:0 0 8px 0">Aspetto</h2>
-      <div class="switch">
-        <label for="themeAutoToggle">Tema scuro automatico (dopo le 19)</label>
-        <label class="toggle-slider">
-          <input id="themeAutoToggle" type="checkbox" />
-          <span class="track"></span>
-        </label>
-      </div>
-      <div class="desc">Passa da solo al tema scuro la sera (dalle 19 alle 7) e chiaro di giorno.</div>
 
-      <div class="switch" style="margin-top:10px" id="manualThemeRow">
-        <label for="themeToggle">Tema scuro (manuale)</label>
-        <label class="toggle-slider">
-          <input id="themeToggle" type="checkbox" />
+    <section class="card">
+      <h2 style="margin:0 0 10px 0">Aspetto</h2>
+
+      <div class="opt-row">
+        <div>
+          <div class="opt-label">Tema scuro automatico</div>
+          <div class="opt-desc">Dalle 19 alle 7 di notte, senza doverci pensare.</div>
+        </div>
+        <label class="switch">
+          <input id="autoThemeInput" type="checkbox">
           <span class="track"></span>
         </label>
       </div>
-      <div class="desc" id="manualThemeDesc">Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.</div>
+
+      <div class="opt-row">
+        <div>
+          <div class="opt-label">Tema scuro (manuale)</div>
+          <div class="opt-desc" id="manualDesc">Disattiva l'automatico qui sopra per sceglierlo tu.</div>
+        </div>
+        <label class="switch">
+          <input id="manualThemeInput" type="checkbox">
+          <span class="track"></span>
+        </label>
+      </div>
     </section>
 
     <section class="card" style="margin-top:14px">
-      <h2 style="margin:0 0 8px 0">Notifiche partite</h2>
+      <h2 style="margin:0 0 10px 0">Notifiche partite</h2>
+      <div class="opt-desc" style="margin-top:0">Promemoria il giorno della partita, avviso quando inizia una diretta, e i gol in tempo reale.</div>
 
-      <div class="row" style="gap:8px">
-        <button type="button" id="notifOnBtn" class="seg-btn-notif">🔔 Attive</button>
-        <button type="button" id="notifOffBtn" class="seg-btn-notif">🔕 Disattivate</button>
+      <div class="seg2">
+        <button type="button" id="notifOnBtn">🔔 Attive</button>
+        <button type="button" id="notifOffBtn">🔕 Disattivate</button>
       </div>
-      <div class="desc">
-        Ricevi un promemoria a mezzogiorno il giorno delle partite, l'avviso quando inizia una diretta e i gol. Su Android/PWA funziona al meglio.
-      </div>
-      <div class="desc" id="iosNotice" style="display:none; margin-top:8px; padding:10px; background:#f5eef0; border-radius:10px; color:var(--granata)">
+      <div class="statusline" id="notifStatus"></div>
+
+      <div class="ios-box" id="iosNotice" style="display:none">
         📱 <b>Sei su iPhone:</b> perché le notifiche funzionino devi prima aggiungere questa app alla schermata Home
-        (tocca <b>Condividi</b> in Safari → <b>Aggiungi a Home</b>). Se la apri solo dal link, Apple non permette
-        di ricevere notifiche.
+        (tocca <b>Condividi</b> in Safari → <b>Aggiungi a Home</b>). Se apri solo il link da Safari, Apple non le permette.
       </div>
 
-      <button id="testNotif" class="btn" style="width:100%;justify-content:center;margin-top:12px">Invia notifica di prova</button>
-      <div class="small" id="saveNotifMsg" style="margin-top:6px;min-height:16px"></div>
+      <button type="button" id="testNotifBtn" class="btn-outline">🔔 Invia notifica di prova</button>
     </section>
+
   </main>
+
+  <script>
+    (function(){
+      var drawer = document.getElementById('drawer');
+      var menuBtn = document.getElementById('menuBtn');
+      var closeBtn = document.getElementById('drawer-close');
+      menuBtn.addEventListener('click', function(e){ e.stopPropagation(); drawer.classList.add('open'); });
+      closeBtn.addEventListener('click', function(){ drawer.classList.remove('open'); });
+      document.addEventListener('click', function(e){
+        if (drawer.classList.contains('open') && !drawer.contains(e.target) && e.target !== menuBtn){
+          drawer.classList.remove('open');
+        }
+      });
+    })();
+  </script>
 
   <script type="module">
     import { permissionState, enableNotifications, disableNotifications } from './notify.js';
 
-    // Tema scuro/chiaro: automatico (dopo le 19) oppure manuale
-    const themeAutoToggle = document.getElementById('themeAutoToggle');
-    const themeToggle = document.getElementById('themeToggle');
-    const manualThemeRow = document.getElementById('manualThemeRow');
-    const manualThemeDesc = document.getElementById('manualThemeDesc');
+    if ('serviceWorker' in navigator) await navigator.serviceWorker.register('./sw.js');
+
+    // ===== Tema =====
+    const autoThemeInput = document.getElementById('autoThemeInput');
+    const manualThemeInput = document.getElementById('manualThemeInput');
+    const manualDesc = document.getElementById('manualDesc');
 
     function computeAutoTheme(){
       const h = new Date().getHours();
@@ -132,89 +153,84 @@
       const mode = auto ? computeAutoTheme() : (localStorage.getItem('corb-theme') || 'light');
       document.documentElement.dataset.theme = mode;
     }
-    function refreshManualRowState(){
-      const auto = themeAutoToggle.checked;
-      manualThemeRow.style.opacity = auto ? '.4' : '1';
-      themeToggle.disabled = auto;
-      manualThemeDesc.textContent = auto
-        ? 'Disattiva l\'automatico qui sopra per scegliere tu il tema.'
-        : 'Comodo la sera o con poca luce. La scelta resta ricordata su questo dispositivo.';
+    function refreshThemeUI(){
+      const auto = autoThemeInput.checked;
+      manualThemeInput.disabled = auto;
+      manualDesc.textContent = auto
+        ? "Disattiva l'automatico qui sopra per sceglierlo tu."
+        : 'Comodo la sera o con poca luce. Resta ricordato su questo dispositivo.';
     }
 
-    themeAutoToggle.checked = (localStorage.getItem('corb-theme-auto') ?? 'on') === 'on';
-    themeToggle.checked = (localStorage.getItem('corb-theme') === 'dark');
-    refreshManualRowState();
+    autoThemeInput.checked = (localStorage.getItem('corb-theme-auto') ?? 'on') === 'on';
+    manualThemeInput.checked = localStorage.getItem('corb-theme') === 'dark';
+    refreshThemeUI();
 
-    themeAutoToggle.addEventListener('change', () => {
-      localStorage.setItem('corb-theme-auto', themeAutoToggle.checked ? 'on' : 'off');
-      refreshManualRowState();
+    autoThemeInput.addEventListener('change', () => {
+      localStorage.setItem('corb-theme-auto', autoThemeInput.checked ? 'on' : 'off');
+      refreshThemeUI();
       applyTheme();
     });
-    themeToggle.addEventListener('change', () => {
-      const mode = themeToggle.checked ? 'dark' : 'light';
-      localStorage.setItem('corb-theme', mode);
+    manualThemeInput.addEventListener('change', () => {
+      localStorage.setItem('corb-theme', manualThemeInput.checked ? 'dark' : 'light');
       applyTheme();
     });
 
-    // Drawer
-    const drawer = document.getElementById('drawer');
-    document.getElementById('menuBtn').onclick = (e)=>{e.stopPropagation();drawer.classList.add('open')};
-    document.getElementById('drawer-close').onclick = ()=> drawer.classList.remove('open');
-    document.addEventListener('click', (e)=>{ if(drawer.classList.contains('open') && !drawer.contains(e.target)) drawer.classList.remove('open') });
-
+    // ===== Notifiche =====
     const notifOnBtn  = document.getElementById('notifOnBtn');
     const notifOffBtn = document.getElementById('notifOffBtn');
-    const saveNotifMsg = document.getElementById('saveNotifMsg');
-    const testBtn  = document.getElementById('testNotif');
+    const notifStatus = document.getElementById('notifStatus');
+    const testNotifBtn = document.getElementById('testNotifBtn');
 
-    if ('serviceWorker' in navigator) await navigator.serviceWorker.register('./sw.js');
-
-    // Avviso iPhone: mostralo solo se il dispositivo è iOS
     if (/iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream){
       document.getElementById('iosNotice').style.display = 'block';
     }
 
-    const savedState = localStorage.getItem('corb-notif-enabled');
-    let selected = savedState === null ? (permissionState() === 'granted') : (savedState === 'yes');
+    let notifOn = (localStorage.getItem('corb-notif-enabled') ?? (permissionState()==='granted' ? 'yes' : 'no')) === 'yes';
 
-    function paintSelection(){
-      notifOnBtn.classList.toggle('active', selected === true);
-      notifOffBtn.classList.toggle('active', selected === false);
+    function paintNotif(){
+      notifOnBtn.classList.toggle('active', notifOn === true);
+      notifOffBtn.classList.toggle('active', notifOn === false);
     }
-    paintSelection();
+    paintNotif();
 
-    async function applyChoice(wantOn){
-      notifOnBtn.disabled = true; notifOffBtn.disabled = true;
-      saveNotifMsg.textContent = 'Un attimo...';
-      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Non ho ricevuto risposta. Riprova, o controlla di aver dato il permesso alle notifiche nelle impostazioni di sistema del telefono/browser.')), ms));
+    function setBusy(busy){
+      notifOnBtn.disabled = busy;
+      notifOffBtn.disabled = busy;
+    }
+
+    async function chooseNotif(wantOn){
+      setBusy(true);
+      notifStatus.textContent = wantOn ? 'Attivazione in corso, rispondi al permesso del telefono se richiesto...' : 'Disattivazione in corso...';
+      notifStatus.style.color = 'var(--muted)';
+      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Nessuna risposta. Riprova.')), ms));
       try{
         if (wantOn){
           await Promise.race([enableNotifications(), timeout(60000)]);
-          localStorage.setItem('corb-notif-enabled', 'yes');
-          selected = true;
-          saveNotifMsg.textContent = '✅ Notifiche attivate.';
         } else {
           await Promise.race([disableNotifications(), timeout(60000)]);
-          localStorage.setItem('corb-notif-enabled', 'no');
-          selected = false;
-          saveNotifMsg.textContent = '✅ Notifiche disattivate.';
         }
+        localStorage.setItem('corb-notif-enabled', wantOn ? 'yes' : 'no');
+        notifOn = wantOn;
+        notifStatus.textContent = wantOn ? '✅ Notifiche attivate.' : '✅ Notifiche disattivate.';
+        notifStatus.style.color = '#059669';
       } catch(err){
-        saveNotifMsg.textContent = '❌ ' + err.message;
+        notifStatus.textContent = '❌ ' + err.message;
+        notifStatus.style.color = '#dc2626';
       } finally {
-        paintSelection();
-        notifOnBtn.disabled = false; notifOffBtn.disabled = false;
+        paintNotif();
+        setBusy(false);
       }
     }
-    notifOnBtn.addEventListener('click', ()=> applyChoice(true));
-    notifOffBtn.addEventListener('click', ()=> applyChoice(false));
+    notifOnBtn.addEventListener('click', () => chooseNotif(true));
+    notifOffBtn.addEventListener('click', () => chooseNotif(false));
 
-    testBtn.addEventListener('click', async ()=>{
-      if (!('serviceWorker' in navigator)) return alert('SW non disponibile.');
+    testNotifBtn.addEventListener('click', async () => {
+      if (!('serviceWorker' in navigator)) { notifStatus.textContent = 'Service worker non disponibile.'; return; }
       const reg = await navigator.serviceWorker.ready;
       reg.active?.postMessage({ type: 'local-test-notify' });
     });
   </script>
+
   <script src="./ui.js?v=35"></script>
   <script defer src="./install-prompt.js?v=2"></script>
 </body>

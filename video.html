@@ -12,11 +12,22 @@
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
     .video-list{display:grid;gap:12px}
+    .video-card{overflow:hidden}
     .video-card .title{font-weight:700;margin:8px 0 4px 0;overflow-wrap:break-word;word-break:break-word}
     .video-card a.small{overflow-wrap:break-word;word-break:break-word}
     .ratio{position:relative;width:100%;border-radius:12px;overflow:hidden;background:#eee}
     .ratio::before{content:"";display:block;padding-top:56.25%}
     .ratio > iframe, .ratio > img{position:absolute;inset:0;width:100%;height:100%;border:0}
+
+    /* L'embed Instagram porta il proprio sfondo bianco (non lo controlliamo noi,
+       è dentro il loro iframe) — lo inquadriamo in un riquadro chiaro sempre
+       coerente, anche col tema scuro, invece di un contrasto netto e brutto. */
+    .instagram-media{
+      max-width:100% !important; width:100% !important;
+      margin:0 !important; border-radius:12px !important; overflow:hidden;
+    }
+    .ig-wrap{background:#fafafa;border-radius:12px;padding:1px;display:flex;justify-content:center;overflow:hidden}
+    :root[data-theme="dark"] .ig-wrap{background:#e8e8e8}
   </style>
 </head>
 <body>
@@ -116,8 +127,9 @@
         return `
           <article class="card video-card">
             <div class="title" style="margin-bottom:8px">${titolo}</div>
-            <blockquote class="instagram-media" data-instgrm-permalink="${link}" data-instgrm-version="14"
-              style="margin:0 auto;max-width:100%"></blockquote>
+            <div class="ig-wrap">
+              <blockquote class="instagram-media" data-instgrm-permalink="${link}" data-instgrm-version="14"></blockquote>
+            </div>
           </article>`;
       } else if (isYouTube(link)){
         const id = ytId(link);

@@ -25,6 +25,9 @@
     }
     .std-table .team-name{font-weight:700}
     .std-table .pts{font-weight:900;color:var(--granata)}
+    .gol-count{font-weight:900;color:var(--granata)}
+    :root[data-theme="dark"] .std-table .pts,
+    :root[data-theme="dark"] .gol-count{color:#ff8a9b}
     .zone-vincente{background:rgba(37,99,235,.16);color:#2563eb}
     .zone-promozione{background:rgba(22,163,74,.16);color:#16a34a}
     .zone-playoff{background:rgba(234,179,8,.18);color:#a16207}
@@ -34,18 +37,14 @@
     .legend .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
     @media(max-width:420px){ .std-table{font-size:12px} .std-table th{font-size:10px} }
 
-    /* Su tema scuro, queste due card restano bianche per leggere bene i colori
-       delle zone classifica e i numeri dei marcatori. */
-    :root[data-theme="dark"] #classificaCard,
-    :root[data-theme="dark"] #marcatoriCard{
-      background:#ffffff; color:#2b1d22;
-    }
-    :root[data-theme="dark"] #classificaCard .std-table .pos,
-    :root[data-theme="dark"] #classificaCard .std-table td,
-    :root[data-theme="dark"] #marcatoriCard .small,
-    :root[data-theme="dark"] #marcatoriCard div{ color:#2b1d22 }
-    :root[data-theme="dark"] #classificaCard .std-table tr.me{ background:#f5eef0 }
-    :root[data-theme="dark"] #classificaCard .season-select select{ background:#fff; color:#2b1d22 }
+    /* Tema scuro: sfondo scuro vero (eredita dalla card), ma i colori delle
+       zone classifica hanno bisogno di più contrasto per restare leggibili
+       su uno sfondo scuro invece che su uno bianco. */
+    :root[data-theme="dark"] .zone-vincente{background:rgba(59,130,246,.28);color:#93c5fd}
+    :root[data-theme="dark"] .zone-promozione{background:rgba(34,197,94,.28);color:#86efac}
+    :root[data-theme="dark"] .zone-playoff{background:rgba(234,179,8,.30);color:#fde047}
+    :root[data-theme="dark"] .zone-coppa{background:rgba(168,85,247,.28);color:#d8b4fe}
+    :root[data-theme="dark"] .season-select select{background:var(--card);color:var(--text)}
   </style>
 </head>
 <body>
@@ -223,7 +222,7 @@
       scorersList.innerHTML = scorers.length ? scorers.map((p, i) => `
         <div class="item-row" style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--ring)">
           <div><span class="small muted" style="margin-right:8px">${i+1}°</span><strong>${p.nome}</strong> ${p.numero ? '<span class="small muted">#'+p.numero+'</span>' : ''}</div>
-          <div style="font-weight:900;color:var(--granata)">${p.gol} ⚽</div>
+          <div class="gol-count">${p.gol} ⚽</div>
         </div>
       `).join('') : `<div class="small">Nessun gol registrato per la stagione ${selected}.</div>`;
     }
