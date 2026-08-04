@@ -14,13 +14,31 @@ export function permissionState(){
   return Notification.permission; // 'default' | 'granted' | 'denied'
 }
 
+// Alcuni Safari/iOS più datati implementano Notification.requestPermission()
+// con un vecchio sistema a "callback" invece del sistema moderno a Promise:
+// se lo chiami con await senza gestire anche quel caso, resta in attesa per
+// sempre senza mai rispondere. Questo wrapper funziona con entrambi.
+function requestPermissionSafe(){
+  return new Promise((resolve, reject) => {
+    let done = false;
+    try{
+      const maybePromise = Notification.requestPermission((result) => {
+        if (!done){ done = true; resolve(result); }
+      });
+      if (maybePromise && typeof maybePromise.then === 'function'){
+        maybePromise.then((result) => { if (!done){ done = true; resolve(result); } }, (err) => { if (!done){ done = true; reject(err); } });
+      }
+    }catch(err){ if (!done){ done = true; reject(err); } }
+  });
+}
+
 // Chiede il permesso, ottiene il token FCM per QUESTO dispositivo/browser
 // e lo salva in Firestore così l'admin (o l'automatismo del giorno-partita)
 // può usarlo per mandare la notifica a tutti.
 export async function enableNotifications(){
   if (!('Notification' in window)) throw new Error('Notifiche non supportate su questo dispositivo/browser.');
 
-  const perm = await Notification.requestPermission();
+  const perm = await requestPermissionSafe();
   if (perm !== 'granted') throw new Error('Permesso negato.');
 
   const messaging = await getMessagingIfSupported();

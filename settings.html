@@ -186,20 +186,21 @@
     async function applyChoice(wantOn){
       notifOnBtn.disabled = true; notifOffBtn.disabled = true;
       saveNotifMsg.textContent = 'Un attimo...';
+      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Il telefono non ha risposto in tempo. Riprova, o controlla di aver dato il permesso alle notifiche nelle impostazioni di sistema.')), ms));
       try{
         if (wantOn){
-          await enableNotifications();
+          await Promise.race([enableNotifications(), timeout(10000)]);
           localStorage.setItem('corb-notif-enabled', 'yes');
           selected = true;
           saveNotifMsg.textContent = '✅ Notifiche attivate.';
         } else {
-          await disableNotifications();
+          await Promise.race([disableNotifications(), timeout(10000)]);
           localStorage.setItem('corb-notif-enabled', 'no');
           selected = false;
           saveNotifMsg.textContent = '✅ Notifiche disattivate.';
         }
       } catch(err){
-        saveNotifMsg.textContent = '❌ Errore: ' + err.message;
+        saveNotifMsg.textContent = '❌ ' + err.message;
       } finally {
         paintSelection();
         notifOnBtn.disabled = false; notifOffBtn.disabled = false;
