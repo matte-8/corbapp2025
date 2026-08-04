@@ -28,7 +28,7 @@
     .toggle-slider input:checked + .track::before{transform:translateX(22px)}
     .desc{font-size:13px;color:var(--muted);margin-top:6px}
     .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{border:1px solid var(--ring);background:var(--card);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
+    .btn{border:1px solid var(--ring);background:var(--card);color:var(--text);border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer}
     .btn-primary{background:var(--granata);color:#fff;border-color:transparent}
     .stat{font-size:13px;color:var(--muted)}
     .seg-btn-notif{flex:1;padding:12px 0;border-radius:12px;border:2px solid var(--ring);background:var(--card);color:var(--text);font-weight:700;font-size:14px;cursor:pointer}
@@ -109,14 +109,8 @@
         di ricevere notifiche.
       </div>
 
-      <button id="saveNotifBtn" class="btn btn-primary" style="width:100%;justify-content:center;margin-top:12px">💾 Salva preferenze</button>
+      <button id="testNotif" class="btn" style="width:100%;justify-content:center;margin-top:12px">Invia notifica di prova</button>
       <div class="small" id="saveNotifMsg" style="margin-top:6px;min-height:16px"></div>
-
-      <div class="actions" style="margin-top:10px">
-        <button id="testNotif" class="btn">Invia notifica di prova</button>
-      </div>
-
-      <div class="stat" id="permState" style="margin-top:8px">Permesso: —</div>
     </section>
   </main>
 
@@ -170,10 +164,8 @@
 
     const notifOnBtn  = document.getElementById('notifOnBtn');
     const notifOffBtn = document.getElementById('notifOffBtn');
-    const saveNotifBtn = document.getElementById('saveNotifBtn');
     const saveNotifMsg = document.getElementById('saveNotifMsg');
     const testBtn  = document.getElementById('testNotif');
-    const permEl   = document.getElementById('permState');
 
     if ('serviceWorker' in navigator) await navigator.serviceWorker.register('./sw.js');
 
@@ -182,9 +174,6 @@
       document.getElementById('iosNotice').style.display = 'block';
     }
 
-    // Stato iniziale: uso quello che abbiamo salvato noi (non solo il permesso
-    // del browser, che una volta concesso resta sempre "granted" per sempre,
-    // anche se qui hai disattivato le notifiche).
     const savedState = localStorage.getItem('corb-notif-enabled');
     let selected = savedState === null ? (permissionState() === 'granted') : (savedState === 'yes');
 
@@ -193,31 +182,31 @@
       notifOffBtn.classList.toggle('active', selected === false);
     }
     paintSelection();
-    permEl.textContent = 'Permesso: ' + permissionState();
 
-    // Scegliere qui NON applica ancora nulla: serve toccare "Salva preferenze"
-    notifOnBtn.addEventListener('click', ()=>{ selected = true; paintSelection(); saveNotifMsg.textContent=''; });
-    notifOffBtn.addEventListener('click', ()=>{ selected = false; paintSelection(); saveNotifMsg.textContent=''; });
-
-    saveNotifBtn.addEventListener('click', async ()=>{
-      saveNotifBtn.disabled = true;
-      saveNotifMsg.textContent = 'Salvataggio...';
+    async function applyChoice(wantOn){
+      notifOnBtn.disabled = true; notifOffBtn.disabled = true;
+      saveNotifMsg.textContent = 'Un attimo...';
       try{
-        if (selected){
+        if (wantOn){
           await enableNotifications();
           localStorage.setItem('corb-notif-enabled', 'yes');
+          selected = true;
+          saveNotifMsg.textContent = '✅ Notifiche attivate.';
         } else {
           await disableNotifications();
           localStorage.setItem('corb-notif-enabled', 'no');
+          selected = false;
+          saveNotifMsg.textContent = '✅ Notifiche disattivate.';
         }
-        saveNotifMsg.textContent = selected ? '✅ Notifiche attivate e salvate.' : '✅ Notifiche disattivate e salvate.';
       } catch(err){
         saveNotifMsg.textContent = '❌ Errore: ' + err.message;
       } finally {
-        permEl.textContent = 'Permesso: ' + permissionState();
-        saveNotifBtn.disabled = false;
+        paintSelection();
+        notifOnBtn.disabled = false; notifOffBtn.disabled = false;
       }
-    });
+    }
+    notifOnBtn.addEventListener('click', ()=> applyChoice(true));
+    notifOffBtn.addEventListener('click', ()=> applyChoice(false));
 
     testBtn.addEventListener('click', async ()=>{
       if (!('serviceWorker' in navigator)) return alert('SW non disponibile.');
