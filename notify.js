@@ -35,19 +35,27 @@ function requestPermissionSafe(){
 // Chiede il permesso, ottiene il token FCM per QUESTO dispositivo/browser
 // e lo salva in Firestore così l'admin (o l'automatismo del giorno-partita)
 // può usarlo per mandare la notifica a tutti.
-export async function enableNotifications(){
+export async function enableNotifications(onStep){
+  const step = (s) => { try{ onStep && onStep(s); }catch{} };
+
   if (!('Notification' in window)) throw new Error('Notifiche non supportate su questo dispositivo/browser.');
 
+  step('Controllo il permesso...');
   const perm = await requestPermissionSafe();
   if (perm !== 'granted') throw new Error('Permesso negato.');
 
+  step('Controllo il supporto del browser...');
   const messaging = await getMessagingIfSupported();
   if (!messaging) throw new Error('Push non supportato su questo browser (es. iPhone: l\'app va aperta dalla schermata Home, non da Safari).');
 
+  step('Mi collego al service worker...');
   const swReg = await navigator.serviceWorker.ready;
+
+  step('Ottengo il codice del dispositivo...');
   const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
   if (!token) throw new Error('Impossibile ottenere il token di notifica.');
 
+  step('Salvo su Firestore...');
   await setDoc(doc(db, TOKENS_COLLECTION, token), {
     token,
     ua: navigator.userAgent,
@@ -70,12 +78,16 @@ export async function enableNotifications(){
   return token;
 }
 
-export async function disableNotifications(){
+export async function disableNotifications(onStep){
+  const step = (s) => { try{ onStep && onStep(s); }catch{} };
+  step('Controllo il supporto del browser...');
   const messaging = await getMessagingIfSupported();
   if (!messaging) return;
+  step('Mi collego al service worker...');
   const swReg = await navigator.serviceWorker.ready;
   try {
+    step('Ottengo il codice del dispositivo...');
     const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg });
-    if (token) await deleteDoc(doc(db, TOKENS_COLLECTION, token));
+    if (token){ step('Rimuovo da Firestore...'); await deleteDoc(doc(db, TOKENS_COLLECTION, token)); }
   } catch {}
 }

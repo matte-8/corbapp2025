@@ -200,14 +200,14 @@
 
     async function chooseNotif(wantOn){
       setBusy(true);
-      notifStatus.textContent = wantOn ? 'Attivazione in corso, rispondi al permesso del telefono se richiesto...' : 'Disattivazione in corso...';
       notifStatus.style.color = 'var(--muted)';
-      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Nessuna risposta. Riprova.')), ms));
+      const onStep = (s) => { notifStatus.textContent = s; };
+      const timeout = (ms) => new Promise((_, rej) => setTimeout(()=> rej(new Error('Bloccato al passaggio: "' + notifStatus.textContent + '". Fammi uno screenshot di questa scritta.')), ms));
       try{
         if (wantOn){
-          await Promise.race([enableNotifications(), timeout(60000)]);
+          await Promise.race([enableNotifications(onStep), timeout(25000)]);
         } else {
-          await Promise.race([disableNotifications(), timeout(60000)]);
+          await Promise.race([disableNotifications(onStep), timeout(25000)]);
         }
         localStorage.setItem('corb-notif-enabled', wantOn ? 'yes' : 'no');
         notifOn = wantOn;
