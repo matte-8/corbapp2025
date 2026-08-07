@@ -171,6 +171,25 @@
     }
   }
 
+  // --- Connessione assente: piccolo avviso giallo nella barra, solo quando serve ---
+  function injectConnectionStatus(){
+    const nav = document.querySelector('.topbar .nav');
+    if (!nav || document.getElementById('corb-offline-badge')) return;
+
+    const badge = document.createElement('span');
+    badge.id = 'corb-offline-badge';
+    badge.textContent = '⚠️ Connessione assente';
+    badge.style.cssText = 'display:none;font-size:11px;font-weight:700;color:#3a2f00;background:#facc15;padding:3px 8px;border-radius:999px;margin-left:8px;white-space:nowrap';
+    nav.appendChild(badge);
+
+    function refresh(){
+      badge.style.display = navigator.onLine ? 'none' : 'inline-block';
+    }
+    window.addEventListener('online', refresh);
+    window.addEventListener('offline', refresh);
+    refresh();
+  }
+
   function injectTopIndicators(){
     const brand = document.querySelector('.topbar .brand');
     if (!brand) return;
@@ -322,6 +341,7 @@
   ready(() => {
     injectTopIndicators();
     injectNotifyReminder();
+    injectConnectionStatus();
   });
 
   ready(() => {

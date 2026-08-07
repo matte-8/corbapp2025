@@ -273,6 +273,7 @@
           {key:'logo_casa', label:'Logo casa (URL, opzionale)', type:'text'},
           {key:'logo_fuori', label:'Logo trasferta (URL, opzionale)', type:'text'},
           {key:'stato', label:'Stato partita', type:'select', options:['Regolare','Rinviata','Annullata']},
+          {key:'speciale', label:'Partita speciale (derby/big match)', type:'select', options:['No','Sì']},
           {key:'live', label:'In diretta ORA?', type:'select', options:['No','Sì']},
         ],
         itemLabel: (m)=> `${m.data||'?'} ${m.ora||''} — ${m.casa||'Corbiolo'} vs ${m.fuori||'Avversario'} ${m.risultato ? '('+m.risultato+')' : ''} ${m.stagione ? '· '+m.stagione : ''} ${m.stato && m.stato!=='Regolare' ? '⚠️ '+m.stato : ''}`,
@@ -363,6 +364,7 @@
                 if (f.key==='stagione') defaultValue = currentSeason();
                 if (f.key==='live') defaultValue = 'No';
                 if (f.key==='stato') defaultValue = 'Regolare';
+                if (f.key==='speciale') defaultValue = 'No';
                 if (f.key==='tipo') defaultValue = 'Campionato';
               }
               return fieldHTML(f, prefill ? prefill[f.key] : defaultValue);

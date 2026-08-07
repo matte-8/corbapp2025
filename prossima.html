@@ -13,6 +13,7 @@
   <link rel="stylesheet" href="./style.css?v=35">
   <style>
     .next-card{background:linear-gradient(180deg,#7d2631,#6b0f1a);color:#fff;border-radius:18px;padding:16px;box-shadow:0 10px 26px rgba(0,0,0,.14)}
+    .next-card.derby{border:2px solid #facc15;box-shadow:0 0 0 3px rgba(250,204,21,.25),0 10px 26px rgba(0,0,0,.14)}
     .versus{display:grid;grid-template-columns:1fr auto 1fr;gap:14px;align-items:center;margin-top:8px}
     .teamBox{display:flex;flex-direction:column;align-items:center;text-align:center}
     .teamLogo{width:72px;height:72px;border-radius:14px;object-fit:contain;background:#ffffff18}
@@ -64,7 +65,7 @@
   </nav>
 
   <main class="container">
-    <section class="next-card">
+    <section class="next-card" id="nextCard">
       <div class="row" style="justify-content:space-between;align-items:center">
         <h2 style="margin:0">La prossima</h2>
         <a class="goCal" href="./calendario.html">Vedi calendario</a>
@@ -177,8 +178,10 @@
           <span class="pill-soft">${isHomeCorb?'🏠 Casa':'✈️ Trasferta'}</span>
           <span class="pill-soft">${fmtLong(next.date)}</span>
           ${next.tipo && next.tipo!=='Campionato' ? `<span class="pill-soft">${next.tipo}</span>` : ''}
+          ${next.speciale==='Sì' ? `<span class="pill-soft" style="background:#facc15;color:#3a2f00;font-weight:800">🔥 DA NON PERDERE</span>` : ''}
         `;
 
+        document.getElementById('nextCard').classList.toggle('derby', next.speciale==='Sì');
         document.getElementById('addCalBtn').style.display = 'inline-flex';
         document.getElementById('addCalBtn').onclick = () => addToCalendar(next, homeName, awayName);
       } else {
